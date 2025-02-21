@@ -1,0 +1,18 @@
+{
+  "name": "al-437",
+  "version": "1.0.0",
+  "description": "A generative artwork",
+  "license": "MIT",
+  "scripts": {
+    "postinstall": "fxhash update",
+    "update": "fxhash update",
+    "start": "fxhash dev",
+    "build": "fxhash build"
+  },
+  "devDependencies": {
+    "fxhash": "latest"
+  },
+  "dependencies": {
+    "stats.js": "^0.17.0"
+  }
+}
