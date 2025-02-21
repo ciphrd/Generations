@@ -75,23 +75,35 @@ for (let i = 0; i < 40; i++) {
     testBodies.push(body(vec2((i + 0.5) / 40, (j + 0.5) / 40)))
   }
 }
-const part = new SpacePartition(testBodies, 0.12)
-
-const neighbours = part.neighbours(testBodies[20])
-for (const body of neighbours) {
-  body.color = "yellow"
-}
-testBodies[20].color = "red"
 
 // const renderer = new CanvasRenderer([...food, ...bodies, ...constraints])
 const renderer = new CanvasRenderer(testBodies)
 Mouse.init(renderer.cvs)
 
 function tick(time, dt) {
+  let closest,
+    minD = Infinity
+  for (const body of testBodies) {
+    body.color = "#00ff00"
+    body.acc.x += ($fx.rand() - 0.5) * 0.1
+    body.acc.y += ($fx.rand() - 0.5) * 0.1
+    if (body.pos.dist(Mouse.pos) < minD) {
+      closest = body
+      minD = body.pos.dist(Mouse.pos)
+    }
+  }
+
+  const part = new SpacePartition(testBodies, 0.12)
+  const neighbours = part.neighbours(closest)
+  for (const body of neighbours) {
+    body.color = "orange"
+  }
+  closest.color = "red"
+
   for (const constraint of constraints) {
     constraint.apply(dt)
   }
-  for (const body of bodies) {
+  for (const body of testBodies) {
     body.update(dt)
   }
   renderer.render()
@@ -103,6 +115,16 @@ function tick(time, dt) {
   for (let y = 0; y < part.divs; y++) {
     renderer.ctx.fillRect(0, y / part.divs, 1, renderer.texelSize)
   }
+
+  renderer.ctx.strokeStyle = "red"
+  renderer.ctx.lineWidth = 3 * renderer.texelSize
+  renderer.ctx.beginPath()
+  renderer.ctx.arc(closest.pos.x, closest.pos.y, 0.12, 0, TAU)
+  renderer.ctx.stroke()
+  renderer.ctx.fillStyle = "red"
+  renderer.ctx.beginPath()
+  renderer.ctx.arc(closest.pos.x, closest.pos.y, 0.01, 0, TAU)
+  renderer.ctx.fill()
 }
 
 let lastFrameTime

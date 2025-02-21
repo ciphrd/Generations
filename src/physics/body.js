@@ -1,4 +1,5 @@
 import { vec2 } from "../utils/vec"
+import { mod } from "../utils/math"
 
 let c = 0
 
@@ -22,6 +23,7 @@ export class Body {
     this.vel.add(this.acc.mul(dt))
     this.acc.res()
     this.pos.add(this.vel.x * dt, this.vel.y * dt)
+    this.pos.apply((x) => mod(x, 1))
   }
 
   addFlag(flag) {
