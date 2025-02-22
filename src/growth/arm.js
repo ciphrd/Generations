@@ -1,5 +1,5 @@
 import { Eater } from "../interactions/eat"
-import { body } from "../physics/body"
+import { BodyFlags, body } from "../physics/body"
 import { Friction } from "../physics/constraints/friction"
 import { LAR, larf } from "../physics/constraints/lar"
 import { Spring } from "../physics/constraints/spring"
@@ -8,10 +8,13 @@ export function growArm(root, nSegments, foodBodies) {
   const constraints = []
   const bodies = []
 
+  let bod
   for (let i = 0; i < nSegments; i++) {
-    bodies.push(body(root.pos.clone()))
+    bod = body(root.pos.clone())
+    bod.addFlag(BodyFlags.GLOBAL_REPULSION)
+    bodies.push(bod)
     constraints.push(
-      new Spring(i === 0 ? root : bodies[i - 1], bodies[i], 0.01, 80, 10),
+      new Spring(i === 0 ? root : bodies[i - 1], bodies[i], 0.001, 80, 70),
       new Friction(bodies[i], 0.02)
     )
   }

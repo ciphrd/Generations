@@ -9,7 +9,7 @@ export const BodyFlags = {
   THIRD: 0b100,
 }
 
-const MAX_VELOCITY = 0.02
+const MAX_VELOCITY = 0.5
 const MAX_VELOCITY_SQ = MAX_VELOCITY ** 2
 
 export class Body {

@@ -1,5 +1,5 @@
 export function renderSpring(ctx, spring) {
-  ctx.lineWidth = 0.02
+  ctx.lineWidth = 0.004
   ctx.strokeStyle = "red"
   ctx.beginPath()
   ctx.moveTo(spring.bodyA.pos.x, spring.bodyA.pos.y)

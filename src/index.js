@@ -19,10 +19,11 @@ import { LAR, larf } from "./physics/constraints/lar"
 import { Food } from "./physics/entities/food"
 import { Alignement } from "./physics/constraints/alignment"
 import { mod } from "./utils/math"
-import { growMembrane } from "./growth/membrane"
+import { growDoubleMembrane, growMembrane } from "./growth/membrane"
 import { Mouse, MouseFollow } from "./interactions/mouse"
 import { SpacePartition } from "./utils/hash-partition"
 import { GlobalRepulsion } from "./physics/constraints/repulsion"
+import { growSection } from "./growth/section"
 
 const stats = new Stats()
 stats.showPanel(1)
@@ -35,66 +36,68 @@ window.TAU = 2 * PI
 const bodies = []
 const constraints = []
 
-// const membrane = growMembrane(100, vec2(0.5, 0.5), 0.3, {
-//   stiffness: 10,
-//   dampening: 10,
-// })
+const membrane = growDoubleMembrane(50, vec2(0.5, 0.5), 0.3, 0.03, {
+  stiffness: 100,
+  damping: 10,
+})
 
-// bodies.push(...membrane.bodies)
-// constraints.push(...membrane.constraints)
+bodies.push(...membrane.bodies)
+constraints.push(...membrane.constraints)
+
+const section = growSection(membrane.parts.inner.bodies, 10, 0, 20, 0.02, {
+  stiffness: 100,
+  damping: 8,
+  contracted: 0.5,
+})
+bodies.push(...section.bodies)
+constraints.push(...section.constraints)
+
+bodies.forEach((body) => body.addFlag(BodyFlags.GLOBAL_REPULSION))
 
 // constraints.push(new MouseFollow(membrane.bodies[0]))
 
-// const food = []
-// for (let i = 0; i < 40; i++) {
-//   food.push(
-//     new Food(vec2($fx.rand(), $fx.rand()), (fd) =>
-//       food.splice(food.indexOf(fd), 1)
-//     )
-//   )
-// }
+const food = []
+for (let i = 0; i < 100; i++) {
+  food.push(
+    new Food(vec2($fx.rand(), $fx.rand()), (fd) =>
+      food.splice(food.indexOf(fd), 1)
+    )
+  )
+}
 
-// const armExtremities = []
-// for (let i = 0; i < 1; i++) {
-//   const arm = growArm(bodies[i * 2], 3, food)
-//   bodies.push(...arm.bodies)
-//   constraints.push(...arm.constraints)
-// }
-
-// for (const extr of armExtremities) {
-//   constraints.push(
-//     new LAR(extr, armExtremities, {
-//       attr: larf(0, 0),
-//       rep: larf(0.3, 0.02),
-//     })
-//   )
-// }
+for (let i = 0; i < 10; i++) {
+  const arm = growArm(bodies[i * 2], 8, food)
+  bodies.push(...arm.bodies)
+  constraints.push(...arm.constraints)
+}
 
 const testBodies = []
-const NB = 40
+const NB = 0
 for (let i = 0; i < NB; i++) {
   for (let j = 0; j < NB; j++) {
     const bod = body(vec2((i + 0.5) / NB, (j + 0.5) / NB))
     bod.addFlag(BodyFlags.GLOBAL_REPULSION)
     testBodies.push(bod)
+    constraints.push(new Friction(bod, 0.02))
   }
 }
-const rep = new GlobalRepulsion(testBodies, {
-  radius: 0.05,
-  strength: 0.001,
-})
 
+const allBodies = [...food, ...testBodies, ...bodies]
+
+const rep = new GlobalRepulsion(allBodies, {
+  radius: 0.05,
+  strength: 0.0003,
+})
 constraints.push(rep)
 
-// const renderer = new CanvasRenderer([...food, ...bodies, ...constraints])
-const renderer = new CanvasRenderer(testBodies)
+const renderer = new CanvasRenderer([...allBodies, ...constraints])
 Mouse.init(renderer.cvs)
 
 function tick(time, dt) {
   for (const constraint of constraints) {
     constraint.apply(dt)
   }
-  for (const body of testBodies) {
+  for (const body of allBodies) {
     body.update(dt)
   }
   renderer.render()
@@ -104,7 +107,7 @@ let lastFrameTime
 function loop() {
   stats.begin()
   const time = performance.now()
-  const dt = (time - lastFrameTime) / 1000
+  const dt = min(time - lastFrameTime, 30) / 1000
   lastFrameTime = time
   tick(time, dt)
   stats.end()

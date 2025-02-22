@@ -32,8 +32,8 @@ export class GlobalRepulsion {
         this.dir.copy(B.pos).sub(A.pos)
         D = this.dir.lenSq()
         if (D < radSq && D > 0.00001) {
-          this.dir.div(radSq)
-          A.acc.sub(this.dir.mul(strength))
+          this.dir.div(sqrt(D))
+          A.acc.sub(this.dir.mul(strength / D))
         }
       }
     }

@@ -22,8 +22,8 @@ export class LAR {
       D = _dir.len()
       _dir.normalize()
 
-      if (D > 0.01 && D < attr.range) {
-        F = attr.strength / D
+      if (D > 0.003 && D < attr.range) {
+        F = min(3, attr.strength / D)
         body.acc.add(_dir.clone().mul(F))
       }
       if (D > 0.001 && D < rep.range) {
