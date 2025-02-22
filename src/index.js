@@ -22,6 +22,7 @@ import { mod } from "./utils/math"
 import { growMembrane } from "./growth/membrane"
 import { Mouse, MouseFollow } from "./interactions/mouse"
 import { SpacePartition } from "./utils/hash-partition"
+import { GlobalRepulsion } from "./physics/constraints/repulsion"
 
 const stats = new Stats()
 stats.showPanel(1)
@@ -70,36 +71,26 @@ const constraints = []
 // }
 
 const testBodies = []
-for (let i = 0; i < 40; i++) {
-  for (let j = 0; j < 40; j++) {
-    testBodies.push(body(vec2((i + 0.5) / 40, (j + 0.5) / 40)))
+const NB = 40
+for (let i = 0; i < NB; i++) {
+  for (let j = 0; j < NB; j++) {
+    const bod = body(vec2((i + 0.5) / NB, (j + 0.5) / NB))
+    bod.addFlag(BodyFlags.GLOBAL_REPULSION)
+    testBodies.push(bod)
   }
 }
+const rep = new GlobalRepulsion(testBodies, {
+  radius: 0.05,
+  strength: 0.001,
+})
+
+constraints.push(rep)
 
 // const renderer = new CanvasRenderer([...food, ...bodies, ...constraints])
 const renderer = new CanvasRenderer(testBodies)
 Mouse.init(renderer.cvs)
 
 function tick(time, dt) {
-  let closest,
-    minD = Infinity
-  for (const body of testBodies) {
-    body.color = "#00ff00"
-    body.acc.x += ($fx.rand() - 0.5) * 0.1
-    body.acc.y += ($fx.rand() - 0.5) * 0.1
-    if (body.pos.dist(Mouse.pos) < minD) {
-      closest = body
-      minD = body.pos.dist(Mouse.pos)
-    }
-  }
-
-  const part = new SpacePartition(testBodies, 0.12)
-  const neighbours = part.neighbours(closest)
-  for (const body of neighbours) {
-    body.color = "orange"
-  }
-  closest.color = "red"
-
   for (const constraint of constraints) {
     constraint.apply(dt)
   }
@@ -107,24 +98,6 @@ function tick(time, dt) {
     body.update(dt)
   }
   renderer.render()
-
-  renderer.ctx.fillStyle = "red"
-  for (let x = 0; x < part.divs; x++) {
-    renderer.ctx.fillRect(x / part.divs, 0, renderer.texelSize, 1)
-  }
-  for (let y = 0; y < part.divs; y++) {
-    renderer.ctx.fillRect(0, y / part.divs, 1, renderer.texelSize)
-  }
-
-  renderer.ctx.strokeStyle = "red"
-  renderer.ctx.lineWidth = 3 * renderer.texelSize
-  renderer.ctx.beginPath()
-  renderer.ctx.arc(closest.pos.x, closest.pos.y, 0.12, 0, TAU)
-  renderer.ctx.stroke()
-  renderer.ctx.fillStyle = "red"
-  renderer.ctx.beginPath()
-  renderer.ctx.arc(closest.pos.x, closest.pos.y, 0.01, 0, TAU)
-  renderer.ctx.fill()
 }
 
 let lastFrameTime

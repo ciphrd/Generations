@@ -1,5 +1,5 @@
 import { vec2 } from "../utils/vec"
-import { mod } from "../utils/math"
+import { clamp, mod } from "../utils/math"
 
 let c = 0
 
@@ -8,6 +8,9 @@ export const BodyFlags = {
   SECOND: 0b10,
   THIRD: 0b100,
 }
+
+const MAX_VELOCITY = 0.02
+const MAX_VELOCITY_SQ = MAX_VELOCITY ** 2
 
 export class Body {
   constructor(pos, color = "#00ff00") {
@@ -21,9 +24,13 @@ export class Body {
 
   update(dt) {
     this.vel.add(this.acc.mul(dt))
+    let lenSq = this.vel.lenSq()
+    if (lenSq > MAX_VELOCITY_SQ) {
+      this.vel.mul(MAX_VELOCITY / sqrt(lenSq))
+    }
     this.acc.res()
     this.pos.add(this.vel.x * dt, this.vel.y * dt)
-    this.pos.apply((x) => mod(x, 1))
+    this.pos.apply((x) => clamp(x, 0, 0.999999))
   }
 
   addFlag(flag) {

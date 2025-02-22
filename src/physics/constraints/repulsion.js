@@ -1,3 +1,5 @@
+import { SpacePartition } from "../../utils/hash-partition"
+import { vec2 } from "../../utils/vec"
 import { BodyFlags } from "../body"
 
 /**
@@ -5,14 +7,35 @@ import { BodyFlags } from "../body"
  * Uses space hash partionning to reduce amount of computations.
  */
 export class GlobalRepulsion {
-  constructor(bodies) {
-    this.bodies = bodies
+  constructor(bodies, settings) {
+    this.updateBodies(bodies)
+    this.dir = vec2()
+    this.settings = settings
+  }
+
+  updateBodies(bodies) {
+    this.filtered = bodies.filter((body) =>
+      body.hasFlag(BodyFlags.GLOBAL_REPULSION)
+    )
   }
 
   apply(dt) {
-    // filter bodies which are subject to global repulsion
-    const filtered = this.bodies.filter((body) =>
-      body.hasFlag(BodyFlags.GLOBAL_REPULSION)
-    )
+    const { radius, strength } = this.settings
+    const radSq = radius ** 2
+    const part = new SpacePartition(this.filtered, radius)
+
+    let D
+    for (const A of this.filtered) {
+      const neighbours = part.neighbours(A)
+      for (const B of neighbours) {
+        if (A === B) continue
+        this.dir.copy(B.pos).sub(A.pos)
+        D = this.dir.lenSq()
+        if (D < radSq && D > 0.00001) {
+          this.dir.div(radSq)
+          A.acc.sub(this.dir.mul(strength))
+        }
+      }
+    }
   }
 }
