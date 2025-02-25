@@ -5,7 +5,7 @@ let c = 0
 
 export const BodyFlags = {
   GLOBAL_REPULSION: 0b1,
-  SECOND: 0b10,
+  WANDERING: 0b10,
   THIRD: 0b100,
 }
 
@@ -30,7 +30,22 @@ export class Body {
     }
     this.acc.res()
     this.pos.add(this.vel.x * dt, this.vel.y * dt)
-    this.pos.apply((x) => clamp(x, 0, 0.999999))
+
+    if (this.pos.x < 0) {
+      this.pos.x = 1 - mod(this.pos.x, 1)
+      this.vel.x *= -1
+    } else if (this.pos.x >= 1) {
+      this.pos.x = 1 - mod(this.pos.x, 1)
+      this.vel.x *= -1
+    }
+
+    if (this.pos.y < 0) {
+      this.pos.y = 1 - mod(this.pos.y, 1)
+      this.vel.y *= -1
+    } else if (this.pos.y >= 1) {
+      this.pos.y = 1 - mod(this.pos.y, 1)
+      this.vel.y *= -1
+    }
   }
 
   addFlag(flag) {
