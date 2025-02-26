@@ -5,8 +5,10 @@ let c = 0
 
 export const BodyFlags = {
   GLOBAL_REPULSION: 0b1,
-  WANDERING: 0b10,
-  THIRD: 0b100,
+  REPELLING: 0b10,
+  REPELLED: 0b100,
+  WANDERING: 0b1000,
+  THIRD: 0b10000,
 }
 
 const MAX_VELOCITY = 0.5
@@ -20,6 +22,9 @@ export class Body {
     this.vel = vec2()
     this.acc = vec2()
     this.flags = 0
+    this.data = {
+      clusterGroup: -1,
+    }
   }
 
   update(dt) {

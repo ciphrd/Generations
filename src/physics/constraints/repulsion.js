@@ -15,7 +15,7 @@ export class GlobalRepulsion {
 
   updateBodies(bodies) {
     this.filtered = bodies.filter((body) =>
-      body.hasFlag(BodyFlags.GLOBAL_REPULSION)
+      body.hasFlag(BodyFlags.REPELLING | BodyFlags.REPELLED)
     )
   }
 
@@ -26,9 +26,10 @@ export class GlobalRepulsion {
 
     let D
     for (const A of this.filtered) {
+      if (!A.hasFlag(BodyFlags.REPELLED)) continue
       const neighbours = part.neighbours(A)
       for (const B of neighbours) {
-        if (A === B) continue
+        if (A === B || !B.hasFlag(BodyFlags.REPELLING)) continue
         this.dir.copy(B.pos).sub(A.pos)
         D = this.dir.lenSq()
         if (D < radSq && D > 0.00001) {

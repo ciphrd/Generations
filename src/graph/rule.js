@@ -1,35 +1,79 @@
 import { delarr } from "../utils/array"
 import { clamp, clamp01 } from "../utils/math"
+import { parseParams } from "../utils/parse"
+import { rnd } from "../utils/rnd"
 import { Node } from "./node"
 
 const regpart = /^{(.*)}$/
 const regparts = /({[^{}]*})/g
 const regins = /^([a-z]+)({.*})$/
 
-function components(groups) {}
+const t = {}
+function exec(instructions, context) {
+  let state = {}
+  const { rules } = context
 
-export function applyRule(nodes, node, rules) {
-  const instructions = {}
-  for (const ins of node.rule.split(";")) {
-    const [_, id, value] = regins.exec(ins)
-    instructions[id] = value
+  function execSingle(instruction, state) {
+    const parsed = /^([a-z]+)\((.*)\)$/.exec(instruction)
+    if (!parsed) return instruction
+
+    const [fn, param] = [parsed[1], parsed[2]]
+    const params = parseParams(param).map((par) => execSingle(par, context))
+
+    const fns = {
+      permut: (param) => {
+        return {
+          ...state,
+          permut: param,
+        }
+      },
+      assign: (target, effect) => ({
+        ...state,
+        assign: {
+          ...(state.assign || {}),
+          [target]: effect,
+        },
+      }),
+      rnd: $fx.rand,
+      dna: (idx) => rules[idx],
+      ref(idx) {
+        return exec(this.dna(idx), context)
+      },
+      either: (left, right, statement) => (statement ? left : right),
+      gt: (left, right) => left > right,
+    }
+
+    const out = fns[fn](...params)
+    console.log({ instruction, parsed, out })
+    return out
   }
 
-  const rule = instructions.re
-  console.log(rule)
-  if (!rule) throw "fatal"
-
-  const ruleAssign = {}
-  if (instructions.ra) {
-    for (const match of instructions.ra.matchAll(/([a-z]->\d+)/g)) {
-      const [letter, ruleIdx] = match[0].split("->")
-      ruleAssign[letter] = ruleIdx
+  console.log({ instructions })
+  for (const ins of instructions.split(";")) {
+    const res = execSingle(ins, state)
+    state = {
+      ...state,
+      ...res,
     }
   }
 
+  return state
+}
+
+export function applyRule(nodes, node, rules) {
+  console.log("===============")
+  console.log(node.rule)
+  const instructions = {}
+  const context = exec(node.rule, { rules })
+  console.log(context)
+  const { permut, assign = {} } = context
+  if (!permut) throw "fatal"
+
   console.log("parse:")
+  console.log({ permut })
   console.log(
-    rule
+    regpart
+      .exec(permut)[1]
       .split("->")
       .map((a) =>
         [...regpart.exec(a)[1].matchAll(regparts)].map((a) =>
@@ -38,7 +82,7 @@ export function applyRule(nodes, node, rules) {
       )
   )
 
-  const [input, output] = rule
+  const [input, output] = permut
     .split("->")
     .map((a) =>
       [...regpart.exec(a)[1].matchAll(regparts)].map((a) =>
@@ -59,10 +103,12 @@ export function applyRule(nodes, node, rules) {
   function matchEdge(a, b) {
     let match = null
     if (!edges[a.id]) edges[a.id] = []
+    const bias = rnd.int(0, a.edges.length)
     for (let i = 0; i < a.edges.length; i++) {
-      if (edges[a.id].includes(i)) continue
-      if (!b || a.edges[i] === b) {
-        match = { i, node: a.edges[i] }
+      const di = (i + bias) % a.edges.length
+      if (edges[a.id].includes(di)) continue
+      if (!b || a.edges[di] === b) {
+        match = { i: di, node: a.edges[di] }
         break
       }
     }
@@ -72,7 +118,6 @@ export function applyRule(nodes, node, rules) {
 
   // parse the input to associate letters with nodes
   for (const [a, b] of input) {
-    console.log({ a, b })
     if (!nodemap[a]) {
       console.log("node doesn't exist")
       return false
@@ -89,9 +134,6 @@ export function applyRule(nodes, node, rules) {
     }
     if (!nodemap[b]) nodemap[b] = match
   }
-
-  console.log(nodemap)
-  console.log(edges)
 
   // remove all used edges
   for (const id in edges) {
@@ -122,8 +164,8 @@ export function applyRule(nodes, node, rules) {
     }
     nodemap[a].edges.push(nodemap[b])
 
-    if (ruleAssign[a]) nodemap[a].rule = rules[ruleAssign[a]]
-    if (ruleAssign[b]) nodemap[b].rule = rules[ruleAssign[b]]
+    if (assign[a]?.rule) nodemap[a].rule = assign[a].rule
+    if (assign[b]?.rule) nodemap[b].rule = assign[b].rule
   }
 
   for (const n of Object.values(nodemap)) {

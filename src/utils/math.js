@@ -9,3 +9,7 @@ export function clamp(x, _min, _max) {
 export function clamp01(x) {
   return clamp(x, 0, 0.9999)
 }
+
+export function lerp(start, end, t) {
+  return (1 - t) * start + t * end
+}

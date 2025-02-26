@@ -5,6 +5,9 @@ export class Node {
     this.id = (globalIndex++).toString()
     this.edges = edges
     this.rule = rule
+    this.data = {
+      clusterGroup: -1,
+    }
   }
 }
 

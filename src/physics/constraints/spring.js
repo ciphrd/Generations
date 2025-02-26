@@ -1,3 +1,4 @@
+import { delarr } from "../../utils/array"
 import { vec2 } from "../../utils/vec"
 
 export class Spring {
@@ -10,15 +11,20 @@ export class Spring {
     this.disp = vec2()
   }
 
-  apply(dt) {
+  apply(dt, constraints) {
     const { bodyA, bodyB, restLength, stiffness, damping, disp } = this
     disp.copy(bodyB.pos).sub(bodyA.pos)
     const D = disp.len()
     if (D < 0.00001) return
+
+    if (D > 0.15) {
+      delarr(constraints, this)
+      return
+    }
+
     const dir = disp.div(D)
     const force = -stiffness * (D - restLength)
 
-    // debugger
     const relv = vec2(bodyB.vel).sub(bodyA.vel)
     const dampingForce = -damping * (relv.x * dir.x + relv.y * dir.y)
 

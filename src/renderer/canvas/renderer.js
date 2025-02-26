@@ -31,10 +31,12 @@ export class CanvasRenderer {
     this.ctx.fillRect(0, 0, 1, 1)
 
     let renderer
-    for (const ent of this.entities) {
-      renderer = renderers[ent.constructor.name]
-      if (!renderer) continue
-      renderer(this.ctx, ent)
+    for (const group of this.entities) {
+      for (const ent of group) {
+        renderer = renderers[ent.constructor.name]
+        if (!renderer) continue
+        renderer(this.ctx, ent)
+      }
     }
   }
 }
