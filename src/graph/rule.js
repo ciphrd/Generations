@@ -1,3 +1,4 @@
+import { settings } from ".."
 import { delarr } from "../utils/array"
 import { clamp, clamp01 } from "../utils/math"
 import { parseParams } from "../utils/parse"
@@ -7,6 +8,18 @@ import { Node } from "./node"
 const regpart = /^{(.*)}$/
 const regparts = /({[^{}]*})/g
 const regins = /^([a-z]+)({.*})$/
+
+// todo; define functions better so that it's not hard-coded
+export const execFunctions = [
+  "permut",
+  "assign",
+  "cluster",
+  "rnd",
+  "dna",
+  "ref",
+  "either",
+  "gt",
+]
 
 const t = {}
 function exec(instructions, context) {
@@ -34,8 +47,18 @@ function exec(instructions, context) {
           [target]: effect,
         },
       }),
+      cluster: (target, group) => {
+        return {
+          cluster: {
+            ...state.cluster,
+            [target]: floor(clamp(parseInt(group), 0, settings.clusters.nb)),
+          },
+        }
+      },
       rnd: $fx.rand,
-      dna: (idx) => rules[idx],
+      dna: (idx) => {
+        return rules[floor(clamp(idx, 0, settings.dnas.nb))]
+      },
       ref(idx) {
         return exec(this.dna(idx), context)
       },
@@ -44,11 +67,10 @@ function exec(instructions, context) {
     }
 
     const out = fns[fn](...params)
-    console.log({ instruction, parsed, out })
+    // console.log({ instruction, parsed, out })
     return out
   }
 
-  console.log({ instructions })
   for (const ins of instructions.split(";")) {
     const res = execSingle(ins, state)
     state = {
@@ -61,26 +83,18 @@ function exec(instructions, context) {
 }
 
 export function applyRule(nodes, node, rules) {
-  console.log("===============")
-  console.log(node.rule)
+  // todo
+  // add fns who can read node values
+  // here change how we exec the rules
+  // permut 1st
+  // then compute permut nodes, to have associations
+  // then compute other rules
+
   const instructions = {}
   const context = exec(node.rule, { rules })
-  console.log(context)
-  const { permut, assign = {} } = context
+  // console.log({ context })
+  const { permut, assign = {}, cluster = {} } = context
   if (!permut) throw "fatal"
-
-  console.log("parse:")
-  console.log({ permut })
-  console.log(
-    regpart
-      .exec(permut)[1]
-      .split("->")
-      .map((a) =>
-        [...regpart.exec(a)[1].matchAll(regparts)].map((a) =>
-          regpart.exec(a[1])[1].split(",")
-        )
-      )
-  )
 
   const [input, output] = permut
     .split("->")
@@ -145,15 +159,25 @@ export function applyRule(nodes, node, rules) {
     }
   }
 
+  const inputLetters = input.reduce((a, b) => b.concat(a), [])
   function spawnNode() {
-    return new Node(
+    const parent = nodemap[rnd.el(inputLetters)]
+    const out = new Node(
       node.pos
         .clone()
-        .add(($fx.rand() - 0.5) * 0.2, ($fx.rand() - 0.5) * 0.2)
+        .add(
+          rnd.range(0.001, 0.1) * rnd.sign(),
+          rnd.range(0.001, 0.1) * rnd.sign()
+        )
         .apply(clamp01),
       node.rule
     )
+    out.data = { ...parent.data }
+    out.data.clusterGroup = (out.data.clusterGroup + 1) % settings.clusters.nb
+    return out
   }
+
+  // console.log({ cluster, assign })
 
   for (const [a, b] of output) {
     if (!nodemap[a]) {
@@ -164,8 +188,14 @@ export function applyRule(nodes, node, rules) {
     }
     nodemap[a].edges.push(nodemap[b])
 
-    if (assign[a]?.rule) nodemap[a].rule = assign[a].rule
-    if (assign[b]?.rule) nodemap[b].rule = assign[b].rule
+    // todo:
+    // there seems to be a bug, all the nodes have the same rule ?
+    if (a in assign) nodemap[a].rule = assign[a]
+    if (b in assign) nodemap[b].rule = assign[b]
+  }
+
+  for (const [target, group] of Object.entries(cluster)) {
+    nodemap[target].data.clusterGroup = group
   }
 
   for (const n of Object.values(nodemap)) {

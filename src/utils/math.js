@@ -13,3 +13,7 @@ export function clamp01(x) {
 export function lerp(start, end, t) {
   return (1 - t) * start + t * end
 }
+
+export function fract(n) {
+  return n - floor(n)
+}

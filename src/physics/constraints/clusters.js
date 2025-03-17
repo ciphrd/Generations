@@ -30,11 +30,13 @@ export class Clusters {
         dir.copy(B.pos).sub(A.pos)
         D = dir.len()
         dir.div(D)
-        if (D < rule.rep.range && D > 0.0001) {
-          A.acc.sub(v2.copy(dir).mul((0.2 * rule.rep.strength) / D ** 2))
-        }
-        if (D < rule.attr.range && D > 0.0001) {
-          A.acc.add(v2.copy(dir).mul((0.2 * rule.attr.strength) / D ** 2))
+        if (D > 0.0007) {
+          if (D < rule.rep.range) {
+            A.acc.sub(v2.copy(dir).mul((0.5 * rule.rep.strength) / D ** 2))
+          }
+          if (D < rule.attr.range) {
+            A.acc.add(v2.copy(dir).mul((0.5 * rule.attr.strength) / D ** 2))
+          }
         }
 
         // todo collision

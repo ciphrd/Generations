@@ -17,10 +17,10 @@ export class Spring {
     const D = disp.len()
     if (D < 0.00001) return
 
-    if (D > 0.15) {
-      delarr(constraints, this)
-      return
-    }
+    // if (D > 0.15) {
+    //   delarr(constraints, this)
+    //   return
+    // }
 
     const dir = disp.div(D)
     const force = -stiffness * (D - restLength)
@@ -35,5 +35,3 @@ export class Spring {
     bodyB.acc.add(F)
   }
 }
-
-// export function lar(body, bodies, )

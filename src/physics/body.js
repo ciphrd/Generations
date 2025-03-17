@@ -11,12 +11,13 @@ export const BodyFlags = {
   THIRD: 0b10000,
 }
 
-const MAX_VELOCITY = 0.5
+const MAX_VELOCITY = 0.2
 const MAX_VELOCITY_SQ = MAX_VELOCITY ** 2
 
 export class Body {
-  constructor(pos, color = "#00ff00") {
+  constructor(pos, radius, color = "#00ff00") {
     this.id = c++
+    this.radius = radius
     this.color = color
     this.pos = pos
     this.vel = vec2()
@@ -35,7 +36,10 @@ export class Body {
     }
     this.acc.res()
     this.pos.add(this.vel.x * dt, this.vel.y * dt)
+    this.clamp()
+  }
 
+  clamp() {
     if (this.pos.x < 0) {
       this.pos.x = 1 - mod(this.pos.x, 1)
       this.vel.x *= -1
@@ -66,6 +70,6 @@ export class Body {
   }
 }
 
-export function body(pos, col) {
-  return new Body(pos, col)
+export function body(pos, rad, col) {
+  return new Body(pos, rad, col)
 }

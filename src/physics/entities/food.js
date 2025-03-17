@@ -2,7 +2,7 @@ import { Body } from "../body"
 
 export class Food extends Body {
   constructor(pos, onEaten) {
-    super(pos, "#0000ff")
+    super(pos, 0.002, "#0000ff")
     this.nutrients = 1
     this.onEaten = onEaten
   }
