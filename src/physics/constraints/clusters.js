@@ -2,7 +2,7 @@ import { SpacePartition } from "../../utils/hash-partition"
 import { vec2 } from "../../utils/vec"
 
 export class Clusters {
-  constructor(bodies, ruleMatrix, nSpecies) {
+  constructor(bodies, ruleMatrix, nSpecies, computeCache) {
     this.updateBodies(bodies)
     this.matrix = ruleMatrix
     this.nb = nSpecies
@@ -10,36 +10,36 @@ export class Clusters {
       (acc, val) => max(acc, max(val.attr.range, val.rep.range)),
       0
     )
-    this.dir = vec2()
     this.v2 = vec2()
+    this.cache = computeCache
   }
 
   updateBodies(bodies) {
     this.bodies = bodies.filter((body) => body.data.clusterGroup >= 0)
   }
 
+  //
+  // find why cache is not working
+  // git stash pop
+
   apply(dt) {
-    const { dir, v2, matrix, nb } = this
+    const { v2, matrix, nb } = this
     const part = new SpacePartition(this.bodies, sqrt(this.maxRadiusSq))
-    let D, rule
+    let _, rule
     for (const A of this.bodies) {
       const neighbours = part.neighbours(A)
       for (const B of neighbours) {
         if (A === B) continue
         rule = matrix[A.data.clusterGroup + B.data.clusterGroup * nb]
-        dir.copy(B.pos).sub(A.pos)
-        D = dir.len()
-        dir.div(D)
-        if (D > 0.0007) {
-          if (D < rule.rep.range) {
-            A.acc.sub(v2.copy(dir).mul((0.5 * rule.rep.strength) / D ** 2))
+        _ = this.cache.get(A, B)
+        if (_.d > 0.0007) {
+          if (_.d < rule.rep.range) {
+            A.acc.sub(v2.copy(_.dir).mul((0.5 * rule.rep.strength) / _.d2))
           }
-          if (D < rule.attr.range) {
-            A.acc.add(v2.copy(dir).mul((0.5 * rule.attr.strength) / D ** 2))
+          if (_.d < rule.attr.range) {
+            A.acc.add(v2.copy(_.dir).mul((0.5 * rule.attr.strength) / _.d2))
           }
         }
-
-        // todo collision
       }
     }
   }

@@ -40,6 +40,8 @@ import { rnd } from "./utils/rnd"
 import { Clusters } from "./physics/constraints/clusters"
 import { str } from "./utils/string"
 import { Collisions } from "./physics/collisions"
+import { ComputeCache } from "./opti/compute-cache"
+import { SquareBounds } from "./physics/constraints/bounds"
 
 Object.getOwnPropertyNames(Math).forEach((el) => (window[el] = Math[el]))
 window.TAU = 2 * PI
@@ -391,8 +393,6 @@ bodies.forEach((body) => {
   body.addFlag(BodyFlags.REPELLED)
 })
 
-constraints.push(new Clusters(bodies, clusterRules, settings.clusters.nb))
-
 const testBodies = []
 const NB = 25
 for (let i = 0; i < NB; i++) {
@@ -413,18 +413,30 @@ testBodies.forEach((body) =>
 
 const allBodies = [...food, ...testBodies, ...bodies]
 
-const rep = new GlobalRepulsion(allBodies, {
-  radius: 0.05,
-  strength: 0.0003,
-})
-constraints.push(rep)
+const computeCache = new ComputeCache(allBodies)
 
-const collisions = new Collisions(allBodies)
+constraints.push(
+  new Clusters(bodies, clusterRules, settings.clusters.nb, computeCache)
+)
+constraints.push(
+  new GlobalRepulsion(
+    allBodies,
+    {
+      radius: 0.05,
+      strength: 0.0003,
+    },
+    computeCache
+  )
+)
+const collisions = new Collisions(allBodies, computeCache)
+const squareBounds = new SquareBounds(allBodies)
 
 const renderer = new CanvasRenderer([allBodies, constraints])
 Mouse.init(renderer.cvs)
 
 function tick(time, dt) {
+  computeCache.prepare()
+
   for (let i = constraints.length - 1; i >= 0; i--) {
     const constraint = constraints[i]
     constraint.apply(dt, constraints)
@@ -433,6 +445,7 @@ function tick(time, dt) {
     body.update(dt)
   }
   collisions.apply()
+  squareBounds.apply()
   renderer.render()
 }
 
