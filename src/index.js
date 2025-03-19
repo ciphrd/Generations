@@ -42,6 +42,8 @@ import { str } from "./utils/string"
 import { Collisions } from "./physics/collisions"
 import { ComputeCache } from "./opti/compute-cache"
 import { SquareBounds } from "./physics/constraints/bounds"
+import { World } from "./physics/world"
+import { Solver } from "./physics/solver"
 
 Object.getOwnPropertyNames(Math).forEach((el) => (window[el] = Math[el]))
 window.TAU = 2 * PI
@@ -305,7 +307,7 @@ stats.showPanel(1)
 document.body.appendChild(stats.dom)
 
 const bodies = []
-const constraints = []
+const constraints = { pre: [], post: [] }
 
 const food = []
 for (let i = 0; i < 100; i++) {
@@ -323,7 +325,7 @@ for (const node of nodes) {
   bod.addFlag(BodyFlags.GLOBAL_REPULSION)
   bod.data = node.data
   bodies.push(bod)
-  constraints.push(new Friction(bod, 0.01))
+  constraints.pre.push(new Friction(bod, 0.01))
 
   let nEdges = node.edges.length
   for (const node2 of nodes) {
@@ -333,7 +335,7 @@ for (const node of nodes) {
 
   if (nEdges === 1) {
     bod.color = "yellow"
-    constraints.push(
+    constraints.pre.push(
       new LAR(bod, food, {
         attr: larf(0.35, 0.01),
         rep: larf(0, 0),
@@ -350,7 +352,7 @@ for (let i = 0; i < nodes.length; i++) {
     if (node === edge) continue
     if (edgemap[nodeTupleId([node, edge])]) continue
     edgemap[nodeTupleId([node, edge])] = true
-    constraints.push(
+    constraints.pre.push(
       new Spring(bodies[i], bodies[nodes.indexOf(edge)], 0.001, 200, 30)
     )
   }
@@ -404,7 +406,7 @@ for (let i = 0; i < NB; i++) {
     bod.addFlag(BodyFlags.WANDERING)
     bod.addFlag(BodyFlags.GLOBAL_REPULSION)
     testBodies.push(bod)
-    constraints.push(new Friction(bod, 0.02))
+    constraints.pre.push(new Friction(bod, 0.02))
   }
 }
 testBodies.forEach((body) =>
@@ -413,39 +415,24 @@ testBodies.forEach((body) =>
 
 const allBodies = [...food, ...testBodies, ...bodies]
 
-const computeCache = new ComputeCache(allBodies)
-
-constraints.push(
-  new Clusters(bodies, clusterRules, settings.clusters.nb, computeCache)
+constraints.pre.push(new Clusters(bodies, clusterRules, settings.clusters.nb))
+constraints.pre.push(
+  new GlobalRepulsion(allBodies, {
+    radius: 0.05,
+    strength: 0.0003,
+  })
 )
-constraints.push(
-  new GlobalRepulsion(
-    allBodies,
-    {
-      radius: 0.05,
-      strength: 0.0003,
-    },
-    computeCache
-  )
-)
-const collisions = new Collisions(allBodies, computeCache)
-const squareBounds = new SquareBounds(allBodies)
+constraints.post.push(new Collisions(allBodies))
+constraints.post.push(new SquareBounds(allBodies))
 
-const renderer = new CanvasRenderer([allBodies, constraints])
+const renderer = new CanvasRenderer([allBodies, constraints.pre])
 Mouse.init(renderer.cvs)
 
-function tick(time, dt) {
-  computeCache.prepare()
+const world = new World(allBodies)
+const solver = new Solver(world, constraints)
 
-  for (let i = constraints.length - 1; i >= 0; i--) {
-    const constraint = constraints[i]
-    constraint.apply(dt, constraints)
-  }
-  for (const body of allBodies) {
-    body.update(dt)
-  }
-  collisions.apply()
-  squareBounds.apply()
+function tick(time, dt) {
+  solver.solve(dt)
   renderer.render()
 }
 

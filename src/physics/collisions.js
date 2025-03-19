@@ -3,10 +3,9 @@ import { SpacePartition } from "../utils/hash-partition"
 import { vec2 } from "../utils/vec"
 
 export class Collisions {
-  constructor(bodies, computeCache) {
+  constructor(bodies) {
     this.update(bodies)
     this.dir = vec2()
-    this.cache = computeCache
   }
 
   update(bodies) {
@@ -14,7 +13,7 @@ export class Collisions {
     this.maxRad = bodies.reduce((acc, val) => max(acc, val.radius), 0)
   }
 
-  apply() {
+  apply(dt, computeCache) {
     const part = new SpacePartition(this.bodies, this.maxRad)
     const done = {}
 
@@ -23,7 +22,7 @@ export class Collisions {
       for (const B of part.neighbours(A)) {
         id = twoBodiesId(A, B)
         if (A === B || done[id]) continue
-        _ = this.cache.get(A, B)
+        _ = computeCache.get(A, B)
         if (_.d < 0.0000001) debugger
         e = _.d - (A.radius + B.radius)
         if (e < 0) {
