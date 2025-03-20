@@ -5,4 +5,11 @@ export function renderBody(ctx, body) {
   ctx.beginPath()
   ctx.arc(body.pos.x, body.pos.y, body.radius, 0, 2 * PI)
   ctx.fill()
+
+  ctx.strokeStyle = "rgba(0, 0, 255, 0.3)"
+  ctx.lineWidth = 0.003
+  ctx.beginPath()
+  ctx.moveTo(body.pos.x, body.pos.y)
+  ctx.lineTo(body.pos.x + body.vel.x, body.pos.y + body.vel.y)
+  ctx.stroke()
 }

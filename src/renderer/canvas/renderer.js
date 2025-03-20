@@ -1,5 +1,8 @@
+import { renderActuator } from "./actuator"
+import { renderAnchor } from "./anchor"
 import { renderBody } from "./body"
 import { renderEater } from "./eater"
+import { renderFoodSeeker } from "./food-seeker"
 import { renderSpring } from "./spring"
 
 const W = 800
@@ -10,6 +13,13 @@ const renderers = {
   Food: renderBody,
   Spring: renderSpring,
   Eater: renderEater,
+  Actuator: renderActuator,
+  Anchor: renderAnchor,
+  FoodSeeker: renderFoodSeeker,
+}
+
+export function arc(index) {
+  return [(index * 2 * PI) / 6, ((index + 1) * 2 * PI) / 6]
 }
 
 export class CanvasRenderer {

@@ -5,13 +5,20 @@ export class Spring {
   constructor(bodyA, bodyB, restLength, stiffness, damping) {
     this.bodyA = bodyA
     this.bodyB = bodyB
+    this.initial = {
+      restLength,
+      stiffness,
+      damping,
+    }
     this.restLength = restLength
     this.stiffness = stiffness
     this.damping = damping
     this.disp = vec2()
+    this.bodyA.springs.push(this)
+    // this.bodyB.springs.push(this)
   }
 
-  apply(dt) {
+  apply(t, dt) {
     const { bodyA, bodyB, restLength, stiffness, damping, disp } = this
     disp.copy(bodyB.pos).sub(bodyA.pos)
     const D = disp.len()

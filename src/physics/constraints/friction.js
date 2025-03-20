@@ -3,7 +3,7 @@ export class Friction {
     this.body = body
     this.invFriction = 1.0 - friction
   }
-  apply(dt) {
+  apply() {
     this.body.vel.mul(this.invFriction)
   }
 }

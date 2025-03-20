@@ -8,7 +8,8 @@ export const BodyFlags = {
   REPELLING: 0b10,
   REPELLED: 0b100,
   WANDERING: 0b1000,
-  THIRD: 0b10000,
+  FOOD: 0b10000,
+  FOOD_SEEKER: 0b100000,
 }
 
 const MAX_VELOCITY = 0.2
@@ -26,6 +27,8 @@ export class Body {
     this.data = {
       clusterGroup: -1,
     }
+    this.springs = []
+    this.modifiers = []
   }
 
   update(dt) {
@@ -33,6 +36,10 @@ export class Body {
     let lenSq = this.vel.lenSq()
     if (lenSq > MAX_VELOCITY_SQ) {
       this.vel.mul(MAX_VELOCITY / sqrt(lenSq))
+    }
+    if (this.modifiers.length > 0) {
+      this.modifiers.forEach((mod) => mod(this))
+      this.modifiers.length = 0
     }
     this.acc.res()
     this.pos.add(this.vel.x * dt, this.vel.y * dt)

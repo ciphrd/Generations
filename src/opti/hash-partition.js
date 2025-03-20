@@ -1,4 +1,4 @@
-import { Cache } from "./cache"
+import { Cache } from "../utils/cache"
 
 export class SpacePartition {
   /**
@@ -15,7 +15,24 @@ export class SpacePartition {
   }
 
   neighbours(body) {
-    const hash = this.#hash(body)
+    return this.#hashNeighbours(this.#hash(body))
+  }
+
+  posNeighbours(pos) {
+    return this.#hashNeighbours(this.#hashPos(pos))
+  }
+
+  #hash(body) {
+    return this.hashes.get(body.id, () => this.#hashPos(body.pos))
+  }
+
+  #hashPos(pos) {
+    const x = floor(pos.x * this.divs)
+    const y = floor(pos.y * this.divs)
+    return x + y * this.divs
+  }
+
+  #hashNeighbours(hash) {
     const x = hash % this.divs
     const y = floor(hash / this.divs)
     const cells = Array(9)
@@ -25,13 +42,5 @@ export class SpacePartition {
       }
     }
     return cells.flat()
-  }
-
-  #hash(body) {
-    return this.hashes.get(body.id, () => {
-      const x = floor(body.pos.x * this.divs)
-      const y = floor(body.pos.y * this.divs)
-      return x + y * this.divs
-    })
   }
 }

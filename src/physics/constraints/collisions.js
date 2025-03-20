@@ -1,6 +1,6 @@
-import { twoBodiesId } from "../utils/cache"
-import { SpacePartition } from "../utils/hash-partition"
-import { vec2 } from "../utils/vec"
+import { twoBodiesId } from "../../utils/cache"
+import { SpacePartition } from "../../opti/hash-partition"
+import { vec2 } from "../../utils/vec"
 
 export class Collisions {
   constructor(bodies) {
@@ -13,7 +13,7 @@ export class Collisions {
     this.maxRad = bodies.reduce((acc, val) => max(acc, val.radius), 0)
   }
 
-  apply(dt, computeCache) {
+  apply(t, dt, computeCache) {
     const part = new SpacePartition(this.bodies, this.maxRad)
     const done = {}
 

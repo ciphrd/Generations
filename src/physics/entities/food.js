@@ -1,4 +1,4 @@
-import { Body } from "../body"
+import { Body, BodyFlags } from "../body"
 
 export class Food extends Body {
   constructor(pos, onEaten) {
@@ -6,6 +6,7 @@ export class Food extends Body {
     this.nutrients = 1
     this.onEaten = onEaten
     this.baseRad = this.radius
+    this.addFlag(BodyFlags.FOOD)
   }
 
   eat(quantity = 0.01) {

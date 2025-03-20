@@ -8,6 +8,7 @@ export class Node {
     this.data = {
       clusterGroup: -1,
     }
+    this.behaviors = {}
   }
 }
 

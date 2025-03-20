@@ -7,11 +7,11 @@ export class Solver {
     this.computeCache = new ComputeCache(this.world.bodies)
   }
 
-  solve(dt) {
+  solve(t, dt) {
     this.computeCache.prepare()
 
     for (let i = this.constraints.pre.length - 1; i >= 0; i--) {
-      if (this.constraints.pre[i].apply(dt, this.computeCache) === false) {
+      if (this.constraints.pre[i].apply(t, dt, this.computeCache) === false) {
         this.constraints.pre.splice(i, 1)
       }
     }
@@ -19,7 +19,7 @@ export class Solver {
       body.update(dt)
     }
     for (let i = 0; i < this.constraints.post.length; i++) {
-      this.constraints.post[i].apply(dt, this.computeCache)
+      this.constraints.post[i].apply(t, dt, this.computeCache)
     }
   }
 }

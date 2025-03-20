@@ -1,4 +1,4 @@
-import { SpacePartition } from "../../utils/hash-partition"
+import { SpacePartition } from "../../opti/hash-partition"
 import { vec2 } from "../../utils/vec"
 import { BodyFlags } from "../body"
 
@@ -19,7 +19,7 @@ export class GlobalRepulsion {
     )
   }
 
-  apply(dt, computeCache) {
+  apply(t, dt, computeCache) {
     const { radius, strength } = this.settings
     const radSq = radius ** 2
     const part = new SpacePartition(this.filtered, radius)

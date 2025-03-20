@@ -19,6 +19,7 @@ export const execFunctions = [
   "ref",
   "either",
   "gt",
+  "behavior",
 ]
 
 const t = {}
@@ -52,6 +53,14 @@ function exec(instructions, context) {
           cluster: {
             ...state.cluster,
             [target]: floor(clamp(parseInt(group), 0, settings.clusters.nb)),
+          },
+        }
+      },
+      behavior: (target, behavior) => {
+        return {
+          behaviors: {
+            ...state.behaviors,
+            [target]: behavior,
           },
         }
       },
@@ -93,8 +102,10 @@ export function applyRule(nodes, node, rules) {
   const instructions = {}
   const context = exec(node.rule, { rules })
   // console.log({ context })
-  const { permut, assign = {}, cluster = {} } = context
+  const { permut, assign = {}, cluster = {}, behaviors = {} } = context
   if (!permut) throw "fatal"
+
+  console.log(context.behaviors)
 
   const [input, output] = permut
     .split("->")
@@ -195,6 +206,12 @@ export function applyRule(nodes, node, rules) {
 
   for (const [target, group] of Object.entries(cluster)) {
     nodemap[target].data.clusterGroup = group
+  }
+
+  for (const [target, behavior] of Object.entries(behaviors)) {
+    const active = behavior.slice(0, 1) === "+"
+    const name = behavior.slice(1)
+    nodemap[target].behaviors[name] = active
   }
 
   for (const n of Object.values(nodemap)) {

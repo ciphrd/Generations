@@ -28,7 +28,7 @@ import { Alignement } from "./physics/constraints/alignment"
 import { fract, mod } from "./utils/math"
 import { growDoubleMembrane, growMembrane } from "./growth/membrane"
 import { Mouse, MouseFollow } from "./interactions/mouse"
-import { SpacePartition } from "./utils/hash-partition"
+import { SpacePartition } from "./opti/hash-partition"
 import { GlobalRepulsion } from "./physics/constraints/repulsion"
 import { growSection } from "./growth/section"
 import { growBacteria, growMultiBacteria } from "./growth/bacteria"
@@ -39,11 +39,14 @@ import { arr } from "./utils/array"
 import { rnd } from "./utils/rnd"
 import { Clusters } from "./physics/constraints/clusters"
 import { str } from "./utils/string"
-import { Collisions } from "./physics/collisions"
+import { Collisions } from "./physics/constraints/collisions"
 import { ComputeCache } from "./opti/compute-cache"
 import { SquareBounds } from "./physics/constraints/bounds"
 import { World } from "./physics/world"
 import { Solver } from "./physics/solver"
+import { Actuator } from "./interactions/actuator"
+import { Anchor } from "./interactions/anchor"
+import { FoodSeeker } from "./interactions/food-seeker"
 
 Object.getOwnPropertyNames(Math).forEach((el) => (window[el] = Math[el]))
 window.TAU = 2 * PI
@@ -87,8 +90,8 @@ export const settings = {
 }
 
 // todo
-// - optimize N^2 interactions  by doing a single loop through the bodies, and
-//   calling the different constraints on the pairs
+// - optimize Eater - RN there's a LAR for every eater which is fairly
+//   unoptimized, as LAR can support N^2 interactions and is optimized for it
 // - do not reinstanciate the space hash, clean it / update
 // - square rules
 //   "{{{x,y},{y,z},{z,w},{w,x}}->{{x,y},{y,z},{z,w},{w,x},{y,x},{z,y},{w,z},{x,w},{x,z},{y,w},{z,v},{v,u},{u,y},{v,y},{z,u}}}",
@@ -154,9 +157,17 @@ const permutRules = [
   "{{{x,y},{x,z}}->{{x,y},{x,w},{y,w},{z,w}}}",
 ]
 
+const behaviors = {
+  actuator: Actuator,
+  anchor: Anchor,
+  "food-seeker": FoodSeeker,
+  eater: Eater,
+}
+
 const rulesContructionGraph = [
-  ["root_fns", "assign", 50],
-  ["root_fns", "cluster", 50],
+  ["root_fns", "assign", 34],
+  ["root_fns", "cluster", 33],
+  ["root_fns", "behavior", 33],
 
   // types mapping
   ["number", "_rnd", 80],
@@ -186,6 +197,9 @@ const rulesContructionGraph = [
   // dna
   ["dna", "_rnd_dna_idx", 80],
   ["dna", "number", 20],
+
+  // behaviors
+  ["behavior", "_letter", "_rnd_behavior", 100],
 ]
 
 function generateWithGraph(node, rules, options, letters) {
@@ -197,6 +211,8 @@ function generateWithGraph(node, rules, options, letters) {
     letter: () => rnd.char(letters),
     rnd_cluster_idx: () => rnd.int(0, settings.clusters.nb),
     rnd_dna_idx: () => rnd.int(0, options.nDNAs),
+    rnd_behavior: () =>
+      rnd.el(Object.keys(behaviors).flatMap((b) => [`+${b}`, `-${b}`])),
   }
 
   if (node.startsWith("_")) {
@@ -248,6 +264,8 @@ function createDna(permutRules, settings) {
   return [permutRule, ...props].join(";")
 }
 
+const world = new World()
+
 const DNAs = [...Array(settings.dnas.nb)].map(() =>
   createDna(permutRules, {
     propsRange: {
@@ -273,7 +291,7 @@ for (const node of nodes) {
   node.rule = rnd.el(DNAs)
 }
 
-for (let i = 0; i < 1000 && nodes.length < 350; i++) {
+for (let i = 0; i < 1000 && nodes.length < 50; i++) {
   for (let L = nodes.length, j = L - 1; j >= 0 && nodes.length < 350; j--) {
     // applyRule(nodes, nodes[j], rules)
     applyRule(nodes, rnd.el(nodes), DNAs)
@@ -292,17 +310,6 @@ for (const node of nodes) {
     strEdges.push(`${node.id} ${edge.id} 0`)
   }
 }
-
-let mermaid = "flowchart TD\n"
-for (const node of nodes) {
-  mermaid += `${node.id}((${node.id}))\n`
-}
-for (const node of nodes) {
-  for (const edge of node.edges) {
-    mermaid += `${node.id} --> ${edge.id}\n`
-  }
-}
-// console.log(mermaid)
 
 const stats = new Stats()
 stats.showPanel(1)
@@ -327,7 +334,7 @@ for (const node of nodes) {
   bod.addFlag(BodyFlags.GLOBAL_REPULSION)
   bod.data = node.data
   bodies.push(bod)
-  constraints.pre.push(new Friction(bod, 0.01))
+  constraints.pre.push(new Friction(bod, 0.02))
 
   let nEdges = node.edges.length
   for (const node2 of nodes) {
@@ -335,15 +342,14 @@ for (const node of nodes) {
     nEdges += node2.edges.filter((e) => e === node).length
   }
 
-  if (nEdges === 1) {
-    bod.color = "yellow"
-    constraints.pre.push(
-      new LAR(bod, food, {
-        attr: larf(0.2, 0.05),
-        rep: larf(0, 0),
-      }),
-      new Eater(bod, food)
-    )
+  // if (nEdges === 1) {
+  //   bod.color = "yellow"
+  //   constraints.pre.push(new FoodSeeker(bod, world), new Eater(bod, world))
+  // }
+
+  for (const [name, enabled] of Object.entries(node.behaviors)) {
+    if (!enabled) continue
+    constraints.pre.push(new behaviors[name](bod, world))
   }
 }
 
@@ -398,7 +404,7 @@ bodies.forEach((body) => {
 })
 
 const testBodies = []
-const NB = 25
+const NB = 0
 for (let i = 0; i < NB; i++) {
   for (let j = 0; j < NB; j++) {
     const bod = body(
@@ -424,17 +430,27 @@ constraints.pre.push(
     strength: 0.0003,
   })
 )
+constraints.pre.push(
+  new LAR(
+    bodies.filter((body) => body.hasFlag(BodyFlags.FOOD_SEEKER)),
+    food,
+    {
+      attr: larf(0.2, 0.05),
+      rep: larf(0, 0),
+    }
+  )
+)
 constraints.post.push(new Collisions(allBodies))
 constraints.post.push(new SquareBounds(allBodies))
 
 const renderer = new CanvasRenderer([allBodies, constraints.pre])
 Mouse.init(renderer.cvs)
 
-const world = new World(allBodies)
+world.setBodies(allBodies)
 const solver = new Solver(world, constraints)
 
-function tick(time, dt) {
-  solver.solve(dt)
+function tick(time, t, dt) {
+  solver.solve(t, dt)
   renderer.render()
 }
 
@@ -444,7 +460,7 @@ function loop() {
   const time = performance.now()
   const dt = min(time - lastFrameTime, 30) / 1000
   lastFrameTime = time
-  tick(time, dt)
+  tick(time, time, dt)
   stats.end()
   requestAnimationFrame(loop)
 }

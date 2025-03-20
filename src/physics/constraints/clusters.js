@@ -1,4 +1,4 @@
-import { SpacePartition } from "../../utils/hash-partition"
+import { SpacePartition } from "../../opti/hash-partition"
 import { vec2 } from "../../utils/vec"
 
 export class Clusters {
@@ -21,7 +21,7 @@ export class Clusters {
   // find why cache is not working
   // git stash pop
 
-  apply(dt, computeCache) {
+  apply(t, dt, computeCache) {
     const { v2, matrix, nb } = this
     const part = new SpacePartition(this.bodies, sqrt(this.maxRadiusSq))
     let _, rule

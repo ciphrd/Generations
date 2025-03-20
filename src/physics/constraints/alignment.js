@@ -8,7 +8,7 @@ export class Alignement {
     this.body = body
     this.targets = targets
   }
-  apply(dt) {
+  apply(t, dt) {
     const { body, targets } = this
     mid.copy(targets[0].pos)
     for (let i = 1; i < targets.length; i++) {
