@@ -23,7 +23,7 @@ export class Collisions {
         id = twoBodiesId(A, B)
         if (A === B || done[id]) continue
         _ = computeCache.get(A, B)
-        if (_.d < 0.0000001) debugger
+        if (_.d < 0.0000001) continue
         e = _.d - (A.radius + B.radius)
         if (e < 0) {
           e /= 2

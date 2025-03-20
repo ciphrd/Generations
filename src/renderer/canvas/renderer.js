@@ -1,4 +1,5 @@
 import { renderBody } from "./body"
+import { renderEater } from "./eater"
 import { renderSpring } from "./spring"
 
 const W = 800
@@ -8,6 +9,7 @@ const renderers = {
   Body: renderBody,
   Food: renderBody,
   Spring: renderSpring,
+  Eater: renderEater,
 }
 
 export class CanvasRenderer {

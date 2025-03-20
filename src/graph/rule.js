@@ -166,14 +166,13 @@ export function applyRule(nodes, node, rules) {
       node.pos
         .clone()
         .add(
-          rnd.range(0.001, 0.1) * rnd.sign(),
-          rnd.range(0.001, 0.1) * rnd.sign()
+          rnd.range(0.0001, 0.01) * rnd.sign(),
+          rnd.range(0.0001, 0.01) * rnd.sign()
         )
         .apply(clamp01),
       node.rule
     )
     out.data = { ...parent.data }
-    out.data.clusterGroup = (out.data.clusterGroup + 1) % settings.clusters.nb
     return out
   }
 

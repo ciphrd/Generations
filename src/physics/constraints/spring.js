@@ -17,7 +17,7 @@ export class Spring {
     const D = disp.len()
     if (D < 0.00001) return
 
-    // if (D > 0.15) {
+    // if (D > 0.1) {
     //   return false
     // }
 

@@ -51,14 +51,14 @@ window.TAU = 2 * PI
 export const settings = {
   radius: 0.005,
   dnas: {
-    nb: 3,
+    nb: 10,
   },
   clusters: {
-    nb: 3,
+    nb: 4,
     attr: {
       range: {
-        min: 0.05,
-        max: 0.15,
+        min: 0.02,
+        max: 0.1,
       },
       strength: {
         min: 0.0001,
@@ -233,10 +233,10 @@ function generateWithGraph(node, rules, options, letters) {
 }
 
 function createDna(permutRules, settings) {
-  const { nMaxProps } = settings
+  const { nMinProps, propsRange } = settings
   const permutRule = generateWithGraph("permut", permutRules, settings)
   const cleanedRule = /{{(.+)}}/.exec(permutRule.replace("->", ""))[1]
-  const nProps = rnd.int(0, nMaxProps)
+  const nProps = rnd.int(propsRange.min, propsRange.max)
   const props = [...Array(nProps)].map(() =>
     generateWithGraph(
       "root_fns",
@@ -245,13 +245,15 @@ function createDna(permutRules, settings) {
       str.letters(cleanedRule).join("")
     )
   )
-  // console.log({ props })
   return [permutRule, ...props].join(";")
 }
 
 const DNAs = [...Array(settings.dnas.nb)].map(() =>
   createDna(permutRules, {
-    nMaxProps: 10,
+    propsRange: {
+      min: 5,
+      max: 10,
+    },
     nDNAs: settings.dnas.nb,
     nClusters: settings.clusters.nb,
   })
@@ -271,8 +273,8 @@ for (const node of nodes) {
   node.rule = rnd.el(DNAs)
 }
 
-for (let i = 0; i < 200 && nodes.length < 200; i++) {
-  for (let L = nodes.length, j = L - 1; j >= 0; j--) {
+for (let i = 0; i < 1000 && nodes.length < 350; i++) {
+  for (let L = nodes.length, j = L - 1; j >= 0 && nodes.length < 350; j--) {
     // applyRule(nodes, nodes[j], rules)
     applyRule(nodes, rnd.el(nodes), DNAs)
   }
@@ -337,10 +339,10 @@ for (const node of nodes) {
     bod.color = "yellow"
     constraints.pre.push(
       new LAR(bod, food, {
-        attr: larf(0.35, 0.01),
+        attr: larf(0.2, 0.05),
         rep: larf(0, 0),
       }),
-      new Eater(bod, food, 0.02)
+      new Eater(bod, food)
     )
   }
 }
@@ -353,7 +355,7 @@ for (let i = 0; i < nodes.length; i++) {
     if (edgemap[nodeTupleId([node, edge])]) continue
     edgemap[nodeTupleId([node, edge])] = true
     constraints.pre.push(
-      new Spring(bodies[i], bodies[nodes.indexOf(edge)], 0.001, 200, 30)
+      new Spring(bodies[i], bodies[nodes.indexOf(edge)], 0.002, 100, 15)
     )
   }
 }
@@ -401,7 +403,7 @@ for (let i = 0; i < NB; i++) {
   for (let j = 0; j < NB; j++) {
     const bod = body(
       vec2((i + 0.5) / NB, (j + 0.5) / NB),
-      settings.radius * 0.2
+      settings.radius * 0.4
     )
     bod.addFlag(BodyFlags.WANDERING)
     bod.addFlag(BodyFlags.GLOBAL_REPULSION)
