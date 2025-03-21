@@ -10,6 +10,7 @@ export const BodyFlags = {
   WANDERING: 0b1000,
   FOOD: 0b10000,
   FOOD_SEEKER: 0b100000,
+  DEBUG: 0b1000000,
 }
 
 const MAX_VELOCITY = 0.2

@@ -25,7 +25,7 @@ import { growArm } from "./growth/arm"
 import { LAR, larf } from "./physics/constraints/lar"
 import { Food } from "./physics/entities/food"
 import { Alignement } from "./physics/constraints/alignment"
-import { fract, mod } from "./utils/math"
+import { fract, lerp, mod } from "./utils/math"
 import { growDoubleMembrane, growMembrane } from "./growth/membrane"
 import { Mouse, MouseFollow } from "./interactions/mouse"
 import { SpacePartition } from "./opti/hash-partition"
@@ -90,8 +90,6 @@ export const settings = {
 }
 
 // todo
-// - optimize Eater - RN there's a LAR for every eater which is fairly
-//   unoptimized, as LAR can support N^2 interactions and is optimized for it
 // - do not reinstanciate the space hash, clean it / update
 // - square rules
 //   "{{{x,y},{y,z},{z,w},{w,x}}->{{x,y},{y,z},{z,w},{w,x},{y,x},{z,y},{w,z},{x,w},{x,z},{y,w},{z,v},{v,u},{u,y},{v,y},{z,u}}}",
@@ -291,8 +289,10 @@ for (const node of nodes) {
   node.rule = rnd.el(DNAs)
 }
 
-for (let i = 0; i < 1000 && nodes.length < 50; i++) {
-  for (let L = nodes.length, j = L - 1; j >= 0 && nodes.length < 350; j--) {
+const N = lerp(30, 350, pow($fx.rand(), 4))
+
+for (let i = 0; i < 1000 && nodes.length < N; i++) {
+  for (let L = nodes.length, j = L - 1; j >= 0 && nodes.length < N; j--) {
     // applyRule(nodes, nodes[j], rules)
     applyRule(nodes, rnd.el(nodes), DNAs)
   }
@@ -313,7 +313,7 @@ for (const node of nodes) {
 
 const stats = new Stats()
 stats.showPanel(1)
-document.body.appendChild(stats.dom)
+// document.body.appendChild(stats.dom)
 
 const bodies = []
 const constraints = { pre: [], post: [] }
@@ -401,10 +401,11 @@ bodies.forEach((body) => {
   body.color = settings.clusters.colors[body.data.clusterGroup]
   body.addFlag(BodyFlags.REPELLING)
   body.addFlag(BodyFlags.REPELLED)
+  body.addFlag(BodyFlags.DEBUG)
 })
 
 const testBodies = []
-const NB = 0
+const NB = 25
 for (let i = 0; i < NB; i++) {
   for (let j = 0; j < NB; j++) {
     const bod = body(
