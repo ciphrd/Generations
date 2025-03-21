@@ -10,17 +10,18 @@ export class LAR {
     this.targets = targets
     this.settings = settings
     this.maxRad = max(settings.attr.range, settings.rep.range)
+    this.part = new SpacePartition(this.targets, this.maxRad)
     this.v2 = vec2()
   }
 
   apply(t, dt, computeCache) {
     const { bodies, targets } = this
     const { attr, rep } = this.settings
-    const part = new SpacePartition(this.targets, this.maxRad)
+    this.part.update()
 
     let _, F
     for (const a of this.bodies) {
-      for (const b of part.posNeighbours(a.pos)) {
+      for (const b of this.part.posNeighbours(a.pos)) {
         if (a === b) continue
         _ = computeCache.get(a, b)
 

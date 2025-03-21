@@ -15,32 +15,24 @@
  */
 
 import Stats from "stats.js"
-import { Body, BodyFlags, body } from "./physics/body"
+import { BodyFlags, body } from "./physics/body"
 import { Spring } from "./physics/constraints/spring"
 import { Friction } from "./physics/constraints/friction"
 import { CanvasRenderer } from "./renderer/canvas/renderer"
 // import { canvasRenderer } from "./renderer/canvas"
 import { vec2 } from "./utils/vec"
-import { growArm } from "./growth/arm"
 import { LAR, larf } from "./physics/constraints/lar"
 import { Food } from "./physics/entities/food"
-import { Alignement } from "./physics/constraints/alignment"
-import { fract, lerp, mod } from "./utils/math"
-import { growDoubleMembrane, growMembrane } from "./growth/membrane"
-import { Mouse, MouseFollow } from "./interactions/mouse"
-import { SpacePartition } from "./opti/hash-partition"
+import { fract, lerp } from "./utils/math"
+import { Mouse } from "./interactions/mouse"
 import { GlobalRepulsion } from "./physics/constraints/repulsion"
-import { growSection } from "./growth/section"
-import { growBacteria, growMultiBacteria } from "./growth/bacteria"
 import { applyRule, execFunctions } from "./graph/rule"
 import { Node, nodeTupleId } from "./graph/node"
 import { Eater } from "./interactions/eat"
-import { arr } from "./utils/array"
 import { rnd } from "./utils/rnd"
 import { Clusters } from "./physics/constraints/clusters"
 import { str } from "./utils/string"
 import { Collisions } from "./physics/constraints/collisions"
-import { ComputeCache } from "./opti/compute-cache"
 import { SquareBounds } from "./physics/constraints/bounds"
 import { World } from "./physics/world"
 import { Solver } from "./physics/solver"
@@ -313,7 +305,7 @@ for (const node of nodes) {
 
 const stats = new Stats()
 stats.showPanel(1)
-// document.body.appendChild(stats.dom)
+document.body.appendChild(stats.dom)
 
 const bodies = []
 const constraints = { pre: [], post: [] }

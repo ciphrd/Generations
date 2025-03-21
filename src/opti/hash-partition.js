@@ -9,7 +9,13 @@ export class SpacePartition {
     this.divs = floor(1 / targetRadius)
     this.space = [...Array(this.divs ** 2)].map((_) => [])
     this.hashes = new Cache()
-    for (const body of bodies) {
+    this.bodies = bodies
+  }
+
+  update() {
+    this.space.forEach((slot) => (slot.length = 0))
+    this.hashes.reset()
+    for (const body of this.bodies) {
       this.space[this.#hash(body)].push(body)
     }
   }
