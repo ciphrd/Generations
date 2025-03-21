@@ -1,13 +1,3 @@
-export function rndarr(arr, mut = (x) => x) {
-  return arr[floor(mut($fx.rand() * arr.length))]
-}
-
-export function delarr(arr, el) {
-  const idx = arr.indexOf(el)
-  if (idx < 0) return
-  arr.splice(idx, 1)
-}
-
 export const arr = {
   dedup(A) {
     for (let i = A.length - 1; i >= 0; i--) {
@@ -22,5 +12,10 @@ export const arr = {
   },
   sum(A, getV = (v) => v) {
     return A.reduce((acc, val) => acc + getV(val), 0)
+  },
+  del(A, el) {
+    const idx = A.indexOf(el)
+    if (idx < 0) return
+    A.splice(idx, 1)
   },
 }

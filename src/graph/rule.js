@@ -1,5 +1,4 @@
 import { settings } from ".."
-import { delarr } from "../utils/array"
 import { clamp, clamp01 } from "../utils/math"
 import { parseParams } from "../utils/parse"
 import { rnd } from "../utils/rnd"

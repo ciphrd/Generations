@@ -1,4 +1,3 @@
-import { delarr } from "../../utils/array"
 import { vec2 } from "../../utils/vec"
 
 export class Spring {
