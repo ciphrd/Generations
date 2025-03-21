@@ -1,4 +1,4 @@
-import { settings } from ".."
+import { settings } from "../settings"
 import { clamp, clamp01 } from "../utils/math"
 import { parseParams } from "../utils/parse"
 import { rnd } from "../utils/rnd"
@@ -91,13 +91,6 @@ function exec(instructions, context) {
 }
 
 export function applyRule(nodes, node, rules) {
-  // todo
-  // add fns who can read node values
-  // here change how we exec the rules
-  // permut 1st
-  // then compute permut nodes, to have associations
-  // then compute other rules
-
   const instructions = {}
   const context = exec(node.rule, { rules })
   // console.log({ context })
@@ -197,8 +190,6 @@ export function applyRule(nodes, node, rules) {
     }
     nodemap[a].edges.push(nodemap[b])
 
-    // todo:
-    // there seems to be a bug, all the nodes have the same rule ?
     if (a in assign) nodemap[a].rule = assign[a]
     if (b in assign) nodemap[b].rule = assign[b]
   }

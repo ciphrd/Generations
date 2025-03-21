@@ -18,4 +18,9 @@ export const arr = {
     if (idx < 0) return
     A.splice(idx, 1)
   },
+  log(A, get = (v) => v) {
+    for (const el of A) {
+      console.log(get(el))
+    }
+  },
 }

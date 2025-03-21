@@ -4,13 +4,11 @@ import { clamp, mod } from "../utils/math"
 let c = 0
 
 export const BodyFlags = {
-  GLOBAL_REPULSION: 0b1,
+  DEBUG: 0b1,
   REPELLING: 0b10,
   REPELLED: 0b100,
-  WANDERING: 0b1000,
-  FOOD: 0b10000,
-  FOOD_SEEKER: 0b100000,
-  DEBUG: 0b1000000,
+  FOOD: 0b1000,
+  FOOD_SEEKER: 0b10000,
 }
 
 const MAX_VELOCITY = 0.2
