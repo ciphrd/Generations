@@ -7,12 +7,14 @@
     "postinstall": "fxhash update",
     "update": "fxhash update",
     "start": "fxhash dev",
-    "build": "fxhash build"
+    "build": "fxhash build",
+    "compile:permutations": "node scripts/rules.js"
   },
   "devDependencies": {
     "fxhash": "latest"
   },
   "dependencies": {
+    "sharp": "^0.33.5",
     "stats.js": "^0.17.0"
   }
 }
