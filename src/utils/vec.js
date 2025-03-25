@@ -61,6 +61,9 @@ export class Vec2 {
     this.y *= x
     return this
   }
+  dot(v) {
+    return this.x * v.x + this.y * v.y
+  }
   div(x) {
     return this.mul(1 / x)
   }
@@ -68,7 +71,7 @@ export class Vec2 {
     return this.x ** 2 + this.y ** 2
   }
   len() {
-    return Math.sqrt(this.lenSq())
+    return sqrt(this.lenSq())
   }
   normalize() {
     return this.mul(1 / this.len())
@@ -81,10 +84,21 @@ export class Vec2 {
     return (this.x - a1) ** 2 + (this.y - a2) ** 2
   }
   dist(a1, a2) {
-    return Math.sqrt(this.distSq(a1, a2))
+    return sqrt(this.distSq(a1, a2))
   }
   toString() {
     return `(${this.x}; ${this.y})`
+  }
+  outside() {
+    return this.x < 0 || this.x >= 1 || this.y < 0 || this.y >= 1
+  }
+  angle() {
+    return atan2(this.y, this.x)
+  }
+  fromAngle(angle) {
+    this.x = cos(angle)
+    this.y = sin(angle)
+    return this
   }
 }
 

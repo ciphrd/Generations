@@ -17,3 +17,8 @@ export function lerp(start, end, t) {
 export function fract(n) {
   return n - floor(n)
 }
+
+export function angleForLerp(source, target) {
+  if (abs(source - (target - TAU)) < abs(source - target)) return target - TAU
+  return target
+}
