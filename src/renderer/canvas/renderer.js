@@ -3,6 +3,7 @@ import { renderAnchor } from "./anchor"
 import { renderBody } from "./body"
 import { renderEater } from "./eater"
 import { renderFoodSeeker } from "./food-seeker"
+import { renderSensors } from "./sensors"
 import { renderSpring } from "./spring"
 
 const W = 800
@@ -48,6 +49,7 @@ export class CanvasRenderer {
         renderer = renderers[ent.constructor.name]
         if (!renderer) continue
         renderer(this.ctx, ent)
+        if (ent.sensors) renderSensors(this.ctx, ent.sensors)
       }
     }
   }

@@ -1,0 +1,26 @@
+import { BodyFlags } from "../physics/body"
+import { vec2 } from "../utils/vec"
+import { Sensor } from "./sensor"
+
+const _v2a = vec2()
+const DIST = 0.05
+
+export class SmellSensor extends Sensor {
+  constructor(body, world) {
+    super(body, world)
+    this.dist = DIST
+    this.distSq = DIST ** 2
+  }
+
+  update() {
+    const { body, world, dist } = this
+    const part = world.partition(DIST, BodyFlags.FOOD)
+
+    for (const food of part.posNeighbours(body.pos)) {
+      if (body.pos.distSq(food.pos) < (this.dist + food.radius) ** 2) {
+        body.emitToken("two", (v) => v)
+        break
+      }
+    }
+  }
+}

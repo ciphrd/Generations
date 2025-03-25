@@ -8,7 +8,6 @@
 import Stats from "stats.js"
 import { BodyFlags, body } from "./physics/body"
 import { Spring } from "./physics/constraints/spring"
-import { Friction } from "./physics/constraints/friction"
 import { CanvasRenderer } from "./renderer/canvas/renderer"
 import { vec2 } from "./utils/vec"
 import { LAR, larf } from "./physics/constraints/lar"
@@ -29,12 +28,19 @@ import { createDna, createDnas } from "./growth/dna"
 import { grow } from "./growth/growth"
 import { arr } from "./utils/array"
 import { getPermutations } from "./opti/permutations"
+import { Token } from "./network/token"
+import { VisionSensor } from "./sensors/vision"
+import { SmellSensor } from "./sensors/smell"
 
 Object.getOwnPropertyNames(Math).forEach((el) => (window[el] = Math[el]))
 window.TAU = 2 * PI
 
 const stats = new Stats()
 stats.showPanel(1)
+stats.dom.style.position = "absolute"
+stats.dom.style.left = "auto"
+stats.dom.style.right = "0px" // Align to the right
+stats.dom.style.top = "0px"
 document.body.appendChild(stats.dom)
 
 // todo
@@ -45,6 +51,8 @@ document.body.appendChild(stats.dom)
 //         activation happening through the signaling system
 //     [ ] growth-in-activation: growth happens as any other function of the
 //         activation system.
+// [ ] Function to "follow sensor" - might get triggered as sensor spawn tokens
+//     on the sensor node — could result in simple follow dynamics
 
 // todo
 // - square rules
@@ -83,6 +91,15 @@ async function start() {
   )
   arr.log(nodes, (n) => n.rule)
 
+  // const rule1 = "permut({{{x,y}}->{{x,y}}});"
+  // const rule2 = "permut({{{x,y}}->{{x,y}}});"
+
+  // const n1 = new Node(vec2(0.48, 0.5), rule1)
+  // const n2 = new Node(vec2(0.52, 0.5), rule2)
+  // n1.edges.push(n2)
+  // n1.behaviors.actuator = true
+  // const nodes = [n1, n2]
+
   const bodies = []
   const constraints = { pre: [], post: [] }
 
@@ -98,10 +115,10 @@ async function start() {
   //
   //
   for (const node of nodes) {
-    const bod = body(node.pos, settings.radius)
+    const bod = body(node.pos, settings.radius, 0.01)
     bod.data = node.data
+    bod.addFlag(BodyFlags.ORGANISM)
     bodies.push(bod)
-    constraints.pre.push(new Friction(bod, 0.02))
 
     let nEdges = node.edges.length
     for (const node2 of nodes) {
@@ -118,6 +135,17 @@ async function start() {
       if (!enabled) continue
       constraints.pre.push(new behaviors[name](bod, world))
     }
+  }
+
+  bodies[0].receiveToken(new Token("one", 1))
+
+  for (let i = 0; i < min(5, bodies.length); i++) {
+    const idx = rnd.int(0, bodies.length)
+    new VisionSensor(bodies[idx], world)
+  }
+  for (let i = 0; i < min(5, bodies.length); i++) {
+    const idx = rnd.int(0, bodies.length)
+    new SmellSensor(bodies[idx], world)
   }
 
   const edgemap = {}
@@ -167,38 +195,38 @@ async function start() {
   })
 
   const testBodies = []
-  const NB = 25
+  const NB = 0
   for (let i = 0; i < NB; i++) {
     for (let j = 0; j < NB; j++) {
       const bod = body(
         vec2((i + 0.5) / NB, (j + 0.5) / NB),
-        settings.radius * 0.4
+        settings.radius * 0.4,
+        0.02
       )
       bod.addFlag(BodyFlags.REPELLING | BodyFlags.REPELLED)
       testBodies.push(bod)
-      constraints.pre.push(new Friction(bod, 0.02))
     }
   }
 
   const allBodies = [...food, ...testBodies, ...bodies]
 
-  constraints.pre.push(new Clusters(bodies, clusterRules, settings.clusters.nb))
+  // constraints.pre.push(new Clusters(bodies, clusterRules, settings.clusters.nb))
   constraints.pre.push(
     new GlobalRepulsion(allBodies, {
       radius: 0.05,
       strength: 0.0003,
     })
   )
-  constraints.pre.push(
-    new LAR(
-      bodies.filter((body) => body.hasFlag(BodyFlags.FOOD_SEEKER)),
-      food,
-      {
-        attr: larf(0.2, 0.05),
-        rep: larf(0, 0),
-      }
-    )
-  )
+  // constraints.pre.push(
+  //   new LAR(
+  //     bodies.filter((body) => body.hasFlag(BodyFlags.FOOD_SEEKER)),
+  //     food,
+  //     {
+  //       attr: larf(0.2, 0.05),
+  //       rep: larf(0, 0),
+  //     }
+  //   )
+  // )
   constraints.post.push(new Collisions(allBodies))
   constraints.post.push(new SquareBounds(allBodies))
 
@@ -208,18 +236,21 @@ async function start() {
   const renderer = new CanvasRenderer([allBodies, constraints.pre])
   Mouse.init(renderer.cvs)
 
-  function tick(time, t, dt) {
+  function tick(t, dt) {
+    world.update()
     solver.solve(t, dt)
     renderer.render()
   }
 
-  let time, lastTime, dt
+  let time,
+    lastTime = performance.now(),
+    dt
   function loop() {
     stats.begin()
     time = performance.now()
     dt = min(time - lastTime, 30) / 1000
     lastTime = time
-    tick(time, time, dt)
+    tick(time, dt)
     requestAnimationFrame(loop)
     stats.end()
   }

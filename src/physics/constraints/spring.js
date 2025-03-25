@@ -14,7 +14,7 @@ export class Spring {
     this.damping = damping
     this.disp = vec2()
     this.bodyA.springs.push(this)
-    // this.bodyB.springs.push(this)
+    this.bodyB.springs.push(this)
   }
 
   apply(t, dt) {

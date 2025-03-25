@@ -2,7 +2,7 @@ import { Body, BodyFlags } from "../body"
 
 export class Food extends Body {
   constructor(pos, onEaten) {
-    super(pos, 0.01, "#0000ff")
+    super(pos, 0.01, 0.08, "#0000ff")
     this.nutrients = 1
     this.onEaten = onEaten
     this.baseRad = this.radius

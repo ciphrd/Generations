@@ -15,6 +15,12 @@ export class Solver {
         this.constraints.pre.splice(i, 1)
       }
     }
+    for (const body of this.world.organisms) {
+      body.prepareTokens()
+    }
+    for (const body of this.world.organisms) {
+      body.processTokens()
+    }
     for (const body of this.world.bodies) {
       body.update(dt)
     }

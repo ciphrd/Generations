@@ -1,5 +1,12 @@
 import { BodyFlags } from "../../physics/body"
 
+export const chemicalStyle = {
+  one: { size: 0.008, color: "0,255,0" },
+  two: { size: 0.009, color: "255,0,255" },
+  three: { size: 0.01, color: "0,255,255" },
+  four: { size: 0.011, color: "255,0,0" },
+}
+
 export function renderBody(ctx, body) {
   ctx.fillStyle = body.color
   ctx.beginPath()
@@ -12,6 +19,21 @@ export function renderBody(ctx, body) {
     ctx.beginPath()
     ctx.moveTo(body.pos.x, body.pos.y)
     ctx.lineTo(body.pos.x + body.vel.x * 0.5, body.pos.y + body.vel.y * 0.5)
+    ctx.stroke()
+  }
+
+  let style
+  ctx.lineWidth = 0.0008
+  for (let i = 0; i < body.receivedTokens.length; i++) {
+    style = chemicalStyle[body.receivedTokens[i].chemical]
+    ctx.strokeStyle = `rgba(${style.color},${body.receivedTokens[i].quantity})`
+    ctx.beginPath()
+    ctx.rect(
+      body.pos.x - style.size,
+      body.pos.y - style.size,
+      style.size * 2,
+      style.size * 2
+    )
     ctx.stroke()
   }
 }
