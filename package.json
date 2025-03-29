@@ -8,7 +8,9 @@
     "update": "fxhash update",
     "start": "fxhash dev",
     "build": "fxhash build",
-    "compile:permutations": "node scripts/rules.js"
+    "compile:permutations": "node scripts/rules.js",
+    "compile:program": "node scripts/compiler.js",
+    "make:seed": "node scripts/make-seed-image.js"
   },
   "devDependencies": {
     "fxhash": "latest"

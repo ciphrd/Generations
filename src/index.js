@@ -6,7 +6,7 @@
  */
 
 import Stats from "stats.js"
-import { BodyFlags, body } from "./physics/body"
+import { Body, BodyFlags, body } from "./physics/body"
 import { Spring } from "./physics/constraints/spring"
 import { CanvasRenderer } from "./renderer/canvas/renderer"
 import { vec2 } from "./utils/vec"
@@ -24,13 +24,18 @@ import { SquareBounds } from "./physics/constraints/bounds"
 import { World } from "./physics/world"
 import { Solver } from "./physics/solver"
 import { behaviors, permutations, settings } from "./settings"
-import { createDna, createDnas } from "./growth/dna"
+import { createDna, createDnas, generateDNAs } from "./growth/dna"
 import { grow } from "./growth/growth"
 import { arr } from "./utils/array"
-import { getPermutations } from "./opti/permutations"
+import { getPermutations, getSeeds } from "./opti/seeds"
 import { Token } from "./network/token"
 import { VisionSensor } from "./sensors/vision"
 import { SmellSensor } from "./sensors/smell"
+import { ClockSensor } from "./sensors/clock"
+import { CPU } from "./bytecode/cpu"
+import { ActivationBytecode } from "./bytecode/activation"
+import { GrowthBytecode } from "./bytecode/growth"
+import { Sensors } from "./sensors"
 
 Object.getOwnPropertyNames(Math).forEach((el) => (window[el] = Math[el]))
 window.TAU = 2 * PI
@@ -45,6 +50,7 @@ document.body.appendChild(stats.dom)
 
 // todo
 // [ ] Add some basic signal system to test the different options
+// [ ] Body chemicals array instead of object
 // [ ] Implement predefined functions for the signal processing
 // [ ] Test different options:
 //     [ ] growth/activation DNA strands with a 2 step process: growth, then
@@ -53,6 +59,8 @@ document.body.appendChild(stats.dom)
 //         activation system.
 // [ ] Function to "follow sensor" - might get triggered as sensor spawn tokens
 //     on the sensor node — could result in simple follow dynamics
+// [ ] Parametrize clock (& more generally sensors), bounded by allowing for
+//     variation during growth
 
 // todo
 // - square rules
@@ -69,27 +77,41 @@ document.body.appendChild(stats.dom)
 //   the current collisions are computed with small radiuses)
 
 async function start() {
-  const perms = await getPermutations()
+  const seeds = await getSeeds()
+  console.log({ seeds })
+
+  // todo
+  // - DNA generation (using the graph approach ? random bytes ?)
+  //   test with random bytes and if doesn't work well then try to enforce some
+  //   bytes such as assign(), or potentially some predefined byte sequences
+  //   alternatively the graph should work (though a bit hard with the )
+  //   bytecode approach)
+  // - set .dna of node instead, and have the main implementation use the growth
+  //   cpu to apply growth
+  //   note: when node.dna is updated, it requires a new CPU — this isn't ideal
+  // - make it so that a CPU instance can exec arbirary instuctions (check what
+  //   s more optimized been re-instanciating a new CPU and execution random
+  //   instructions)
+
+  const dnas = generateDNAs({
+    seeds: seeds.permutationsBytecode,
+  })
+  console.log({ dnas })
+
+  // const bytecode = "02d893d1e0"
+  // const hexBytes = bytecode.match(/.{1,2}/g)
+  // const bytes = hexBytes.map((hex) => parseInt(hex, 16))
+  // console.log({ bytes })
+
+  // const cpu = new CPU(seeds.activations.at(-1), ActivationBytecode)
+  // cpu.run({
+  //   body: new Body(vec2(0.5, 0.5), 0.1),
+  // })
 
   const world = new World()
 
-  const DNAs = createDnas(settings.dnas.nb, {
-    permutations,
-    propsRange: {
-      min: 5,
-      max: 10,
-    },
-    nClusters: settings.clusters.nb,
-  })
-  console.log("DNAs:")
-  arr.log(DNAs)
-
-  const nodes = grow(
-    vec2(0.501, 0.502),
-    DNAs,
-    lerp(30, 350, pow($fx.rand(), 2))
-  )
-  arr.log(nodes, (n) => n.rule)
+  const nodes = grow(vec2(0.501, 0.502), dnas, 200)
+  arr.log(nodes, (n) => n.dna)
 
   // const rule1 = "permut({{{x,y}}->{{x,y}}});"
   // const rule2 = "permut({{{x,y}}->{{x,y}}});"
@@ -131,22 +153,33 @@ async function start() {
     //   constraints.pre.push(new FoodSeeker(bod, world), new Eater(bod, world))
     // }
 
-    for (const [name, enabled] of Object.entries(node.behaviors)) {
+    // for (const [name, enabled] of Object.entries(node.behaviors)) {
+    //   if (!enabled) continue
+    //   constraints.pre.push(new behaviors[name](bod, world))
+    // }
+
+    for (const [name, enabled] of Object.entries(node.sensors)) {
       if (!enabled) continue
-      constraints.pre.push(new behaviors[name](bod, world))
+      const Sens = Sensors[name]
+      if (!Sens) continue
+      new Sens(bod, world)
     }
   }
 
-  bodies[0].receiveToken(new Token("one", 1))
+  bodies[0].receiveToken(new Token(0, 1))
 
-  for (let i = 0; i < min(5, bodies.length); i++) {
-    const idx = rnd.int(0, bodies.length)
-    new VisionSensor(bodies[idx], world)
-  }
-  for (let i = 0; i < min(5, bodies.length); i++) {
-    const idx = rnd.int(0, bodies.length)
-    new SmellSensor(bodies[idx], world)
-  }
+  // for (let i = 0; i < min(5, bodies.length); i++) {
+  //   const idx = rnd.int(0, bodies.length)
+  //   new VisionSensor(bodies[idx], world)
+  // }
+  // for (let i = 0; i < min(5, bodies.length); i++) {
+  //   const idx = rnd.int(0, bodies.length)
+  //   new SmellSensor(bodies[idx], world)
+  // }
+  // for (let i = 0; i < min(5, bodies.length); i++) {
+  //   const idx = rnd.int(0, bodies.length)
+  //   new ClockSensor(bodies[idx], world)
+  // }
 
   const edgemap = {}
   for (let i = 0; i < nodes.length; i++) {
@@ -195,7 +228,7 @@ async function start() {
   })
 
   const testBodies = []
-  const NB = 0
+  const NB = 20
   for (let i = 0; i < NB; i++) {
     for (let j = 0; j < NB; j++) {
       const bod = body(

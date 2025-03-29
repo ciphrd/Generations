@@ -22,7 +22,7 @@ export class Solver {
       body.processTokens()
     }
     for (const body of this.world.bodies) {
-      body.update(dt)
+      body.update(t, dt)
     }
     for (let i = 0; i < this.constraints.post.length; i++) {
       this.constraints.post[i].apply(t, dt, this.computeCache)

@@ -35,12 +35,7 @@ export class Body {
     this.springs = []
     this.modifiers = []
     this.friction = friction
-    this.chemicals = {
-      one: 1,
-      two: 1,
-      three: 1,
-      four: 1,
-    }
+    this.chemicals = [1, 1, 1, 1]
     this.receivedTokens = []
     this.tokens = []
     this.netCycle = 0
@@ -96,8 +91,8 @@ export class Body {
     }
   }
 
-  update(dt) {
-    this.sensors.forEach((sensor) => sensor.update(dt))
+  update(t, dt) {
+    this.sensors.forEach((sensor) => sensor.update(t, dt))
 
     this.vel.add(this.acc.mul(dt))
     this.vel.mul(1 - this.friction)

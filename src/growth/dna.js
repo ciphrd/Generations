@@ -3,6 +3,41 @@ import { behaviors, settings } from "../settings"
 import { rnd } from "../utils/rnd"
 import { str } from "../utils/string"
 
+/**
+ * Do we encode growth rules using some kind of ByteCode ?
+ * To remain in the spirit of behaviour encoding, and facilitate mutations, we
+ * probably should. Though it's unclear if mutations could have negative effects
+ * on the growth as some operations are more complexe (require specific
+ * parameters for instance). So maybe for mutating we apply a more conservative
+ * approach and alter the function graph instead.
+ *
+ * Functions to encode:
+ * - permut( rule )
+ * - assign( letter, dna )
+ * - dna( number )
+ * - gt( number, number )
+ * - lt( number, number )
+ * - either( any, any, boolean )
+ * - rnd( )
+ * (
+ * - rnd_behavior
+ * - rnd_dna
+ * - ...
+ * )
+ *
+ * Typed Stack Based Bytecode, with automatic typecast to avoid mutation
+ * failures.
+ *
+ * Types:
+ * - number
+ * - boolean
+ * - letter
+ * - dna
+ *
+ * Functions should be resilient, as in never fail even if the provided input
+ * isn't proper. It should resolve with the closest solution.
+ */
+
 const rulesContructionGraph = [
   ["root_fns", "assign", 34],
   ["root_fns", "cluster", 33],
@@ -13,14 +48,9 @@ const rulesContructionGraph = [
   ["number", "either<number>", 20],
   ["boolean", "_boolean", 60],
   ["boolean", "gt", 40],
-  // general utils
-  //
-  ["rule_index", "_rnd_rule_idx", 80],
-  ["rule_index", "number", 20],
 
   ["permut", "_rule", 100],
 
-  ["ref", "_rnd_dna_idx", 100],
   ["assign", "letter", "dna", 100],
 
   ["gt", "number", "number", 100],
@@ -45,8 +75,6 @@ function generateWithGraph(node, rules, options, letters) {
   const fns = {
     rnd: () => "rnd()",
     boolean: () => $fx.rand() < 0.5,
-    rnd_rule_idx: () => rnd.int(0, rules.length),
-    rule: () => rnd.el(rules),
     letter: () => rnd.char(letters),
     rnd_cluster_idx: () => rnd.int(0, settings.clusters.nb),
     rnd_dna_idx: () => rnd.int(0, options.nDNAs),
@@ -110,4 +138,29 @@ export function createDnas(nb, settings) {
       nDNAs: nb,
     })
   )
+}
+
+function generateDNA(settings) {
+  const { seeds } = settings
+  console.log({ seeds })
+  const bytes = []
+
+  // all dns start with a permutation rule
+  bytes.push(0x1)
+  bytes.push(...rnd.el(seeds))
+  // marks the end of permutation
+  bytes.push(128)
+
+  for (let i = 0, m = rnd.int(10, 30); i < m; i++) {
+    bytes.push(rnd.int(0, 256) & 0xff)
+    // if ($fx.rand() < 0.1) {
+    //   bytes.push(((0xc << 4) + rnd.int(0, 16)) & 0xf)
+    // }
+  }
+
+  return new Uint8Array(bytes)
+}
+
+export function generateDNAs(settings) {
+  return [...Array(16)].map(() => generateDNA(settings))
 }

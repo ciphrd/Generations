@@ -1,11 +1,11 @@
 import { BodyFlags } from "../../physics/body"
 
-export const chemicalStyle = {
-  one: { size: 0.008, color: "0,255,0" },
-  two: { size: 0.009, color: "255,0,255" },
-  three: { size: 0.01, color: "0,255,255" },
-  four: { size: 0.011, color: "255,0,0" },
-}
+export const chemicalStyle = [
+  { size: 0.008, color: "0,255,0" },
+  { size: 0.009, color: "255,0,255" },
+  { size: 0.01, color: "0,255,255" },
+  { size: 0.011, color: "255,0,0" },
+]
 
 export function renderBody(ctx, body) {
   ctx.fillStyle = body.color

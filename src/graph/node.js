@@ -1,14 +1,22 @@
+import { CPU } from "../bytecode/cpu"
+import { GrowthBytecode } from "../bytecode/growth"
+
 let globalIndex = 0
 export class Node {
-  constructor(pos, rule, edges = []) {
+  constructor(pos, dna, edges = []) {
     this.pos = pos
     this.id = (globalIndex++).toString()
     this.edges = edges
-    this.rule = rule
+    this.setDNA(dna)
     this.data = {
       clusterGroup: -1,
     }
-    this.behaviors = {}
+    this.sensors = {}
+  }
+
+  setDNA(dna) {
+    this.dna = dna
+    this.cpu = new CPU(dna, GrowthBytecode)
   }
 }
 

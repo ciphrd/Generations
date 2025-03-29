@@ -92,12 +92,12 @@ function exec(instructions, context) {
 
 export function applyRule(nodes, node, rules) {
   const instructions = {}
-  const context = exec(node.rule, { rules })
+  const context = exec(node.dna, { rules })
   // console.log({ context })
   const { permut, assign = {}, cluster = {}, behaviors = {} } = context
   if (!permut) throw "fatal"
 
-  console.log(context.behaviors)
+  // console.log(context.behaviors)
 
   const [input, output] = permut
     .split("->")
@@ -136,17 +136,17 @@ export function applyRule(nodes, node, rules) {
   // parse the input to associate letters with nodes
   for (const [a, b] of input) {
     if (!nodemap[a]) {
-      console.log("node doesn't exist")
+      // console.log("node doesn't exist")
       return false
     }
     if (nodemap[a].edges.length === 0) {
-      console.log("node doesn't have any edge")
+      // console.log("node doesn't have any edge")
       return false
     }
 
     const match = matchEdge(nodemap[a], nodemap[b])
     if (!match) {
-      console.log("no match found")
+      // console.log("no match found")
       return false
     }
     if (!nodemap[b]) nodemap[b] = match
@@ -173,7 +173,7 @@ export function applyRule(nodes, node, rules) {
           rnd.range(0.0001, 0.01) * rnd.sign()
         )
         .apply(clamp01),
-      node.rule
+      node.dna
     )
     out.data = { ...parent.data }
     return out
@@ -190,8 +190,8 @@ export function applyRule(nodes, node, rules) {
     }
     nodemap[a].edges.push(nodemap[b])
 
-    if (a in assign) nodemap[a].rule = assign[a]
-    if (b in assign) nodemap[b].rule = assign[b]
+    if (a in assign) nodemap[a].dna = assign[a]
+    if (b in assign) nodemap[b].dna = assign[b]
   }
 
   for (const [target, group] of Object.entries(cluster)) {

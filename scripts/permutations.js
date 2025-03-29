@@ -1,9 +1,3 @@
-import sharp from "sharp"
-import path from "path"
-
-const ROOT = path.join(import.meta.dirname, "..")
-const OUTPUT_PATH = path.join(ROOT, "src", "permutations.png")
-
 /**
  * To optimize storage, rules are stored in their bytecode representation.
  * Rules are written in human language here, and a script is used to compile
@@ -11,21 +5,27 @@ const OUTPUT_PATH = path.join(ROOT, "src", "permutations.png")
  *
  * The permutation bytecode is represented as following:
  *
- * A series of bytes, where each byte has the same structure:
- * +--+---+---+
- * |ID|Lt1|Lt2|
- * +--+---+---+
+ * A letter is encoded using an identifying bit, and 3 bits to encode the letter
+ * index in the following list: xyzwstuv
+ * +---+---+---+---+
+ * |ID1|  letter   |
+ * +---+---+---+---+
  *
- * - ID: 2 bits sequence identifier
- *   - 0b00: new rule segment
- *   - 0b01: new edge
- * - Lt1/Lt2: 2x3bits to encode 2 letters
+ * Since edges require have 2 nodes, an edge is represented with 2 segments:
+ * +---+---+---+---+---+---+---+---+
+ * |ID1|  letter1  |ID2|  letter2  |
+ * +---+---+---+---+---+---+---+---+
  *
- * Every odd new rule segment encodes the beginning of the right part of the
- * permutation, every even encodes the beginning of a new permutation rule.
+ * Permutation rules are 2 series of edges, each edge being at least 2 letters.
+ * To encode this representation, and allow series of permutations to be encoded
+ * next to each other, we use the first bit of the first letter to encode the
+ * category of the following edge:
+ * - 0x0: new edge
+ * - 0x1: new rule
  *
- * Each letter is encoded over 3 bits, counting from 0 to 7 over xyzwstuv where
- * x is 0 and v is 7.
+ * New rule alternates between defining the right part of the permutation, and
+ * defining a new rule altogether. A rule always start with 0x1, indicating a
+ * new rule.
  */
 
 const permutations = [
@@ -91,12 +91,11 @@ const sortedLetters = "xyzwstuv"
 
 function encodeSegment(type, letters) {
   let byte = 0x00
-  if (type === "edge") {
-    byte |= 0b1
+  if (type === "rule") {
+    byte |= 0x1
   }
-  for (let i = 0; i < 2; i++) {
-    byte = (byte << 3) | sortedLetters.indexOf(letters[i])
-  }
+  byte = (byte << 3) | sortedLetters.indexOf(letters[0])
+  byte = (byte << 4) | sortedLetters.indexOf(letters[1])
   return byte
 }
 
@@ -122,11 +121,11 @@ function decodeByte(byte) {
   const letters = []
   for (let i = 0; i < 2; i++) {
     letters.unshift(sortedLetters[byte & 0x7])
-    byte >>= 3
+    byte >>= 4 - i
   }
   byte &= 0x1
   return {
-    type: byte ? "edge" : "rule",
+    type: byte ? "rule" : "edge",
     letters,
   }
 }
@@ -153,16 +152,6 @@ function decode(bytecode) {
   return rules
 }
 
-// const encoded = permutations.map((perm) => encode(perm)).flat()
-// const decoded = decode(encoded)
-
-async function main() {
-  const encoded = permutations.map((perm) => encode(perm)).flat()
-  console.log(encoded)
-  await sharp(new Uint8Array(encoded), {
-    raw: { width: encoded.length, height: 1, channels: 1 },
-  })
-    .png()
-    .toFile(OUTPUT_PATH)
+export function encodedPermutations() {
+  return permutations.map((perm) => encode(perm)).flat()
 }
-main()

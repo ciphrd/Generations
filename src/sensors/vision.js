@@ -11,6 +11,7 @@ export class VisionSensor extends Sensor {
   constructor(body, world) {
     super(body, world)
     this.length = LENGTH
+    console.log("ye")
   }
 
   update() {
@@ -25,7 +26,7 @@ export class VisionSensor extends Sensor {
       if (_v2a.outside()) break
       for (const food of part.posNeighbours(_v2a)) {
         if (_v2a.distSq(food.pos) < food.radius ** 2) {
-          body.emitToken("one", (v) => 1 * v)
+          body.emitToken(0, (v) => 1 * v)
           break l1
         }
       }

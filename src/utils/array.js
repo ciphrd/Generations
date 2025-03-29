@@ -23,4 +23,11 @@ export const arr = {
       console.log(get(el))
     }
   },
+  shuffle(A) {
+    for (let i = A.length - 1; i > 0; i--) {
+      const j = floor($fx.rand() * (i + 1))
+      ;[A[i], A[j]] = [A[j], A[i]]
+    }
+    return A
+  },
 }
