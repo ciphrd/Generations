@@ -1,0 +1,79 @@
+import { mod } from "../utils/math"
+
+export class Graph {
+  constructor($wrapper, sampler) {
+    const bounds = $wrapper.getBoundingClientRect()
+
+    this.$wrapper = $wrapper
+    this.cvs = document.createElement("canvas")
+    this.cvs.width = bounds.width * devicePixelRatio
+    this.cvs.height = bounds.height * devicePixelRatio
+    this.cvs.style.width = `${bounds.width}px`
+    this.cvs.style.height = `${bounds.height}px`
+    this.$wrapper.appendChild(this.cvs)
+
+    this.ctx = this.cvs.getContext("2d")
+    this.ctx.scale(this.cvs.width, this.cvs.height)
+    this.ctx.translate(0.5, 0.5)
+    this.ctx.scale(1, -1)
+    this.ctx.translate(-0.5, -0.5)
+    this.ctx.fillStyle = "black"
+    this.ctx.fillRect(0, 0, this.cvs.width, this.cvs.height)
+    this.texelSize = 1 / this.cvs.width
+
+    this.sampler = sampler
+    this.samples = sampler.def.map((_) => Array(this.cvs.width))
+    this.idx = 0
+  }
+
+  tick() {
+    const samples = this.sampler.get()
+    for (let i = 0; i < samples.length; i++) {
+      this.samples[i][this.idx] = samples[i]
+    }
+    this.idx = (this.idx + 1) % this.cvs.width
+  }
+
+  val(s, i) {
+    const def = this.sampler.def[s]
+    return 0.08 + (0.86 * (this.samples[s][i] - def.min)) / (def.max - def.min)
+  }
+
+  draw() {
+    const def = this.sampler.def,
+      N = def.length,
+      I = mod(this.idx - 1, this.cvs.width),
+      samples = [0, 0, 0, 0]
+
+    if (I === 0) {
+      this.ctx.fillStyle = "rgba(0, 0, 0, 0.6)"
+      this.ctx.fillRect(0, 0, this.cvs.width, this.cvs.height)
+    }
+
+    this.ctx.lineWidth = this.texelSize
+    for (let s = 0; s < N; s++) {
+      this.ctx.strokeStyle = def[s].color
+      this.ctx.beginPath()
+
+      for (let di = 0; di <= 3; di++) {
+        samples[di] = this.val(s, max(I - (3 - di), 0))
+      }
+
+      this.ctx.moveTo(
+        max(I - 1, 0) / this.cvs.width,
+        (samples[0] + samples[1] + samples[2]) * 0.333
+      )
+
+      this.ctx.lineTo(
+        I / this.cvs.width,
+        (samples[1] + samples[2] + samples[3]) * 0.333
+      )
+      this.ctx.stroke()
+    }
+
+    this.ctx.fillStyle = "black"
+    this.ctx.fillRect(this.idx / this.cvs.width, 0, this.texelSize, 1)
+    this.ctx.fillStyle = "#ff0000"
+    this.ctx.fillRect((this.idx + 1) / this.cvs.width, 0, this.texelSize, 1)
+  }
+}

@@ -1,3 +1,4 @@
+import { mod } from "../../utils/math"
 import { vec2 } from "../../utils/vec"
 
 export class Spring {
@@ -15,9 +16,22 @@ export class Spring {
     this.disp = vec2()
     this.bodyA.springs.push(this)
     this.bodyB.springs.push(this)
+
+    this.contraction = 0
+  }
+
+  contract(strength) {
+    this.contraction = mod(this.contraction + strength * 0.3, 1)
   }
 
   apply(t, dt) {
+    if (this.bodyA.id === 0) {
+      // console.log(this.contraction)
+    }
+
+    this.stiffness = this.initial.stiffness * (1 + this.contraction * 10)
+    // this.contraction *= 0.8
+
     const { bodyA, bodyB, restLength, stiffness, damping, disp } = this
     disp.copy(bodyB.pos).sub(bodyA.pos)
     const D = disp.len()

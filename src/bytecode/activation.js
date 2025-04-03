@@ -2,7 +2,7 @@
  *
  */
 
-import { fract } from "../utils/math"
+import { clamp, fract } from "../utils/math"
 import { Operation } from "./cpu"
 
 /**
@@ -91,7 +91,7 @@ export const ActivationBytecode = {
   exec: (instructions, pointer, stack, context) => {
     const operations = []
     const instruction = instructions[pointer]
-    console.log(`Executing instruction: ${set[instruction]}`)
+    // console.log(`Executing instruction: ${set[instruction]}`)
 
     switch (instruction) {
       // nop_0
@@ -150,7 +150,7 @@ export const ActivationBytecode = {
       case 0x0c:
       case 0x0d:
       case 0x0e: {
-        stack.push(context.body.chemicals[instruction - 0x0b])
+        stack.push(context.body.signals[instruction - 0x0b] & 0xf)
         break
       }
       // fire0

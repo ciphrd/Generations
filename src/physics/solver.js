@@ -7,7 +7,7 @@ export class Solver {
     this.computeCache = new ComputeCache(this.world.bodies)
   }
 
-  solve(t, dt) {
+  prepare(t, dt) {
     this.computeCache.prepare()
 
     for (let i = this.constraints.pre.length - 1; i >= 0; i--) {
@@ -16,10 +16,13 @@ export class Solver {
       }
     }
     for (const body of this.world.organisms) {
-      body.prepareTokens()
+      body.prepare()
     }
+  }
+
+  solve(t, dt) {
     for (const body of this.world.organisms) {
-      body.processTokens()
+      body.processSignals(dt)
     }
     for (const body of this.world.bodies) {
       body.update(t, dt)

@@ -55,22 +55,22 @@ export class CPU {
     this.operations.length = 0
     this.stack.reset()
 
-    console.log(...this.stack.values)
+    // console.log(...this.stack.values)
 
     let i = 0
     while (true) {
-      console.log("------------------------")
+      // console.log("------------------------")
       if (++i > 128) {
-        console.log("MAX ITERATIONS !!")
+        // console.log("MAX ITERATIONS !!")
         break
       }
       if (!this.next(context)) break
 
-      console.log(...this.stack.values)
-      console.log(...this.operations)
+      // console.log(...this.stack.values)
+      // console.log(...this.operations)
     }
-    console.log(...this.stack.values)
-    console.log(...this.operations)
+    // console.log(...this.stack.values)
+    // console.log(...this.operations)
     return this.operations
   }
 

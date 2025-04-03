@@ -6,6 +6,6 @@ export class ClockSensor extends Sensor {
   }
 
   update(t) {
-    this.body.emitToken(2, () => sin(t * 0.01))
+    this.body.receiveSignal(2, sin(t * 0.01))
   }
 }

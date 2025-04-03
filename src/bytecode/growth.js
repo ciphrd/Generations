@@ -63,7 +63,6 @@ const letters = "xyzwstuv".split("")
 
 export const GrowthBytecode = {
   parser: (bytecode) => {
-    console.log(bytecode)
     const instructions = []
     for (const byte of bytecode) {
       instructions.push((byte >> 4) & 0xf)

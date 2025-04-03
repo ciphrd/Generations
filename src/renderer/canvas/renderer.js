@@ -3,6 +3,7 @@ import { renderAnchor } from "./anchor"
 import { renderBody } from "./body"
 import { renderEater } from "./eater"
 import { renderFoodSeeker } from "./food-seeker"
+import { renderNodeSelection } from "./interactions"
 import { renderSensors } from "./sensors"
 import { renderSpring } from "./spring"
 
@@ -17,6 +18,7 @@ const renderers = {
   Actuator: renderActuator,
   Anchor: renderAnchor,
   FoodSeeker: renderFoodSeeker,
+  NodeSelection: renderNodeSelection,
 }
 
 export function arc(index) {

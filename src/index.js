@@ -12,10 +12,9 @@ import { CanvasRenderer } from "./renderer/canvas/renderer"
 import { vec2 } from "./utils/vec"
 import { LAR, larf } from "./physics/constraints/lar"
 import { Food } from "./physics/entities/food"
-import { fract, lerp } from "./utils/math"
+import { clamp, fract, lerp } from "./utils/math"
 import { Mouse } from "./interactions/mouse"
 import { GlobalRepulsion } from "./physics/constraints/repulsion"
-import { applyRule } from "./graph/rule"
 import { Node, nodeTupleId } from "./graph/node"
 import { rnd } from "./utils/rnd"
 import { Clusters } from "./physics/constraints/clusters"
@@ -24,7 +23,7 @@ import { SquareBounds } from "./physics/constraints/bounds"
 import { World } from "./physics/world"
 import { Solver } from "./physics/solver"
 import { behaviors, permutations, settings } from "./settings"
-import { createDna, createDnas, generateDNAs } from "./growth/dna"
+import { generateDNAs } from "./growth/dna"
 import { grow } from "./growth/growth"
 import { arr } from "./utils/array"
 import { getPermutations, getSeeds } from "./opti/seeds"
@@ -36,6 +35,9 @@ import { CPU } from "./bytecode/cpu"
 import { ActivationBytecode } from "./bytecode/activation"
 import { GrowthBytecode } from "./bytecode/growth"
 import { Sensors } from "./sensors"
+import { Graph } from "./ui/graph"
+import { NodeSelection } from "./interactions/selection"
+import { StackGraph } from "./ui/stacks"
 
 Object.getOwnPropertyNames(Math).forEach((el) => (window[el] = Math[el]))
 window.TAU = 2 * PI
@@ -49,9 +51,9 @@ stats.dom.style.top = "0px"
 document.body.appendChild(stats.dom)
 
 // todo
-// [ ] Add some basic signal system to test the different options
-// [ ] Body chemicals array instead of object
-// [ ] Implement predefined functions for the signal processing
+// [x] Add some basic signal system to test the different options
+// [x] Body chemicals array instead of object
+// [x] Implement predefined functions for the signal processing
 // [ ] Test different options:
 //     [ ] growth/activation DNA strands with a 2 step process: growth, then
 //         activation happening through the signaling system
@@ -80,22 +82,7 @@ async function start() {
   const seeds = await getSeeds()
   console.log({ seeds })
 
-  // todo
-  // - DNA generation (using the graph approach ? random bytes ?)
-  //   test with random bytes and if doesn't work well then try to enforce some
-  //   bytes such as assign(), or potentially some predefined byte sequences
-  //   alternatively the graph should work (though a bit hard with the )
-  //   bytecode approach)
-  // - set .dna of node instead, and have the main implementation use the growth
-  //   cpu to apply growth
-  //   note: when node.dna is updated, it requires a new CPU — this isn't ideal
-  // - make it so that a CPU instance can exec arbirary instuctions (check what
-  //   s more optimized been re-instanciating a new CPU and execution random
-  //   instructions)
-
-  const dnas = generateDNAs({
-    seeds: seeds.permutationsBytecode,
-  })
+  const dnas = generateDNAs(seeds)
   console.log({ dnas })
 
   // const bytecode = "02d893d1e0"
@@ -125,21 +112,13 @@ async function start() {
   const bodies = []
   const constraints = { pre: [], post: [] }
 
-  const food = []
-  for (let i = 0; i < 100; i++) {
-    food.push(
-      new Food(vec2($fx.rand(), $fx.rand()), (fd) =>
-        food.splice(food.indexOf(fd), 1)
-      )
-    )
-  }
-
   //
   //
   for (const node of nodes) {
     const bod = body(node.pos, settings.radius, 0.01)
     bod.data = node.data
     bod.addFlag(BodyFlags.ORGANISM)
+    bod.setDNA(node.dna)
     bodies.push(bod)
 
     let nEdges = node.edges.length
@@ -166,7 +145,14 @@ async function start() {
     }
   }
 
-  bodies[0].receiveToken(new Token(0, 1))
+  const food = []
+  for (let i = 0; i < 100; i++) {
+    food.push(
+      new Food(vec2($fx.rand(), $fx.rand()), (fd) =>
+        food.splice(food.indexOf(fd), 1)
+      )
+    )
+  }
 
   // for (let i = 0; i < min(5, bodies.length); i++) {
   //   const idx = rnd.int(0, bodies.length)
@@ -266,13 +252,103 @@ async function start() {
   world.setBodies(allBodies)
   const solver = new Solver(world, constraints)
 
-  const renderer = new CanvasRenderer([allBodies, constraints.pre])
+  const selection = new NodeSelection(world)
+  window.selection = selection
+
+  const renderer = new CanvasRenderer([allBodies, constraints.pre, [selection]])
   Mouse.init(renderer.cvs)
+
+  const $g1 = document.createElement("div")
+  document.body.appendChild($g1)
+  $g1.style.width = "300px"
+  $g1.style.height = "120px"
+  const g1 = new Graph($g1, {
+    def: [
+      {
+        name: "token-chem0",
+        color: "#ff0000",
+        min: 0,
+        max: 4,
+      },
+      {
+        name: "token-chem1",
+        color: "#ffff00",
+        min: 0,
+        max: 4,
+      },
+      {
+        name: "token-chem2",
+        color: "#00ff00",
+        min: 0,
+        max: 4,
+      },
+      {
+        name: "token-chem3",
+        color: "#0000ff",
+        min: 0,
+        max: 4,
+      },
+    ],
+    get: () => {
+      // what do we want To graph ?
+      // - tokens received
+      // - actions taken by CPU update
+
+      return selection.selected.signals.map((s) => clamp(s, 0, 16))
+    },
+  })
+
+  // todo
+  // graph 2 doesn't work!
+  const $g2 = document.createElement("div")
+  document.body.appendChild($g2)
+  $g2.style.width = "300px"
+  $g2.style.height = "120px"
+  const g2 = new StackGraph($g2, {
+    def: [
+      {
+        name: "actuator chem 0",
+        color: `rgba(255,0,0,0.25)`,
+        min: 0,
+        max: 1,
+      },
+      {
+        name: "actuator chem 1",
+        color: `rgba(255,0,0,0.5)`,
+        min: 0,
+        max: 1,
+      },
+      {
+        name: "actuator chem 2",
+        color: `rgba(255,0,0,0.75)`,
+        min: 0,
+        max: 1,
+      },
+      {
+        name: "actuator chem 3",
+        color: `rgba(255,0,0,1)`,
+        min: 0,
+        max: 1,
+      },
+    ],
+    get: () => {
+      return selection.selected.operations.map((ops) =>
+        ops.some((op) => op.name === "actuate") ? 1 : 0
+      )
+    },
+  })
 
   function tick(t, dt) {
     world.update()
+
+    solver.prepare(t, dt)
+    g1.tick()
+    g2.tick()
     solver.solve(t, dt)
+
     renderer.render()
+    g1.draw()
+    g2.draw()
   }
 
   let time,

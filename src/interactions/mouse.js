@@ -7,6 +7,10 @@ class MouseSingleton {
   constructor() {
     this.pos = vec2()
     this.down = false
+    this.listeners = {
+      move: [],
+      down: [],
+    }
   }
   init($el) {
     this.#$wrapper = $el
@@ -18,8 +22,14 @@ class MouseSingleton {
     })
     $el.addEventListener("mousemove", (evt) => {
       this.#computeRelativePos(evt.clientX, evt.clientY)
+      this.listeners.move.forEach((cb) => cb())
     })
-    $el.addEventListener("mousedown", (evt) => (this.down = true))
+    $el.addEventListener("mousedown", (evt) => {
+      if (!this.down) {
+        this.down = true
+        this.listeners.down.forEach((cb) => cb())
+      }
+    })
     $el.addEventListener("mouseup", (evt) => (this.down = false))
     $el.addEventListener("mouseleave", (evt) => (this.down = false))
   }
@@ -31,6 +41,13 @@ class MouseSingleton {
       (absX - this.#wrapperBounds.x) / this.#wrapperBounds.width,
       1 - (absY - this.#wrapperBounds.y) / this.#wrapperBounds.height
     )
+  }
+  on(evt, cb) {
+    const listeners = this.listeners[evt]
+    listeners.push(cb)
+    return () => {
+      listeners.splice(listeners.indexOf(cb), 1)
+    }
   }
 }
 export const Mouse = new MouseSingleton()

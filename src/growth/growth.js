@@ -1,5 +1,4 @@
 import { Node } from "../graph/node"
-import { applyRule } from "../graph/rule"
 import { rnd } from "../utils/rnd"
 
 export function grow(center, dnas, maxNodes) {

@@ -2,6 +2,9 @@ import { vec2 } from "../utils/vec"
 import { angleForLerp, clamp, lerp, mod } from "../utils/math"
 import { Token } from "../network/token"
 import { rnd } from "../utils/rnd"
+import { CPU } from "../bytecode/cpu"
+import { ActivationBytecode } from "../bytecode/activation"
+import { Actions } from "./actions"
 
 let c = 0
 const _v2a = vec2(),
@@ -22,6 +25,7 @@ const MAX_VELOCITY_SQ = MAX_VELOCITY ** 2
 export class Body {
   constructor(pos, radius, friction = 0, color = "#00ff00") {
     this.id = c++
+    this.energy = 1
     this.radius = radius
     this.color = color
     this.pos = pos
@@ -35,64 +39,138 @@ export class Body {
     this.springs = []
     this.modifiers = []
     this.friction = friction
-    this.chemicals = [1, 1, 1, 1]
-    this.receivedTokens = []
-    this.tokens = []
+    this.receivedSignals = Array(4).fill(0)
+    this.signals = Array(4).fill(0)
+    this.operations = Array(4).fill([])
     this.netCycle = 0
     this.sensors = []
+    this.actions = Object.fromEntries(
+      Object.entries(Actions).map(([name, props]) => [
+        name,
+        new props.module(this),
+      ])
+    )
+    this.actionsArr = Object.values(this.actions)
+  }
+
+  setDNA(dna) {
+    this.dna = dna
+    this.cpu = new CPU(dna[1], ActivationBytecode)
   }
 
   // todo
   // tokens move more slowly (once every N frame or N ms)
   // ie tokens are processed after a delay
 
-  emitToken(chemical, getValue) {
-    const value = getValue(this.chemicals[chemical])
-    // this.chemicals[chemical] = max(0, this.chemicals[chemical] - value)
+  prepare() {
+    let tmp = this.signals
+    this.signals = this.receivedSignals
+    this.receivedSignals = tmp.fill(0)
+  }
 
-    if (value > 0.01) {
-      this.receivedTokens.unshift(new Token(chemical, value))
+  receiveSignal(chemical, quantity) {
+    if (quantity < 0.0001) return
+    this.receivedSignals[chemical] += quantity
+  }
+
+  sendSignal(chemical, quantity) {
+    if (this.springs.length === 0) return
+
+    this.netCycle = (this.netCycle + 1) % this.springs.length
+    const spring = this.springs[this.netCycle]
+    const other = spring.bodyA === this ? spring.bodyB : spring.bodyA
+    other.receiveSignal(chemical, quantity)
+  }
+
+  processSignals(dt) {
+    this.operations.fill([])
+
+    // Todos
+    // - implement token merging
+    // - maybe we don't send token class anymore and just a tuple
+    //   [chemical, quantity] for memory efficiency (which is passed as fn
+    //   parameter, simply)
+
+    // if (this.id === 1) {
+    //   console.log("----------------")
+    //   console.log([...this.signals])
+    // }
+
+    let quantity
+    for (let i = 0; i < 4; i++) {
+      quantity = this.signals[i]
+      if (quantity === 0) continue
+
+      if (this.cpu) {
+        this.operations[i] = this.mergeOperations(this.cpu.run({ body: this }))
+        this.processOperations(this.operations[i], dt, quantity)
+      }
+
+      //! NOTE
+      // Here we can use a different model, where instead of sending each
+      // chemical to a different node, all chemicals are sent to the same one.
+
+      // quantity *= 0.95
+      // if (quantity > 0.01) this.sendSignal(i, quantity)
+    }
+
+    if (window.selection.selected === this) {
+      console.log(this.operations)
     }
   }
 
-  prepareTokens() {
-    this.tokens = this.receivedTokens
-    this.receivedTokens = []
+  mergeOperations(ops) {
+    let op
+    const map = {}
+    for (let i = ops.length - 1; i >= 0; i--) {
+      op = ops[i]
+      if (map[op.name]) continue
+      map[op.name] = op
+    }
+    return Object.values(map)
+
+    //! this strategy uses the merge method of the action; not sure if required
+    //! TBD
+    // const grouped = {}
+    // for (const op of ops) {
+    //   if (!grouped[op.name]) grouped[op.name] = []
+    //   grouped[op.name].push(op)
+    // }
+    // const names = Object.keys(grouped)
+    // const merged = Array(names.length)
+    // for (let i = 0; i < names.length; i++) {
+    //   merged[i] = Actions[names[i]].merge(grouped[names[i]])
+    // }
+    // return merged
   }
 
-  receiveToken(token) {
-    this.receivedTokens.unshift(token)
-  }
+  processOperations(ops, dt, chemicalQuantity) {
+    if (this.id === 0) {
+      // todo
+      // apply operations
+      // it's not a trigger but rather a "keep doing this action" effect
+      // ie grab while "grab" action is emitted
+      // maybe we have some Actuators who can receive "signals" and handle
+      // specific body behaviours
+      // grab is gonna be a bit tricky...
+      // console.log(ops)
+    }
 
-  sendToken(token) {
-    const spring = this.springs[this.netCycle]
-    if (!spring) return
-    const other = spring.bodyA === this ? spring.bodyB : spring.bodyA
-    other.receiveToken(token)
-    this.netCycle = (this.netCycle + 1) % this.springs.length
-  }
-
-  processTokens() {
-    let token
-    for (let i = this.tokens.length - 1; i >= 0; i--) {
-      token = this.tokens[i]
-      // todo: here activate token process
-      token.quantity *= 0.95
-
-      // this.chemicals[token.chemical] += 0.03 * token.quantity
-      if (token.quantity > 0.01) {
-        this.sendToken(token)
-        // if ($fx.rand() < 0.01) {
-        //   this.sendToken(new Token("one", this.chemicals.one))
-        //   this.chemicals.one = 0
-        // }
+    for (const op of ops) {
+      if (
+        // op.name === "forward" ||
+        // op.name === "backward" ||
+        op.name === "actuate" ||
+        op.name === "fire"
+      ) {
+        this.actions[op.name].activate(dt, chemicalQuantity, op.values)
       }
-      this.tokens.splice(i, 1)
     }
   }
 
   update(t, dt) {
     this.sensors.forEach((sensor) => sensor.update(t, dt))
+    this.actionsArr.forEach((action) => action.apply(t, dt))
 
     this.vel.add(this.acc.mul(dt))
     this.vel.mul(1 - this.friction)

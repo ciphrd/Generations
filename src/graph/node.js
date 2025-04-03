@@ -16,7 +16,7 @@ export class Node {
 
   setDNA(dna) {
     this.dna = dna
-    this.cpu = new CPU(dna, GrowthBytecode)
+    if (dna) this.cpu = new CPU(dna[0], GrowthBytecode)
   }
 }
 
