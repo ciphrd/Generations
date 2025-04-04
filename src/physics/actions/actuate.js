@@ -1,3 +1,4 @@
+import { clamp01, lerp } from "../../utils/math"
 import { Action } from "./action"
 
 // todo as general simulation parameter
@@ -7,12 +8,10 @@ export class ActuateAction extends Action {
   constructor(body) {
     super(body)
     this.strength = 0
+    this.initial = {
+      friction: body.friction,
+    }
   }
-
-  // todo
-  // change here
-  // probably want something where we just set contract to "on" / "off",
-  // and if "on" it contracts the muscle ; can lead to more generic behaviours
 
   // todo
   // actually need to rethink this to get more specific behaviours to emerge
@@ -40,10 +39,36 @@ export class ActuateAction extends Action {
     if (this.body.id === 0) {
       // console.log("actuate", values[0])
     }
+    const v = clamp01(values[0])
     for (const spring of this.body.springs) {
-      spring.contract(/*values[0] **/ dt)
+      spring.contraction = v
+      // this.body.friction = 1
     }
   }
 
-  apply(t, dt) {}
+  apply(t, dt) {
+    let expand = false
+    if (this.body.springs.length > 0) {
+      if (
+        this.body.springs[0].contraction > 0.1 &&
+        this.body.springs[0].prevContraction > this.body.springs[0].contraction
+      ) {
+        expand = true
+      }
+    }
+
+    let other
+    for (const spring of this.body.springs) {
+      other = spring.bodyA === this.body ? spring.bodyB : spring.bodyA
+      if (expand) {
+        this.body.friction = 1
+      } else {
+        this.body.friction = this.initial.friction
+      }
+    }
+
+    // if (!expand) {
+    //   this.body.friction = lerp(this.body.friction, this.initial.friction, 0.1)
+    // }
+  }
 }

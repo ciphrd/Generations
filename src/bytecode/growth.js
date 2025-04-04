@@ -27,7 +27,7 @@
  *  B  ; nedg ; letter ; push number of edges of node associated with letter
  *  C  ; push ; any ; push value to stack (literals)
  *  D  ; dnal ; letter ; push current dna of letter
- *  E  ; sens ; u8, letter ; add a sensor to node; sensor is picked using
+ *  E  ; sens ; u8, letter, u16 ; add a sensor to node; sensor is picked using
  *            ; u8 % sensors.length
  *  F  ; /   ; yet unallocated
  */
@@ -237,7 +237,12 @@ export const GrowthBytecode = {
         const s1 = stack.get(1)
         const sensor = SensorKeys[s1 & 3]
         const add = !!(((s1 >> 2) & 1) ^ ((s1 >> 3) & 1))
-        nodemap[letter].sensors[sensor] = add
+        if (!add) {
+          delete nodemap[letter].sensors[sensor]
+          break
+        }
+        const u16 = (stack.get(2) << 4) | stack.get(3)
+        nodemap[letter].sensors[sensor] = u16
         break
       }
 

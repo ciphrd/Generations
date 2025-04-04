@@ -15,8 +15,9 @@ export class Spring {
     this.damping = damping
     this.disp = vec2()
     this.bodyA.springs.push(this)
-    this.bodyB.springs.push(this)
+    // this.bodyB.springs.push(this)
 
+    this.prevContraction = 0
     this.contraction = 0
   }
 
@@ -30,6 +31,8 @@ export class Spring {
     }
 
     this.stiffness = this.initial.stiffness * (1 + this.contraction * 10)
+    this.prevContraction = this.contraction
+    this.contraction *= 0.9
     // this.contraction *= 0.8
 
     const { bodyA, bodyB, restLength, stiffness, damping, disp } = this

@@ -11,7 +11,7 @@ import { Operation } from "./cpu"
  * ; 02    ; pop      ; remove st0
  * ; 03    ; swp      ; swap st0 and st1
  * ; 04    ; rot      ; swap first and last stack values
- * ; 05    ; zero     ; push 0 to stack
+ * ; 05    ; push     ; push next 5 bits to stack (normalized)
  * ; 06    ; if_less  ; if st0 < st1, execute next instruction
  * ; 07    ; if_more  ; if st0 > st1, execute next instruction
  * ; 08    ; jmp      ; jump to closest matching complementary template
@@ -105,19 +105,20 @@ export const ActivationBytecode = {
         stack.pop()
         break
       }
-      // swp
+      // push
       case 0x03: {
+        pointer++
+        stack.push(instructions[pointer] / 31)
+        break
+      }
+      // swp
+      case 0x04: {
         stack.swap()
         break
       }
       // rot
-      case 0x04: {
-        stack.rot()
-        break
-      }
-      // zero
       case 0x05: {
-        stack.push(0)
+        stack.rot()
         break
       }
       // if_less
@@ -137,12 +138,12 @@ export const ActivationBytecode = {
       }
       // add
       case 0x09: {
-        stack.push(stack.pop() + stack.get(0))
+        stack.push(stack.get(0) + stack.get(1))
         break
       }
       // sub
       case 0x0a: {
-        stack.push(stack.pop() - stack.get(0))
+        stack.push(stack.get(0) - stack.get(1))
         break
       }
       // chem0-chem3
@@ -206,12 +207,12 @@ export const ActivationBytecode = {
       }
       // sin
       case 0x1a: {
-        stack.push(sin(stack.pop()))
+        stack.push(sin(stack.get(0)) * 0.5 + 0.5)
         break
       }
       // cos
       case 0x1b: {
-        stack.push(cos(stack.pop()))
+        stack.push(cos(stack.get(0)) * 0.5 + 0.5)
         break
       }
 

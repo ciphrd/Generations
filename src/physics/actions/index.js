@@ -1,4 +1,5 @@
 import { Operation } from "../../bytecode/cpu"
+import { arr } from "../../utils/array"
 import { ActuateAction } from "./actuate"
 import { BackwardAction } from "./backward"
 import { FireAction } from "./fire"
@@ -15,7 +16,11 @@ export const Actions = {
   },
   actuate: {
     module: ActuateAction,
-    merge: (operations) => operations.at(-1),
+    merge: (operations) =>
+      new Operation(
+        "actuate",
+        arr.sum(operations, (op) => op.values[1]) / operations.length
+      ),
   },
   fire: {
     module: FireAction,

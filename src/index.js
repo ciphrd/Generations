@@ -6,38 +6,31 @@
  */
 
 import Stats from "stats.js"
-import { Body, BodyFlags, body } from "./physics/body"
+import { BodyFlags, body } from "./physics/body"
 import { Spring } from "./physics/constraints/spring"
 import { CanvasRenderer } from "./renderer/canvas/renderer"
 import { vec2 } from "./utils/vec"
-import { LAR, larf } from "./physics/constraints/lar"
+import { larf } from "./physics/constraints/lar"
 import { Food } from "./physics/entities/food"
-import { clamp, fract, lerp } from "./utils/math"
+import { clamp, fract } from "./utils/math"
 import { Mouse } from "./interactions/mouse"
 import { GlobalRepulsion } from "./physics/constraints/repulsion"
-import { Node, nodeTupleId } from "./graph/node"
+import { nodeTupleId } from "./graph/node"
 import { rnd } from "./utils/rnd"
-import { Clusters } from "./physics/constraints/clusters"
 import { Collisions } from "./physics/constraints/collisions"
 import { SquareBounds } from "./physics/constraints/bounds"
 import { World } from "./physics/world"
 import { Solver } from "./physics/solver"
-import { behaviors, permutations, settings } from "./settings"
+import { settings } from "./settings"
 import { generateDNAs } from "./growth/dna"
 import { grow } from "./growth/growth"
 import { arr } from "./utils/array"
-import { getPermutations, getSeeds } from "./opti/seeds"
-import { Token } from "./network/token"
-import { VisionSensor } from "./sensors/vision"
-import { SmellSensor } from "./sensors/smell"
-import { ClockSensor } from "./sensors/clock"
-import { CPU } from "./bytecode/cpu"
-import { ActivationBytecode } from "./bytecode/activation"
-import { GrowthBytecode } from "./bytecode/growth"
+import { getSeeds } from "./opti/seeds"
 import { Sensors } from "./sensors"
 import { Graph } from "./ui/graph"
 import { NodeSelection } from "./interactions/selection"
 import { StackGraph } from "./ui/stacks"
+import { dnahex, logdna } from "./utils/string"
 
 Object.getOwnPropertyNames(Math).forEach((el) => (window[el] = Math[el]))
 window.TAU = 2 * PI
@@ -97,8 +90,14 @@ async function start() {
 
   const world = new World()
 
-  const nodes = grow(vec2(0.501, 0.502), dnas, 200)
-  arr.log(nodes, (n) => n.dna)
+  const nodes = grow(vec2(0.501, 0.502), dnas, 20)
+  const dnahexes = {}
+  nodes.forEach((node) => {
+    const hex = dnahex(node.dna)
+    if (!dnahexes[hex]) dnahexes[hex] = 0
+    dnahexes[hex]++
+  })
+  console.log(dnahexes)
 
   // const rule1 = "permut({{{x,y}}->{{x,y}}});"
   // const rule2 = "permut({{{x,y}}->{{x,y}}});"
@@ -137,11 +136,10 @@ async function start() {
     //   constraints.pre.push(new behaviors[name](bod, world))
     // }
 
-    for (const [name, enabled] of Object.entries(node.sensors)) {
-      if (!enabled) continue
+    for (const [name, value] of Object.entries(node.sensors)) {
       const Sens = Sensors[name]
       if (!Sens) continue
-      new Sens(bod, world)
+      new Sens(bod, world, value)
     }
   }
 
@@ -258,35 +256,39 @@ async function start() {
   const renderer = new CanvasRenderer([allBodies, constraints.pre, [selection]])
   Mouse.init(renderer.cvs)
 
+  const $graphs = document.createElement("div")
+  $graphs.id = "graphs"
+  document.body.appendChild($graphs)
+
   const $g1 = document.createElement("div")
-  document.body.appendChild($g1)
+  $graphs.appendChild($g1)
   $g1.style.width = "300px"
   $g1.style.height = "120px"
   const g1 = new Graph($g1, {
     def: [
       {
         name: "token-chem0",
-        color: "#ff0000",
+        color: "#00ff00",
         min: 0,
-        max: 4,
+        max: 1,
       },
       {
         name: "token-chem1",
-        color: "#ffff00",
+        color: "#ff00ff",
         min: 0,
-        max: 4,
+        max: 1,
       },
       {
         name: "token-chem2",
-        color: "#00ff00",
+        color: "#00ffff",
         min: 0,
-        max: 4,
+        max: 1,
       },
       {
         name: "token-chem3",
-        color: "#0000ff",
+        color: "#ff0000",
         min: 0,
-        max: 4,
+        max: 1,
       },
     ],
     get: () => {
@@ -298,43 +300,42 @@ async function start() {
     },
   })
 
-  // todo
-  // graph 2 doesn't work!
   const $g2 = document.createElement("div")
-  document.body.appendChild($g2)
+  $graphs.appendChild($g2)
   $g2.style.width = "300px"
   $g2.style.height = "120px"
   const g2 = new StackGraph($g2, {
     def: [
       {
-        name: "actuator chem 0",
-        color: `rgba(255,0,0,0.25)`,
-        min: 0,
-        max: 1,
-      },
-      {
-        name: "actuator chem 1",
-        color: `rgba(255,0,0,0.5)`,
-        min: 0,
-        max: 1,
-      },
-      {
-        name: "actuator chem 2",
-        color: `rgba(255,0,0,0.75)`,
-        min: 0,
-        max: 1,
-      },
-      {
-        name: "actuator chem 3",
+        name: "actuator",
         color: `rgba(255,0,0,1)`,
         min: 0,
         max: 1,
       },
     ],
     get: () => {
-      return selection.selected.operations.map((ops) =>
-        ops.some((op) => op.name === "actuate") ? 1 : 0
-      )
+      return [
+        selection.selected.operations.find((op) => op.name === "actuate")
+          ?.values[0] || 0,
+      ]
+    },
+  })
+
+  const $g3 = document.createElement("div")
+  $graphs.appendChild($g3)
+  $g3.style.width = "300px"
+  $g3.style.height = "120px"
+  const g3 = new Graph($g3, {
+    def: [
+      {
+        name: "friction",
+        color: "#ff0000",
+        min: 0,
+        max: 1,
+      },
+    ],
+    get: () => {
+      return [selection.selected.friction]
     },
   })
 
@@ -344,11 +345,13 @@ async function start() {
     solver.prepare(t, dt)
     g1.tick()
     g2.tick()
+    g3.tick()
     solver.solve(t, dt)
 
     renderer.render()
     g1.draw()
     g2.draw()
+    g3.draw()
   }
 
   let time,
@@ -358,6 +361,9 @@ async function start() {
     stats.begin()
     time = performance.now()
     dt = min(time - lastTime, 30) / 1000
+    //! enforce dt to ensure sim consistency
+    dt = 0.01
+
     lastTime = time
     tick(time, dt)
     requestAnimationFrame(loop)

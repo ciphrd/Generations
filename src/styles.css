@@ -1,2 +1,12 @@
 body {
+  display: flex;
+  margin: 1px;
+  gap: 1px;
+  background-color: #111111;
+}
+
+#graphs {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
 }

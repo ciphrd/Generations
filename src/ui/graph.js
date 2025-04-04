@@ -36,7 +36,7 @@ export class Graph {
 
   val(s, i) {
     const def = this.sampler.def[s]
-    return 0.08 + (0.86 * (this.samples[s][i] - def.min)) / (def.max - def.min)
+    return (this.samples[s][i] - def.min) / (def.max - def.min)
   }
 
   draw() {

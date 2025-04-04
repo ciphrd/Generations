@@ -50,10 +50,18 @@ export class CPU {
     this.operations = []
   }
 
-  run(context) {
+  run(context, ...initialStack) {
     this.ip = 0
     this.operations.length = 0
     this.stack.reset()
+
+    for (
+      let i = 0, di = 0;
+      i <= this.stack.values.length;
+      i++, di = i % initialStack.length
+    ) {
+      this.stack.push(initialStack[di])
+    }
 
     // console.log(...this.stack.values)
 

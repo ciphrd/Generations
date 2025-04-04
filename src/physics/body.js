@@ -41,7 +41,7 @@ export class Body {
     this.friction = friction
     this.receivedSignals = Array(4).fill(0)
     this.signals = Array(4).fill(0)
-    this.operations = Array(4).fill([])
+    this.operations = []
     this.netCycle = 0
     this.sensors = []
     this.actions = Object.fromEntries(
@@ -70,7 +70,10 @@ export class Body {
 
   receiveSignal(chemical, quantity) {
     if (quantity < 0.0001) return
-    this.receivedSignals[chemical] += quantity
+    this.receivedSignals[chemical] = min(
+      this.receivedSignals[chemical] + quantity,
+      1
+    )
   }
 
   sendSignal(chemical, quantity) {
@@ -83,7 +86,7 @@ export class Body {
   }
 
   processSignals(dt) {
-    this.operations.fill([])
+    this.operations.length = 0
 
     // Todos
     // - implement token merging
@@ -102,10 +105,12 @@ export class Body {
       if (quantity === 0) continue
 
       if (this.cpu) {
-        this.operations[i] = this.mergeOperations(this.cpu.run({ body: this }))
-        this.processOperations(this.operations[i], dt, quantity)
+        this.operations.push(...this.cpu.run({ body: this }, quantity))
+        if (window.selection.selected === this) {
+          console.log(this.cpu.instructions)
+          console.log(...this.cpu.stack.values)
+        }
       }
-
       //! NOTE
       // Here we can use a different model, where instead of sending each
       // chemical to a different node, all chemicals are sent to the same one.
@@ -114,9 +119,11 @@ export class Body {
       // if (quantity > 0.01) this.sendSignal(i, quantity)
     }
 
+    this.operations = this.mergeOperations(this.operations)
     if (window.selection.selected === this) {
-      console.log(this.operations)
+      console.log(...this.operations)
     }
+    this.processOperations(this.operations, dt, quantity)
   }
 
   mergeOperations(ops) {
