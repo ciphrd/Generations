@@ -36,6 +36,9 @@ export class Body {
     this.data = {
       clusterGroup: -1,
     }
+    this.initial = {
+      friction,
+    }
     this.springs = []
     this.modifiers = []
     this.friction = friction
@@ -106,10 +109,10 @@ export class Body {
 
       if (this.cpu) {
         this.operations.push(...this.cpu.run({ body: this }, quantity))
-        if (window.selection.selected === this) {
-          console.log(this.cpu.instructions)
-          console.log(...this.cpu.stack.values)
-        }
+        // if (window.selection.selected === this) {
+        //   console.log(this.cpu.instructions)
+        //   console.log(...this.cpu.stack.values)
+        // }
       }
       //! NOTE
       // Here we can use a different model, where instead of sending each
@@ -120,9 +123,9 @@ export class Body {
     }
 
     this.operations = this.mergeOperations(this.operations)
-    if (window.selection.selected === this) {
-      console.log(...this.operations)
-    }
+    // if (window.selection.selected === this) {
+    //   console.log(...this.operations)
+    // }
     this.processOperations(this.operations, dt, quantity)
   }
 
@@ -181,6 +184,7 @@ export class Body {
 
     this.vel.add(this.acc.mul(dt))
     this.vel.mul(1 - this.friction)
+
     let lenSq = this.vel.lenSq()
     if (lenSq > MAX_VELOCITY_SQ) {
       this.vel.mul(MAX_VELOCITY / sqrt(lenSq))
@@ -208,6 +212,8 @@ export class Body {
       const As = this.forwards.angle()
       this.forwards.fromAngle(lerp(As, angleForLerp(As, At), 0.05))
     }
+
+    this.friction = lerp(this.friction, this.initial.friction, 0.1)
   }
 
   clamp() {

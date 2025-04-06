@@ -90,7 +90,8 @@ async function start() {
 
   const world = new World()
 
-  const nodes = grow(vec2(0.501, 0.502), dnas, 20)
+  const nodes = grow(vec2(0.501, 0.502), dnas, 30)
+  console.log({ nodes })
   const dnahexes = {}
   nodes.forEach((node) => {
     const hex = dnahex(node.dna)
@@ -173,7 +174,7 @@ async function start() {
       if (edgemap[nodeTupleId([node, edge])]) continue
       edgemap[nodeTupleId([node, edge])] = true
       constraints.pre.push(
-        new Spring(bodies[i], bodies[nodes.indexOf(edge)], 0.002, 100, 15)
+        new Spring(bodies[i], bodies[nodes.indexOf(edge)], 0.02, 100, 5)
       )
     }
   }
@@ -231,7 +232,7 @@ async function start() {
   constraints.pre.push(
     new GlobalRepulsion(allBodies, {
       radius: 0.05,
-      strength: 0.0003,
+      strength: 0.0002,
     })
   )
   // constraints.pre.push(

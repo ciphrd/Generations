@@ -1,4 +1,4 @@
-import { clamp01, lerp } from "../../utils/math"
+import { clamp, clamp01, lerp, sign } from "../../utils/math"
 import { Action } from "./action"
 
 // todo as general simulation parameter
@@ -7,10 +7,11 @@ const MAX_STRENGTH = 1.0
 export class ActuateAction extends Action {
   constructor(body) {
     super(body)
-    this.strength = 0
+    this.strength = this.prevStrength = 0
     this.initial = {
       friction: body.friction,
     }
+    this.activation = 0
   }
 
   // todo
@@ -36,39 +37,45 @@ export class ActuateAction extends Action {
   // behaviours if using the values in the stack to drive the actions
 
   activate(dt, chemicalQuantity, values) {
-    if (this.body.id === 0) {
-      // console.log("actuate", values[0])
+    if (selection.selected === this.body) {
+      console.log("actuate", (values[0] - 0.5) * 2)
     }
-    const v = clamp01(values[0])
+
+    this.activation = 1
+    const v = clamp((values[0] - 0.5) * 2, -1, 1)
+
     for (const spring of this.body.springs) {
-      spring.contraction = v
-      // this.body.friction = 1
+      spring.contraction = lerp(spring.contraction, v, 1)
     }
   }
 
   apply(t, dt) {
-    let expand = false
-    if (this.body.springs.length > 0) {
-      if (
-        this.body.springs[0].contraction > 0.1 &&
-        this.body.springs[0].prevContraction > this.body.springs[0].contraction
-      ) {
-        expand = true
+    // todo
+    // maybe use `this.activation`for lerping the value (though might be a bit)
+    // weird when multiple actuate nodes control the body
+
+    let other, delta
+    if (this.activation > 0.001) {
+      for (const spring of this.body.springs) {
+        other = spring.other(this.body)
+        delta = spring.length - spring.prevLength
+
+        if (abs(delta) < 0.00001) continue
+
+        if (delta < 0) {
+          this.body.friction = lerp(this.body.friction, 0.98, 0.2)
+          other.friction = lerp(other.friction, other.initial.friction, 0.2)
+        } else {
+          this.body.friction = lerp(
+            this.body.friction,
+            this.body.initial.friction,
+            0.2
+          )
+          other.friction = lerp(other.friction, 0.98, 0.2)
+        }
       }
     }
 
-    let other
-    for (const spring of this.body.springs) {
-      other = spring.bodyA === this.body ? spring.bodyB : spring.bodyA
-      if (expand) {
-        this.body.friction = 1
-      } else {
-        this.body.friction = this.initial.friction
-      }
-    }
-
-    // if (!expand) {
-    //   this.body.friction = lerp(this.body.friction, this.initial.friction, 0.1)
-    // }
+    this.activation *= 0.98
   }
 }

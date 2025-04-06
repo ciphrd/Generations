@@ -3,7 +3,7 @@ import { vec2 } from "../utils/vec"
 import { Sensor } from "./sensor"
 
 const _v2a = vec2()
-const DIST = 0.05
+const DIST = 0.051
 
 export class SmellSensor extends Sensor {
   constructor(body, world) {

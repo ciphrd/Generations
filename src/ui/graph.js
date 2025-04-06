@@ -42,8 +42,7 @@ export class Graph {
   draw() {
     const def = this.sampler.def,
       N = def.length,
-      I = mod(this.idx - 1, this.cvs.width),
-      samples = [0, 0, 0, 0]
+      I = mod(this.idx - 1, this.cvs.width)
 
     if (I === 0) {
       this.ctx.fillStyle = "rgba(0, 0, 0, 0.6)"
@@ -55,19 +54,12 @@ export class Graph {
       this.ctx.strokeStyle = def[s].color
       this.ctx.beginPath()
 
-      for (let di = 0; di <= 3; di++) {
-        samples[di] = this.val(s, max(I - (3 - di), 0))
-      }
-
       this.ctx.moveTo(
         max(I - 1, 0) / this.cvs.width,
-        (samples[0] + samples[1] + samples[2]) * 0.333
+        this.val(s, max(0, I - 1))
       )
 
-      this.ctx.lineTo(
-        I / this.cvs.width,
-        (samples[1] + samples[2] + samples[3]) * 0.333
-      )
+      this.ctx.lineTo(I / this.cvs.width, this.val(s, I))
       this.ctx.stroke()
     }
 

@@ -1,5 +1,18 @@
 import { rnd } from "../utils/rnd"
 
+function generateActivation(seeds) {
+  const out = []
+  for (let i = 0, n = rnd.int(3, 10); i < n; i++) {
+    out.push(...rnd.el(seeds.activations))
+  }
+
+  // todo: improve ofc
+  for (let i = 0, n = rnd.int(10, 20); i < n; i++) {
+    out.splice(rnd.int(0, out.length - 1), 0, rnd.int(0, 32) & 0xff)
+  }
+  return out
+}
+
 function generateDNA(seeds) {
   console.log({ seeds })
   const growth = []
@@ -17,20 +30,15 @@ function generateDNA(seeds) {
     // }
   }
 
-  const activation = []
-  for (let i = 0, n = rnd.int(3, 10); i < n; i++) {
-    activation.push(...rnd.el(seeds.activations))
-  }
-  // todo: improve ofc
-  for (let i = 0, n = rnd.int(10, 20); i < n; i++) {
-    activation.splice(
-      rnd.int(0, activation.length - 1),
-      0,
-      rnd.int(0, 32) & 0xff
-    )
-  }
+  const activations = Array(4)
+    .fill(0)
+    .map(() => generateActivation(seeds))
 
-  return [new Uint8Array(growth), new Uint8Array(activation)]
+  // improve this mapping for a more robust sol
+  return [
+    new Uint8Array(growth),
+    ...activations.map((act) => new Uint8Array(act)),
+  ]
 }
 
 export function generateDNAs(seeds) {

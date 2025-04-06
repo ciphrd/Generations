@@ -22,3 +22,7 @@ export function angleForLerp(source, target) {
   if (abs(source - (target - TAU)) < abs(source - target)) return target - TAU
   return target
 }
+
+export function sign(x) {
+  return x < 0 ? -1 : x > 0 ? 1 : 0
+}

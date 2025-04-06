@@ -15,25 +15,32 @@ export class Spring {
     this.damping = damping
     this.disp = vec2()
     this.bodyA.springs.push(this)
-    // this.bodyB.springs.push(this)
+    this.bodyB.springs.push(this)
 
     this.prevContraction = 0
     this.contraction = 0
+
+    this.prevLength = restLength
+    this.length = restLength
   }
 
   contract(strength) {
-    this.contraction = mod(this.contraction + strength * 0.3, 1)
+    this.contraction = min(this.contraction + strength, 1)
+  }
+
+  expand(strength) {
+    this.contraction = max(this.contraction - strength, -1)
+  }
+
+  other(body) {
+    return this.bodyA === body ? this.bodyB : this.bodyA
   }
 
   apply(t, dt) {
-    if (this.bodyA.id === 0) {
-      // console.log(this.contraction)
-    }
-
-    this.stiffness = this.initial.stiffness * (1 + this.contraction * 10)
     this.prevContraction = this.contraction
-    this.contraction *= 0.9
-    // this.contraction *= 0.8
+    this.restLength = this.initial.restLength * (1 - this.contraction)
+    this.stiffness = this.initial.stiffness * (1 + abs(this.contraction) * 2)
+    // this.contraction *= 0.9
 
     const { bodyA, bodyB, restLength, stiffness, damping, disp } = this
     disp.copy(bodyB.pos).sub(bodyA.pos)
@@ -55,5 +62,8 @@ export class Spring {
     const F = dir.mul(totalForce)
     bodyA.acc.sub(F)
     bodyB.acc.add(F)
+
+    this.prevLength = this.length
+    this.length = D
   }
 }
