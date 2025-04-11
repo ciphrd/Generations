@@ -56,6 +56,8 @@ document.body.appendChild(stats.dom)
 //     on the sensor node — could result in simple follow dynamics
 // [ ] Parametrize clock (& more generally sensors), bounded by allowing for
 //     variation during growth
+// [ ] Support deleting entities from the world, and have everything handling
+//     it elegantly (ex: eating food should make the food disappear)
 
 // todo
 // - square rules
@@ -110,12 +112,13 @@ async function start() {
   // const nodes = [n1, n2]
 
   const bodies = []
+  const allBodies = []
   const constraints = { pre: [], post: [] }
 
   //
   //
   for (const node of nodes) {
-    const bod = body(node.pos, settings.radius, 0.01)
+    const bod = body(world, node.pos, settings.radius, 0.01)
     bod.data = node.data
     bod.addFlag(BodyFlags.ORGANISM)
     bod.setDNA(node.dna)
@@ -147,9 +150,10 @@ async function start() {
   const food = []
   for (let i = 0; i < 100; i++) {
     food.push(
-      new Food(vec2($fx.rand(), $fx.rand()), (fd) =>
-        food.splice(food.indexOf(fd), 1)
-      )
+      new Food(world, vec2($fx.rand(), $fx.rand()), (fd) => {
+        console.log("eaten !!!")
+        allBodies.splice(allBodies.indexOf(fd), 1)
+      })
     )
   }
 
@@ -217,6 +221,7 @@ async function start() {
   for (let i = 0; i < NB; i++) {
     for (let j = 0; j < NB; j++) {
       const bod = body(
+        world,
         vec2((i + 0.5) / NB, (j + 0.5) / NB),
         settings.radius * 0.4,
         0.02
@@ -226,7 +231,7 @@ async function start() {
     }
   }
 
-  const allBodies = [...food, ...testBodies, ...bodies]
+  allBodies.push(...food, ...testBodies, ...bodies)
 
   // constraints.pre.push(new Clusters(bodies, clusterRules, settings.clusters.nb))
   constraints.pre.push(
@@ -313,10 +318,18 @@ async function start() {
         min: 0,
         max: 1,
       },
+      {
+        name: "grab",
+        color: `rgba(0,255,0,1)`,
+        min: 0,
+        max: 1,
+      },
     ],
     get: () => {
       return [
         selection.selected.operations.find((op) => op.name === "actuate")
+          ?.values[0] || 0,
+        selection.selected.operations.find((op) => op.name === "grab")
           ?.values[0] || 0,
       ]
     },
@@ -340,6 +353,55 @@ async function start() {
     },
   })
 
+  function bytecodeViewer(body) {
+    let current
+
+    const $root = document.createElement("div")
+    $root.classList.add("bytecode")
+    $root.innerHTML = "<span>stack:</span>"
+    $graphs.appendChild($root)
+
+    const $stack = document.createElement("div")
+    $stack.classList.add("stack")
+    $root.appendChild($stack)
+
+    const $bytecode = document.createElement("div")
+    $bytecode.classList.add("code")
+    $root.appendChild($bytecode)
+
+    const $words = document.createElement("div")
+    $words.classList.add("words")
+    $root.appendChild($words)
+
+    const refresh = () => {
+      current = selection.selected
+      $bytecode.innerHTML = ""
+      $words.innerHTML = ""
+
+      for (const ins of current.cpu.instructions) {
+        const $el = document.createElement("div")
+        $el.innerHTML = ins.toString(16).padStart(2, "0")
+        $bytecode.appendChild($el)
+
+        const $el2 = document.createElement("div")
+        $el2.innerHTML = current.cpu.bytecode.mnemonics[ins]
+        $words.appendChild($el2)
+      }
+    }
+    refresh()
+
+    return {
+      draw() {
+        if (selection.selected !== current) refresh()
+
+        $stack.innerHTML = current.cpu.stack.values
+          .map((v) => `<span>${v.toFixed(1)}</span>`)
+          .join("")
+      },
+    }
+  }
+  const viewer = bytecodeViewer()
+
   function tick(t, dt) {
     world.update()
 
@@ -353,19 +415,18 @@ async function start() {
     g1.draw()
     g2.draw()
     g3.draw()
+    viewer.draw()
   }
 
-  let time,
-    lastTime = performance.now(),
-    dt
+  let time = 0,
+    lastTime = 0,
+    dt = 0.0083333
   function loop() {
     stats.begin()
-    time = performance.now()
-    dt = min(time - lastTime, 30) / 1000
     //! enforce dt to ensure sim consistency
-    dt = 0.01
-
     lastTime = time
+    time = lastTime + 8.3333
+
     tick(time, dt)
     requestAnimationFrame(loop)
     stats.end()

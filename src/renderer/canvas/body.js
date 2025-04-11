@@ -8,6 +8,21 @@ export const chemicalStyle = [
 ]
 
 export function renderBody(ctx, body) {
+  if (body.actions.eat.eated) {
+    ctx.fillStyle = `rgba(0,0,255,${0.3})`
+    ctx.beginPath()
+    ctx.arc(body.pos.x, body.pos.y, 0.04, 0, TAU)
+    ctx.fill()
+  }
+  if (body.actions.eat.eated) {
+    ctx.lineWidth = 0.001
+    ctx.strokeStyle = "rgb(0,0,255)"
+    ctx.beginPath()
+    ctx.moveTo(body.pos.x, body.pos.y)
+    ctx.lineTo(body.actions.eat.eated.pos.x, body.actions.eat.eated.pos.y)
+    ctx.stroke()
+  }
+
   ctx.fillStyle = body.color
   ctx.beginPath()
   ctx.arc(body.pos.x, body.pos.y, body.radius, 0, 2 * PI)

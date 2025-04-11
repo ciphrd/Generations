@@ -3,10 +3,40 @@ body {
   margin: 1px;
   gap: 1px;
   background-color: #111111;
+  font-family: monospace;
 }
 
 #graphs {
   display: flex;
   flex-direction: column;
   gap: 1px;
+}
+
+.bytecode {
+  width: 300px;
+  background-color: #161616;
+  color: #aaa;
+  padding: 0.3em;
+  box-sizing: border-box;
+}
+
+.code {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.3em;
+}
+
+.words {
+  max-height: 313px;
+  overflow-y: auto;
+  margin-top: 0.5em;
+}
+
+.stack {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 1em;
+  gap: 0.7em;
+  font-size: 0.8em;
 }

@@ -1,3 +1,5 @@
+import { Actions } from "../physics/actions"
+
 class Stack {
   constructor() {
     this.values = Array(10).fill(0)
@@ -35,7 +37,7 @@ class Stack {
 export class Operation {
   constructor(name, values) {
     this.name = name
-    this.values = values
+    this.values = values.map((val) => Actions[name]?.normalize(val) || val)
   }
 }
 

@@ -62,6 +62,7 @@ const sortedLetters = "xyzwstuv"
 const letters = "xyzwstuv".split("")
 
 export const GrowthBytecode = {
+  mnemonics: set,
   parser: (bytecode) => {
     const instructions = []
     for (const byte of bytecode) {

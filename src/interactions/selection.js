@@ -1,7 +1,7 @@
 import { BodyFlags } from "../physics/body"
 import { Mouse } from "./mouse"
 
-const SELECTION_RADIUS = 0.05
+const SELECTION_RADIUS = 1
 
 export class NodeSelection {
   constructor(world) {

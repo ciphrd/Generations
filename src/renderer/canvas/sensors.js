@@ -15,7 +15,7 @@ export function renderSensors(ctx, sensors) {
 function renderVisionSensor(ctx, sensor) {
   ctx.save()
   ctx.lineWidth = 0.001
-  ctx.strokeStyle = `rgba(${chemicalStyle[0].color},0.7)`
+  ctx.strokeStyle = `rgba(${chemicalStyle[0].color},0.4)`
   ctx.translate(sensor.body.pos.x, sensor.body.pos.y)
   ctx.beginPath()
   ctx.moveTo(0, 0)

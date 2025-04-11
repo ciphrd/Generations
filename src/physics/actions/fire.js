@@ -5,7 +5,7 @@ export class FireAction extends Action {
     super(body)
   }
 
-  activate(dt, chemicalQuantity, values) {
+  activate(t, dt, chemicalQuantity, values) {
     if (values[1] > 0) {
       // todo
       // explore: maybe it's not possible to fire more than what's been received

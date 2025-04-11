@@ -36,6 +36,15 @@ import { Operation } from "./cpu"
  * dup: duplicate st0
  */
 
+/**
+ * Potential new instructions:
+ * ===========================
+ * - ALL (apply the next operation on the whole stack, moving the pointer on
+ *   each element)
+ * - shift (shift + PI/2) using   cos(acos(x)+PI/2)
+ * -
+ */
+
 const set = [
   "nop_0",
   "nop_1",
@@ -69,6 +78,7 @@ const set = [
 ]
 
 export const ActivationBytecode = {
+  mnemonics: set,
   parser: (bytecode) => {
     const instructions = []
     let bitIndex = 0

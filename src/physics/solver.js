@@ -22,7 +22,7 @@ export class Solver {
 
   solve(t, dt) {
     for (const body of this.world.organisms) {
-      body.processSignals(dt)
+      body.processSignals(t, dt)
     }
     for (const body of this.world.bodies) {
       body.update(t, dt)

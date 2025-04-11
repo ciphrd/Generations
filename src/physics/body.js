@@ -23,7 +23,8 @@ const MAX_VELOCITY = 0.2
 const MAX_VELOCITY_SQ = MAX_VELOCITY ** 2
 
 export class Body {
-  constructor(pos, radius, friction = 0, color = "#00ff00") {
+  constructor(world, pos, radius, friction = 0, color = "#00ff00") {
+    this.world = world
     this.id = c++
     this.energy = 1
     this.radius = radius
@@ -58,6 +59,10 @@ export class Body {
 
   setDNA(dna) {
     this.dna = dna
+    this.cpus = []
+    for (let i = 0; i < 4; i++) {
+      this.cpus[i] = new CPU(dna[i + 1], ActivationBytecode)
+    }
     this.cpu = new CPU(dna[1], ActivationBytecode)
   }
 
@@ -88,7 +93,7 @@ export class Body {
     other.receiveSignal(chemical, quantity)
   }
 
-  processSignals(dt) {
+  processSignals(t, dt) {
     this.operations.length = 0
 
     // Todos
@@ -126,7 +131,7 @@ export class Body {
     // if (window.selection.selected === this) {
     //   console.log(...this.operations)
     // }
-    this.processOperations(this.operations, dt, quantity)
+    this.processOperations(this.operations, t, dt, quantity)
   }
 
   mergeOperations(ops) {
@@ -154,26 +159,17 @@ export class Body {
     // return merged
   }
 
-  processOperations(ops, dt, chemicalQuantity) {
-    if (this.id === 0) {
-      // todo
-      // apply operations
-      // it's not a trigger but rather a "keep doing this action" effect
-      // ie grab while "grab" action is emitted
-      // maybe we have some Actuators who can receive "signals" and handle
-      // specific body behaviours
-      // grab is gonna be a bit tricky...
-      // console.log(ops)
-    }
-
+  processOperations(ops, t, dt, chemicalQuantity) {
     for (const op of ops) {
       if (
         // op.name === "forward" ||
         // op.name === "backward" ||
         op.name === "actuate" ||
-        op.name === "fire"
+        op.name === "fire" ||
+        op.name === "grab" ||
+        op.name === "eat"
       ) {
-        this.actions[op.name].activate(dt, chemicalQuantity, op.values)
+        this.actions[op.name].activate(t, dt, chemicalQuantity, op.values)
       }
     }
   }
@@ -214,6 +210,10 @@ export class Body {
     }
 
     this.friction = lerp(this.friction, this.initial.friction, 0.1)
+
+    if (isNaN(this.pos.x) || isNaN(this.pos.y)) {
+      debugger
+    }
   }
 
   clamp() {
@@ -247,6 +247,6 @@ export class Body {
   }
 }
 
-export function body(pos, rad, col) {
-  return new Body(pos, rad, col)
+export function body(world, pos, rad, col) {
+  return new Body(world, pos, rad, col)
 }
