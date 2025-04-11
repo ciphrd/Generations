@@ -11,7 +11,10 @@ export class ActuateAction extends Action {
     this.initial = {
       friction: body.friction,
     }
-    this.activation = 0
+    this.activation = -Infinity
+
+    this.value = 0
+    this.prevValue = 0
   }
 
   // todo
@@ -36,17 +39,20 @@ export class ActuateAction extends Action {
   // then using specific math functions we can actually encode pretty unique
   // behaviours if using the values in the stack to drive the actions
 
-  activate(dt, chemicalQuantity, values) {
+  activate(t, dt, chemicalQuantity, values) {
     if (selection.selected === this.body) {
-      console.log("actuate", (values[0] - 0.5) * 2)
+      // console.log("actuate", (values[0] - 0.5) * 2)
     }
 
-    this.activation = 1
+    this.activation = t
     const v = clamp((values[0] - 0.5) * 2, -1, 1)
 
     for (const spring of this.body.springs) {
       spring.contraction = lerp(spring.contraction, v, 1)
     }
+
+    this.prevValue = this.value
+    this.value = v
   }
 
   apply(t, dt) {
@@ -54,28 +60,33 @@ export class ActuateAction extends Action {
     // maybe use `this.activation`for lerping the value (though might be a bit)
     // weird when multiple actuate nodes control the body
 
+    // motor seeds to test
+    // - oosndjmYaEiCrkmEq92QnS6odMnBry9CKK4nL2MCm1gYMj9uJfX
+    // - oo6vdhwCQyuE8h7xwn3hte5TAGZKSEupqaXUsyLLBWWYaFVEDJg
+    // - oofAUnsDcAgncGqHzfh9kkjYpniVR1bAWysrrfYU4C5C3WfNSLU
+    // - oohZWc1r9s8mFyrfduhZyUXMJDDRcom7dXh1vA3VRaNBwwebjiE
+
     let other, delta
-    if (this.activation > 0.001) {
+    if (t - this.activation < 1_000) {
       for (const spring of this.body.springs) {
         other = spring.other(this.body)
-        delta = spring.length - spring.prevLength
+        delta = this.value - this.prevValue
+        // delta = spring.length - spring.prevLength
 
         if (abs(delta) < 0.00001) continue
 
-        if (delta < 0) {
-          this.body.friction = lerp(this.body.friction, 0.98, 0.2)
-          other.friction = lerp(other.friction, other.initial.friction, 0.2)
+        if (delta > 0) {
+          this.body.friction = lerp(this.body.friction, 0.98, 0.4)
+          other.friction = lerp(other.friction, other.initial.friction, 0.4)
         } else {
           this.body.friction = lerp(
             this.body.friction,
             this.body.initial.friction,
-            0.2
+            0.4
           )
-          other.friction = lerp(other.friction, 0.98, 0.2)
+          other.friction = lerp(other.friction, 0.98, 0.4)
         }
       }
     }
-
-    this.activation *= 0.98
   }
 }
