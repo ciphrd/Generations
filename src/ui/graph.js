@@ -49,8 +49,8 @@ export class Graph {
       this.ctx.fillRect(0, 0, this.cvs.width, this.cvs.height)
     }
 
-    this.ctx.lineWidth = this.texelSize
     for (let s = 0; s < N; s++) {
+      this.ctx.lineWidth = this.texelSize * (def[s].lineWidth || 1)
       this.ctx.strokeStyle = def[s].color
       this.ctx.beginPath()
 

@@ -266,6 +266,25 @@ async function start() {
   $graphs.id = "graphs"
   document.body.appendChild($graphs)
 
+  const $g0 = document.createElement("div")
+  $graphs.appendChild($g0)
+  $g0.style.width = "300px"
+  $g0.style.height = "120px"
+  const g0 = new Graph($g0, {
+    def: [
+      { name: "axis", color: "#777", min: 0, max: 2 },
+      { name: "energy", color: "#0000ff", lineWidth: 4, min: 0, max: 2 },
+      { name: "selected energy", color: "#0000ff", min: 0, max: 2 },
+    ],
+    get: () => {
+      return [
+        1,
+        arr.sum(bodies, (b) => b.energy) / bodies.length,
+        selection.selected.energy,
+      ]
+    },
+  })
+
   const $g1 = document.createElement("div")
   $graphs.appendChild($g1)
   $g1.style.width = "300px"
@@ -406,12 +425,14 @@ async function start() {
     world.update()
 
     solver.prepare(t, dt)
+    g0.tick()
     g1.tick()
     g2.tick()
     g3.tick()
     solver.solve(t, dt)
 
     renderer.render()
+    g0.draw()
     g1.draw()
     g2.draw()
     g3.draw()

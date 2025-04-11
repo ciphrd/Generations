@@ -170,6 +170,7 @@ export class Body {
         op.name === "eat"
       ) {
         this.actions[op.name].activate(t, dt, chemicalQuantity, op.values)
+        this.energy -= 0.002
       }
     }
   }
@@ -196,12 +197,19 @@ export class Body {
     if (this.springs.length === 0) {
       this.forwards.copy(this.vel).normalize()
     } else {
-      let other
+      let other, dE
       _v2b.set(0, 0)
       for (const spring of this.springs) {
         other = spring.bodyA === this ? spring.bodyB : spring.bodyA
         _v2a.copy(other.pos).sub(this.pos)
         _v2b.add(_v2a)
+
+        dE = this.energy - other.energy
+        if (dE > 0) {
+          dE *= 0.1
+          this.energy -= dE
+          other.energy += dE
+        }
       }
       _v2b.div(-this.springs.length).normalize()
       const At = _v2b.angle()
