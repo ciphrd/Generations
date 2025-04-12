@@ -7,27 +7,23 @@ import { BodyFlags } from "../body"
  * Uses space hash partionning to reduce amount of computations.
  */
 export class GlobalRepulsion {
-  constructor(bodies, settings) {
+  constructor(world, settings) {
+    this.world = world
     this.v2 = vec2()
     this.settings = settings
-    this.updateBodies(bodies)
-  }
-
-  updateBodies(bodies) {
-    this.filtered = bodies.filter((body) =>
-      body.hasFlag(BodyFlags.REPELLING | BodyFlags.REPELLED)
-    )
-    this.part = new SpacePartition(this.filtered, this.settings.radius)
   }
 
   apply(t, dt, computeCache) {
     const { radius, strength } = this.settings
-    this.part.update()
+    const part = this.world.partition(
+      radius,
+      BodyFlags.REPELLING | BodyFlags.REPELLED
+    )
 
     let _
-    for (const a of this.filtered) {
+    for (const a of part.bodies) {
       if (!a.hasFlag(BodyFlags.REPELLED)) continue
-      for (const b of this.part.neighbours(a)) {
+      for (const b of part.neighbours(a)) {
         if (a === b || !b.hasFlag(BodyFlags.REPELLING)) continue
         _ = computeCache.get(a, b)
         if (_.d < radius && _.d > 0.003) {

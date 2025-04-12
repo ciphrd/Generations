@@ -5,23 +5,28 @@ import { vec2 } from "../../utils/vec"
 const _v2a = vec2()
 
 export class Collisions {
-  constructor(bodies) {
-    this.update(bodies)
+  constructor(world) {
+    this.world = world
+    this.world.emitter.on("bodies:update", () => {
+      this.#update()
+    })
+    this.#update()
   }
 
-  update(bodies) {
-    this.bodies = bodies
-    this.maxRad = bodies.reduce((acc, val) => max(acc, val.radius), 0)
-    this.part = new SpacePartition(this.bodies, this.maxRad)
+  #update() {
+    this.maxRad = this.world.bodies.reduce(
+      (acc, val) => max(acc, val.radius),
+      0
+    )
   }
 
   apply(t, dt, computeCache) {
     const done = {}
-    this.part.update()
+    const part = this.world.partition(this.maxRad)
 
     let e, s, imp, id, _
-    for (const a of this.bodies) {
-      for (const b of this.part.neighbours(a)) {
+    for (const a of this.world.bodies) {
+      for (const b of part.neighbours(a)) {
         id = twoBodiesId(a, b)
         if (a === b || done[id]) continue
         _ = computeCache.get(a, b)

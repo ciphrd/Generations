@@ -152,10 +152,15 @@ async function start() {
     food.push(
       new Food(world, vec2($fx.rand(), $fx.rand()), (fd) => {
         console.log("eaten !!!")
-        allBodies.splice(allBodies.indexOf(fd), 1)
+        world.removeBody(fd)
       })
     )
   }
+
+  // todo.
+  // - deleted food should be properly removed
+  // - all parts of the app are responding well to the update to partitions
+  //   & world bodies  updates
 
   // for (let i = 0; i < min(5, bodies.length); i++) {
   //   const idx = rnd.int(0, bodies.length)
@@ -235,7 +240,7 @@ async function start() {
 
   // constraints.pre.push(new Clusters(bodies, clusterRules, settings.clusters.nb))
   constraints.pre.push(
-    new GlobalRepulsion(allBodies, {
+    new GlobalRepulsion(world, {
       radius: 0.05,
       strength: 0.0002,
     })
@@ -250,11 +255,15 @@ async function start() {
   //     }
   //   )
   // )
-  constraints.post.push(new Collisions(allBodies))
-  constraints.post.push(new SquareBounds(allBodies))
 
   world.setBodies(allBodies)
-  const solver = new Solver(world, constraints)
+
+  constraints.post.push(new Collisions(world))
+  constraints.post.push(new SquareBounds(world))
+
+  world.setConstraints(constraints)
+
+  const solver = new Solver(world)
 
   const selection = new NodeSelection(world)
   window.selection = selection

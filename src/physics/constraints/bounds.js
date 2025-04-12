@@ -1,10 +1,10 @@
 export class SquareBounds {
-  constructor(bodies) {
-    this.bodies = bodies
+  constructor(world) {
+    this.world = world
   }
 
   apply() {
-    for (const body of this.bodies) {
+    for (const body of this.world.bodies) {
       body.clamp()
     }
   }

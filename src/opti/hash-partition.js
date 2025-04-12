@@ -5,11 +5,20 @@ export class SpacePartition {
    * A target radius is used to compute the most optimal cell resolution for the
    * partitions.
    */
-  constructor(bodies, targetRadius) {
+  constructor(world, flags, targetRadius) {
+    this.world = world
+    this.flags = flags
     this.divs = floor(1 / targetRadius)
     this.space = [...Array(this.divs ** 2)].map((_) => [])
     this.hashes = new Cache()
-    this.bodies = bodies
+    this.updateBodies()
+    this.world.emitter.on("bodies:updated", () => this.updateBodies())
+  }
+
+  updateBodies() {
+    this.bodies = this.world.bodies.filter(
+      (body) => !this.flags || body.hasFlag(this.flags)
+    )
   }
 
   update() {
