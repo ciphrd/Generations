@@ -6,10 +6,14 @@ export class FireAction extends Action {
   }
 
   activate(t, dt, chemicalQuantity, values) {
-    if (values[1] > 0) {
+    if (selection.selected === this.body) {
+      console.log("fire !!")
+      console.log({ chemicalQuantity, values, signals: [...this.body.signals] })
+    }
+    if (chemicalQuantity > 0.001) {
       // todo
       // explore: maybe it's not possible to fire more than what's been received
-      this.body.sendSignal(values[0], values[1] * 0.96)
+      this.body.sendSignal(values[0], chemicalQuantity * 0.96)
     }
   }
 

@@ -10,6 +10,7 @@ export class Node {
     this.setDNA(dna)
     this.data = {
       clusterGroup: -1,
+      organism: -1,
     }
     this.sensors = {}
   }

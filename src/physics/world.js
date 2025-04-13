@@ -21,6 +21,10 @@ export class World {
     this.organisms = bodies.filter((body) => body.hasFlag(BodyFlags.ORGANISM))
   }
 
+  addConstraint(stage, constraint) {
+    this.constraints[stage].push(constraint)
+  }
+
   removeConstraint(stage, constraint) {
     arr.del(this.constraints[stage], constraint)
   }
@@ -30,7 +34,7 @@ export class World {
     this.emitter.emit("bodies:updated")
   }
 
-  partition(radius, flags) {
+  partition(radius, flags = 0) {
     const K = (flags * 10 + radius).toString()
     if (!this.partitions[K]) {
       this.partitions[K] = new SpacePartition(this, flags, radius)

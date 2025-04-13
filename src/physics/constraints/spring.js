@@ -1,8 +1,9 @@
+import { arr } from "../../utils/array"
 import { mod } from "../../utils/math"
 import { vec2 } from "../../utils/vec"
 
 export class Spring {
-  constructor(bodyA, bodyB, restLength, stiffness, damping) {
+  constructor(bodyA, bodyB, restLength, stiffness, damping, color = "255,0,0") {
     this.bodyA = bodyA
     this.bodyB = bodyB
     this.initial = {
@@ -22,6 +23,8 @@ export class Spring {
 
     this.prevLength = restLength
     this.length = restLength
+
+    this.color = color
   }
 
   contract(strength) {
@@ -65,5 +68,10 @@ export class Spring {
 
     this.prevLength = this.length
     this.length = D
+  }
+
+  delete() {
+    arr.del(this.bodyA.springs, this)
+    arr.del(this.bodyB.springs, this)
   }
 }

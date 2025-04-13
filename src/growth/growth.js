@@ -1,4 +1,5 @@
 import { Node } from "../graph/node"
+import { arr } from "../utils/array"
 import { rnd } from "../utils/rnd"
 
 export function grow(center, dnas, maxNodes) {
@@ -28,5 +29,32 @@ export function grow(center, dnas, maxNodes) {
     }
   }
 
+  return labelOrganisms(nodes)
+}
+
+function labelOrganisms(nodes) {
+  function traverse(node) {
+    for (const n of nodeEdges(node, nodes)) {
+      // if node is already labelled, it's been traversed already
+      if (n.data.organism >= 0) continue
+      n.data.organism = node.data.organism
+      traverse(n)
+    }
+  }
+  let id = 0
+  for (const node of nodes) {
+    if (node.data.organism >= 0) continue
+    node.data.organism = id++
+    traverse(node)
+  }
   return nodes
+}
+
+function nodeEdges(node, nodes) {
+  const linked = []
+  for (const n of nodes) {
+    if (n === node) continue
+    if (n.edges.includes(node)) linked.push(n)
+  }
+  return arr.dedup([...node.edges, ...linked])
 }

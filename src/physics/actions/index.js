@@ -3,6 +3,7 @@ import { arr } from "../../utils/array"
 import { clamp01 } from "../../utils/math"
 import { ActuateAction } from "./actuate"
 import { BackwardAction } from "./backward"
+import { BindAction } from "./bind"
 import { EatAction } from "./eat"
 import { FireAction } from "./fire"
 import { ForwardAction } from "./forward"
@@ -44,6 +45,11 @@ export const Actions = {
   },
   eat: {
     module: EatAction,
+    merge: (operations) => operations.at(-1),
+    normalize: (v) => v,
+  },
+  bind: {
+    module: BindAction,
     merge: (operations) => operations.at(-1),
     normalize: (v) => v,
   },

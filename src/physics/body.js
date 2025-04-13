@@ -36,6 +36,7 @@ export class Body {
     this.flags = 0
     this.data = {
       clusterGroup: -1,
+      organism: -1,
     }
     this.initial = {
       friction,
@@ -113,7 +114,7 @@ export class Body {
       if (quantity === 0) continue
 
       if (this.cpu) {
-        this.operations.push(...this.cpu.run({ body: this }, quantity))
+        this.operations.push(...this.cpus[i].run({ body: this }, quantity))
         // if (window.selection.selected === this) {
         //   console.log(this.cpu.instructions)
         //   console.log(...this.cpu.stack.values)
@@ -162,11 +163,12 @@ export class Body {
   processOperations(ops, t, dt, chemicalQuantity) {
     for (const op of ops) {
       if (
-        // op.name === "forward" ||
-        // op.name === "backward" ||
+        op.name === "forward" ||
+        op.name === "backward" ||
         op.name === "actuate" ||
         op.name === "fire" ||
         op.name === "grab" ||
+        op.name === "bind" ||
         op.name === "eat"
       ) {
         this.actions[op.name].activate(t, dt, chemicalQuantity, op.values)

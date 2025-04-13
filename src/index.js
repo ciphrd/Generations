@@ -1,3 +1,8 @@
+// Nice seeds
+// - ooQRoiuLxppVjdXLT8qeTsHq29QiXm9cFDxRKktHxKNHidHTKhD
+// - ooqiGoeSg1AEZcVjrH7mTf1P3f3e5cbgE3DJYsKd1M33Yd9j1UA
+//   grabber on food proximity + eater (nice working organism)
+
 /**
  * Project inspirations
  * - Stephen Worlfram Physics project
@@ -158,9 +163,8 @@ async function start() {
   }
 
   // todo.
-  // - deleted food should be properly removed
   // - all parts of the app are responding well to the update to partitions
-  //   & world bodies  updates
+  //   & world bodies updates
 
   // for (let i = 0; i < min(5, bodies.length); i++) {
   //   const idx = rnd.int(0, bodies.length)
@@ -352,12 +356,28 @@ async function start() {
         min: 0,
         max: 1,
       },
+      {
+        name: "forward",
+        color: `rgba(255,255,0,1)`,
+        min: 0,
+        max: 1,
+      },
+      {
+        name: "backward",
+        color: `rgba(0,255,255,1)`,
+        min: 0,
+        max: 1,
+      },
     ],
     get: () => {
       return [
         selection.selected.operations.find((op) => op.name === "actuate")
           ?.values[0] || 0,
         selection.selected.operations.find((op) => op.name === "grab")
+          ?.values[0] || 0,
+        selection.selected.operations.find((op) => op.name === "forward")
+          ?.values[0] || 0,
+        selection.selected.operations.find((op) => op.name === "backward")
           ?.values[0] || 0,
       ]
     },
@@ -422,7 +442,9 @@ async function start() {
       draw() {
         if (selection.selected !== current) refresh()
 
-        $stack.innerHTML = current.cpu.stack.values
+        $stack.innerHTML = `<div>ID: ${current.id}</div>`
+        $stack.innerHTML += `<div>ORGANISM: ${current.data.organism}</div>`
+        $stack.innerHTML += current.cpu.stack.values
           .map((v) => `<span>${v.toFixed(1)}</span>`)
           .join("")
       },
