@@ -1,4 +1,5 @@
 import { clamp, clamp01, lerp, sign } from "../../utils/math"
+import { BodyFlags } from "../body"
 import { Spring } from "../constraints/spring"
 import { Action } from "./action"
 
@@ -15,7 +16,7 @@ export class BindAction extends Action {
     this.strength = values[0]
     if (this.spring || this.strength <= 0) return
 
-    const part = this.body.world.partition(BIND_DIST)
+    const part = this.body.world.partition(BIND_DIST, BodyFlags.BINDABLE)
     let closest,
       closestD = Infinity,
       d

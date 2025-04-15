@@ -59,34 +59,31 @@ export class ActuateAction extends Action {
     // todo
     // maybe use `this.activation`for lerping the value (though might be a bit)
     // weird when multiple actuate nodes control the body
-
     // motor seeds to test
     // - oosndjmYaEiCrkmEq92QnS6odMnBry9CKK4nL2MCm1gYMj9uJfX
     // - oo6vdhwCQyuE8h7xwn3hte5TAGZKSEupqaXUsyLLBWWYaFVEDJg
     // - oofAUnsDcAgncGqHzfh9kkjYpniVR1bAWysrrfYU4C5C3WfNSLU
     // - oohZWc1r9s8mFyrfduhZyUXMJDDRcom7dXh1vA3VRaNBwwebjiE
-
-    let other, delta
-    if (t - this.activation < 1_000) {
-      for (const spring of this.body.springs) {
-        other = spring.other(this.body)
-        delta = this.value - this.prevValue
-        // delta = spring.length - spring.prevLength
-
-        if (abs(delta) < 0.00001) continue
-
-        if (delta > 0) {
-          this.body.friction = lerp(this.body.friction, 0.98, 0.4)
-          other.friction = lerp(other.friction, other.initial.friction, 0.4)
-        } else {
-          this.body.friction = lerp(
-            this.body.friction,
-            this.body.initial.friction,
-            0.4
-          )
-          other.friction = lerp(other.friction, 0.98, 0.4)
-        }
-      }
-    }
+    // let other, delta
+    // if (t - this.activation < 1_000) {
+    //   for (const spring of this.body.springs) {
+    //     other = spring.other(this.body)
+    //     delta = this.value - this.prevValue
+    //     // delta = spring.length - spring.prevLength
+    //     if (abs(delta) < 0.00001) continue
+    //     if (delta > 0) {
+    //       this.body.friction = lerp(this.body.friction, 0.98, 0.4)
+    //       other.friction = lerp(other.friction, other.initial.friction, 0.4)
+    //     } else {
+    //       this.body.friction = lerp(
+    //         this.body.friction,
+    //         this.body.initial.friction,
+    //         0.4
+    //       )
+    //       other.friction = lerp(other.friction, 0.98, 0.4)
+    //     }
+    //   }
+    // }
+    //
   }
 }

@@ -8,12 +8,12 @@ export class GrabAction extends Action {
   }
 
   activate(t, dt, chemicalQuantity, values) {
-    this.strength = clamp(values[0], 0.01, 0.9)
+    this.strength = clamp(values[0], 0.01, 0.8)
   }
 
   apply(t, dt) {
     this.strength *= 0.97
     if (this.strength < 0.00001) return
-    this.body.friction = lerp(this.body.initial.friction, this.strength, 1)
+    this.body.friction = lerp(this.body.initial.friction, this.strength, 0.5)
   }
 }

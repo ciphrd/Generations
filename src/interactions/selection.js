@@ -28,4 +28,8 @@ export class NodeSelection {
       this.selected = this.hovered
     })
   }
+
+  is(body) {
+    return this.selected === body
+  }
 }

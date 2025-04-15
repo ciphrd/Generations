@@ -9,9 +9,9 @@ export const chemicalStyle = [
 
 export function renderBody(ctx, body) {
   if (body.actions.eat.eated) {
-    ctx.fillStyle = `rgba(0,0,255,${0.3})`
+    ctx.fillStyle = `rgba(0,0,255,${0.15})`
     ctx.beginPath()
-    ctx.arc(body.pos.x, body.pos.y, 0.04, 0, TAU)
+    ctx.arc(body.pos.x, body.pos.y, 0.02, 0, TAU)
     ctx.fill()
   }
   if (body.actions.eat.eated) {

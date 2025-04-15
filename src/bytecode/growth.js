@@ -76,8 +76,10 @@ export const GrowthBytecode = {
     const operations = []
     const instruction = instructions[pointer]
 
+    // todo remove
     console.log({ instructions, pointer, instruction })
     console.log(`Executing instruction: ${set[instruction]}`)
+    console.log({ stack: [...stack.values] })
 
     switch (instruction) {
       // nop
@@ -242,7 +244,11 @@ export const GrowthBytecode = {
           delete nodemap[letter].sensors[sensor]
           break
         }
-        const u16 = (stack.get(2) << 4) | stack.get(3)
+        let u16 = 0
+        for (let i = 0; i < 4; i++) {
+          u16 <<= 4
+          u16 |= stack.get(2 + i)
+        }
         nodemap[letter].sensors[sensor] = u16
         break
       }

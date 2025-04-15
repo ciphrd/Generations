@@ -42,8 +42,11 @@ export class Spring {
   apply(t, dt) {
     this.prevContraction = this.contraction
     this.restLength = this.initial.restLength * (1 - this.contraction)
-    this.stiffness = this.initial.stiffness * (1 + abs(this.contraction) * 2)
-    // this.contraction *= 0.9
+    // todo.
+    // the factor of change could be genetically driven here
+    this.stiffness = this.initial.stiffness * (1 + abs(this.contraction) * 1.5)
+    // same for the contraction back to rest
+    this.contraction *= 0.98
 
     const { bodyA, bodyB, restLength, stiffness, damping, disp } = this
     disp.copy(bodyB.pos).sub(bodyA.pos)

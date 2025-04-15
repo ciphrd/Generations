@@ -35,8 +35,9 @@ class Stack {
 }
 
 export class Operation {
-  constructor(name, values) {
+  constructor(name, chemicalStrength, values) {
     this.name = name
+    this.chemicalStrength = chemicalStrength
     this.values = values.map((val) => Actions[name]?.normalize(val) || val)
   }
 }
@@ -57,12 +58,14 @@ export class CPU {
     this.operations.length = 0
     this.stack.reset()
 
-    for (
-      let i = 0, di = 0;
-      i <= this.stack.values.length;
-      i++, di = i % initialStack.length
-    ) {
-      this.stack.push(initialStack[di])
+    if (initialStack.length > 0) {
+      for (
+        let i = 0, di = 0;
+        i <= this.stack.values.length;
+        i++, di = i % initialStack.length
+      ) {
+        this.stack.push(initialStack[di])
+      }
     }
 
     // console.log(...this.stack.values)

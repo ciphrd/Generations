@@ -6,7 +6,7 @@ export class Food extends Body {
     this.nutrients = 1
     this.onEaten = onEaten
     this.baseRad = this.radius
-    this.addFlag(BodyFlags.FOOD)
+    this.addFlag(BodyFlags.FOOD | BodyFlags.BINDABLE)
   }
 
   eat(quantity = 0.01) {

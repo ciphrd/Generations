@@ -103,6 +103,9 @@ export const ActivationBytecode = {
     const instruction = instructions[pointer]
     // console.log(`Executing instruction: ${set[instruction]}`)
 
+    const op = (type, values = [stack.get(0)]) =>
+      new Operation(type, context.chemicalStrength, values)
+
     switch (instruction) {
       // nop_0
       case 0x00:
@@ -169,15 +172,7 @@ export const ActivationBytecode = {
       case 0x10:
       case 0x11:
       case 0x12: {
-        // todo how do we handle these ? since we want to potentially
-        // merge all the fired of a same chemical as a single Token
-        // also to avoid exponential growth there should only be 1 Token
-        // emission / tick
-        // todo maybe one token can hold multiple chemicals ? that seems
-        // elegant ?
-        operations.push(
-          new Operation("fire", [instruction - 0x0f, stack.get(0)])
-        )
+        operations.push(op("fire", [instruction - 0x0f, stack.get(0)]))
         break
       }
       // reng
@@ -187,32 +182,32 @@ export const ActivationBytecode = {
       }
       // fw
       case 0x14: {
-        operations.push(new Operation("forward", [stack.get(0)]))
+        operations.push(op("forward"))
         break
       }
       // bw
       case 0x15: {
-        operations.push(new Operation("backward", [stack.get(0)]))
+        operations.push(op("backward"))
         break
       }
       // act
       case 0x16: {
-        operations.push(new Operation("actuate", [stack.get(0)]))
+        operations.push(op("actuate"))
         break
       }
       // bnd
       case 0x17: {
-        operations.push(new Operation("bind", [stack.get(0)]))
+        operations.push(op("bind"))
         break
       }
       // grb
       case 0x18: {
-        operations.push(new Operation("grab", [stack.get(0)]))
+        operations.push(op("grab"))
         break
       }
       // eat
       case 0x19: {
-        operations.push(new Operation("eat", [stack.get(0)]))
+        operations.push(op("eat"))
         break
       }
       // sin

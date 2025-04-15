@@ -10,7 +10,7 @@ export class BackwardAction extends Action {
   }
 
   activate(t, dt, chemicalQuantity, values) {
-    this.strength = values[0] * 5
+    this.strength = values[0] * 2
   }
 
   apply(t, dt) {

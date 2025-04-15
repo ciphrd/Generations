@@ -17,6 +17,7 @@ export const BodyFlags = {
   FOOD: 2 ** 3,
   FOOD_SEEKER: 2 ** 4,
   ORGANISM: 2 ** 5,
+  BINDABLE: 2 ** 6,
 }
 
 const MAX_VELOCITY = 0.2
@@ -80,7 +81,7 @@ export class Body {
   receiveSignal(chemical, quantity) {
     if (quantity < 0.0001) return
     this.receivedSignals[chemical] = min(
-      this.receivedSignals[chemical] + quantity,
+      max(this.receivedSignals[chemical], quantity),
       1
     )
   }
@@ -88,10 +89,14 @@ export class Body {
   sendSignal(chemical, quantity) {
     if (this.springs.length === 0) return
 
-    this.netCycle = (this.netCycle + 1) % this.springs.length
-    const spring = this.springs[this.netCycle]
-    const other = spring.bodyA === this ? spring.bodyB : spring.bodyA
-    other.receiveSignal(chemical, quantity)
+    // this.netCycle = (this.netCycle + 1) % this.springs.length
+    // const spring = this.springs[this.netCycle]
+    // const other = spring.bodyA === this ? spring.bodyB : spring.bodyA
+    // other.receiveSignal(chemical, quantity)
+
+    for (const spring of this.springs) {
+      spring.other(this).receiveSignal(chemical, quantity)
+    }
   }
 
   processSignals(t, dt) {
@@ -114,7 +119,12 @@ export class Body {
       if (quantity === 0) continue
 
       if (this.cpu) {
-        this.operations.push(...this.cpus[i].run({ body: this }, quantity))
+        this.operations.push(
+          ...this.cpus[i].run(
+            { body: this, chemicalStrength: quantity },
+            quantity
+          )
+        )
         // if (window.selection.selected === this) {
         //   console.log(this.cpu.instructions)
         //   console.log(...this.cpu.stack.values)
@@ -132,7 +142,13 @@ export class Body {
     // if (window.selection.selected === this) {
     //   console.log(...this.operations)
     // }
-    this.processOperations(this.operations, t, dt, quantity)
+
+    // todo.
+    // Here operations are processed with the same chemical quanity, even if
+    // generated from different signals. the quantity is updated in the for
+    // loop above, that's wrong.
+    // ! this prevents proper signal transmission atm
+    this.processOperations(this.operations, t, dt)
   }
 
   mergeOperations(ops) {
@@ -160,7 +176,7 @@ export class Body {
     // return merged
   }
 
-  processOperations(ops, t, dt, chemicalQuantity) {
+  processOperations(ops, t, dt) {
     for (const op of ops) {
       if (
         op.name === "forward" ||
@@ -171,8 +187,8 @@ export class Body {
         op.name === "bind" ||
         op.name === "eat"
       ) {
-        this.actions[op.name].activate(t, dt, chemicalQuantity, op.values)
-        this.energy -= 0.002
+        this.actions[op.name].activate(t, dt, op.chemicalStrength, op.values)
+        this.energy -= 0.00001
       }
     }
   }

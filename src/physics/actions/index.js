@@ -32,7 +32,7 @@ export const Actions = {
   fire: {
     module: FireAction,
     merge: (operations) => operations.at(-1),
-    normalize: (v) => clamp01(v),
+    normalize: (v) => v,
   },
   grab: {
     module: GrabAction,

@@ -1,7 +1,7 @@
 import { BodyFlags } from "../body"
 import { Action } from "./action"
 
-const EAT_DIST = 0.04
+const EAT_DIST = 0.02
 
 export class EatAction extends Action {
   constructor(body) {
@@ -27,9 +27,9 @@ export class EatAction extends Action {
 
   apply(t, dt) {
     if (this.eating) {
-      const amount = 0.1 * dt
+      const amount = 0.06 * dt
       this.eating.eat(amount)
-      this.body.energy += amount * 15
+      this.body.energy += amount * 10
     }
     this.eated = this.eating
     this.eating = null

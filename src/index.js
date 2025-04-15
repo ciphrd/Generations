@@ -2,6 +2,12 @@
 // - ooQRoiuLxppVjdXLT8qeTsHq29QiXm9cFDxRKktHxKNHidHTKhD
 // - ooqiGoeSg1AEZcVjrH7mTf1P3f3e5cbgE3DJYsKd1M33Yd9j1UA
 //   grabber on food proximity + eater (nice working organism)
+// - ooNDYieq77FrGqYJDLNoMe7K3eWJDq9YH7Dt4CJPr75LTiobaHR
+//   (200)
+//   nice food graber
+// - ooEMgLs6iWBVTgtkaZ8Fpy4kBVM1LLx669GBFFf5PUcwBbe5TS4
+//   devour
+// -
 
 /**
  * Project inspirations
@@ -36,6 +42,7 @@ import { Graph } from "./ui/graph"
 import { NodeSelection } from "./interactions/selection"
 import { StackGraph } from "./ui/stacks"
 import { dnahex, logdna } from "./utils/string"
+import { Clusters } from "./physics/constraints/clusters"
 
 Object.getOwnPropertyNames(Math).forEach((el) => (window[el] = Math[el]))
 window.TAU = 2 * PI
@@ -97,7 +104,7 @@ async function start() {
 
   const world = new World()
 
-  const nodes = grow(vec2(0.501, 0.502), dnas, 30)
+  const nodes = grow(vec2(0.501, 0.502), dnas, 200)
   console.log({ nodes })
   const dnahexes = {}
   nodes.forEach((node) => {
@@ -125,7 +132,7 @@ async function start() {
   for (const node of nodes) {
     const bod = body(world, node.pos, settings.radius, 0.01)
     bod.data = node.data
-    bod.addFlag(BodyFlags.ORGANISM)
+    bod.addFlag(BodyFlags.ORGANISM | BodyFlags.BINDABLE)
     bod.setDNA(node.dna)
     bodies.push(bod)
 
@@ -406,12 +413,19 @@ async function start() {
 
     const $root = document.createElement("div")
     $root.classList.add("bytecode")
-    $root.innerHTML = "<span>stack:</span>"
     $graphs.appendChild($root)
+
+    const $details = document.createElement("div")
+    $details.classList.add("details")
+    $root.appendChild($details)
+
+    const $stackWrapper = document.createElement("div")
+    $stackWrapper.innerHTML = "<span>stack:</span>"
+    $root.appendChild($stackWrapper)
 
     const $stack = document.createElement("div")
     $stack.classList.add("stack")
-    $root.appendChild($stack)
+    $stackWrapper.appendChild($stack)
 
     const $bytecode = document.createElement("div")
     $bytecode.classList.add("code")
@@ -425,6 +439,9 @@ async function start() {
       current = selection.selected
       $bytecode.innerHTML = ""
       $words.innerHTML = ""
+
+      $details.innerHTML = `<span>ID:</span> <span>${current.id}</span>`
+      $details.innerHTML += `<span>ORGANISM:</span> <span>${current.data.organism}</span>`
 
       for (const ins of current.cpu.instructions) {
         const $el = document.createElement("div")
@@ -442,9 +459,7 @@ async function start() {
       draw() {
         if (selection.selected !== current) refresh()
 
-        $stack.innerHTML = `<div>ID: ${current.id}</div>`
-        $stack.innerHTML += `<div>ORGANISM: ${current.data.organism}</div>`
-        $stack.innerHTML += current.cpu.stack.values
+        $stack.innerHTML = current.cpu.stack.values
           .map((v) => `<span>${v.toFixed(1)}</span>`)
           .join("")
       },
