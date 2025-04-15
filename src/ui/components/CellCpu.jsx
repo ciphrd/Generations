@@ -12,7 +12,7 @@ export function CellCpu({ cpu }) {
       ticker.emitter.on("tick", () => {
         if (!$stack.current) return
         $stack.current.innerText = cpu.stack.values
-          .map((v) => v.toFixed(1))
+          .map((v) => v.toFixed(2))
           .join(" ")
       }),
     []
@@ -38,12 +38,11 @@ export function CellCpu({ cpu }) {
         </div>
       </div>
 
-      <div>
+      <div className="graphs">
         <div>Measures</div>
         <GraphOperations operations={() => cpu.operations} />
 
         <Graph
-          type="stack"
           def={useMemo(
             () => [
               {

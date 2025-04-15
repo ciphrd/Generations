@@ -23,7 +23,7 @@ export function Cell() {
   )
 
   return (
-    <div>
+    <div className="panel">
       <div className="details">
         <span>ID</span>
         <span>{selected.id}</span>
@@ -33,7 +33,7 @@ export function Cell() {
         <span ref={$energy}></span>
       </div>
 
-      <div>
+      <div className="graphs">
         <Graph
           def={useMemo(
             () => [
@@ -84,7 +84,7 @@ export function Cell() {
       </div>
 
       <div>
-        <Tabs tabs={["CPU 1", "CPU 2", "CPU 3", "CPU 4"]}>
+        <Tabs tabs={["Act.1", "Act.2", "Act.3", "Act.4"]}>
           {a4.map((i) => (
             <CellCpu cpu={selected.cpus[i]} />
           ))}

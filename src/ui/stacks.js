@@ -19,7 +19,7 @@ export class StackGraph extends Graph {
     this.ctx.lineWidth = this.texelSize
     for (let s = 0; s < N; s++) {
       this.ctx.fillStyle = def[s].color
-      v = this.samples[s][I]
+      v = this.samples[s][I] + this.noise[s][I]
       this.ctx.fillRect(
         I / this.cvs.width,
         stack / m,

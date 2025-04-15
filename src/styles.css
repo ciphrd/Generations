@@ -2,7 +2,7 @@ body {
   margin: 1px;
   background-color: #323c3c;
   color: #c5d1b8;
-  text-shadow: 0px 2px 0px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
   font-family: Arial, Helvetica, sans-serif;
 }
 
@@ -41,12 +41,13 @@ main {
   margin-top: 0.5em;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5em;
+  gap: 0.3em;
   font-size: 0.8em;
 }
 
 .stack {
   font-size: 0.8em;
+  word-spacing: 0.05em;
 }
 
 .details {
@@ -72,30 +73,101 @@ button {
 .tabs-wrapper {
   display: flex;
   flex-direction: column;
+  gap: 1px;
 }
 
 .tabs {
   display: flex;
   flex-direction: row;
+  flex-grow: 0;
+  align-items: end;
+  gap: 1px;
+  margin-left: 2px;
 }
 
 .tab {
   background: #323c3c;
-  border: 1px solid #1b2020;
+  border: none;
   border-bottom: none;
-  box-shadow: inset 0px 1px 0px 0px #384343;
+  box-shadow: inset 0px 1px 0px 0px rgba(255, 255, 255, 0.1),
+    0px 0px 0px 1px rgba(0, 0, 0, 0.3);
+  padding: 5px 7px 3px;
+  border-top-right-radius: 1px;
+  border-top-left-radius: 1px;
+}
+
+.tab.selected {
+  background: #057334;
+  z-index: 10;
+  padding-bottom: 4px;
+  font-weight: bold;
 }
 
 .tabs-content {
-  border: 1px solid #1b2020;
-  box-shadow: inset 0px 0px 0px 1px rgba(255, 255, 255, 0.1),
-    0px 0px 0px 1px rgba(0, 0, 0, 0.6);
+  box-shadow: inset 0px 1px 0px 0px rgba(255, 255, 255, 0.1),
+    0px 0px 0px 1px rgba(0, 0, 0, 0.3);
   border-radius: 1px;
   padding: 5px;
 }
 
 /*******/
+.graphs {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 .graph-wrapper {
-  width: 300px;
+  width: 100%;
   height: 120px;
+  position: relative;
+  outline: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.graph-wrapper canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.graph-wrapper .hover {
+  z-index: 2;
+}
+
+.graph-values {
+  position: absolute;
+  top: 100%;
+  z-index: 100;
+  display: none;
+  pointer-events: none;
+  flex-direction: column;
+  font-size: 0.6em;
+  background-color: #202727;
+  word-break: keep-all;
+  overflow-wrap: normal;
+  white-space: nowrap;
+  padding: 2px;
+}
+
+.graph-values.show {
+  display: flex;
+}
+
+.graph-values .value {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.3em;
+}
+
+.graph-values .value .color {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+}
+
+/*******/
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
