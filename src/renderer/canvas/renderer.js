@@ -39,7 +39,7 @@ export class CanvasRenderer {
     this.ctx.scale(1, -1)
     this.ctx.translate(-0.5, -0.5)
     this.texelSize = 1 / this.cvs.width
-    document.body.appendChild(this.cvs)
+    document.body.querySelector("#sim").appendChild(this.cvs)
   }
   render() {
     this.ctx.fillStyle = "black"

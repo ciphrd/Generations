@@ -42,6 +42,31 @@ export class Operation {
   }
 }
 
+export function mergeOperations(ops) {
+  let op
+  const map = {}
+  for (let i = ops.length - 1; i >= 0; i--) {
+    op = ops[i]
+    if (map[op.name]) continue
+    map[op.name] = op
+  }
+  return Object.values(map)
+
+  //! this strategy uses the merge method of the action; not sure if required
+  //! TBD
+  // const grouped = {}
+  // for (const op of ops) {
+  //   if (!grouped[op.name]) grouped[op.name] = []
+  //   grouped[op.name].push(op)
+  // }
+  // const names = Object.keys(grouped)
+  // const merged = Array(names.length)
+  // for (let i = 0; i < names.length; i++) {
+  //   merged[i] = Actions[names[i]].merge(grouped[names[i]])
+  // }
+  // return merged
+}
+
 const MAX_CYCLES = 128
 
 export class CPU {
@@ -50,14 +75,22 @@ export class CPU {
     this.ip = 0
     this.instructions = bytecode.parser(new Uint8Array(instructions))
     this.stack = new Stack()
+    this.lastOperations = []
     this.operations = []
+    this.lastExecuted = 0
+    this.executed = 0
+  }
+
+  prepare() {
+    this.ip = 0
+    this.lastExecuted = this.executed
+    this.executed = 0
+    this.lastOperations = this.operations
+    this.operations = []
+    this.stack.reset()
   }
 
   run(context, ...initialStack) {
-    this.ip = 0
-    this.operations.length = 0
-    this.stack.reset()
-
     if (initialStack.length > 0) {
       for (
         let i = 0, di = 0;
@@ -68,22 +101,14 @@ export class CPU {
       }
     }
 
-    // console.log(...this.stack.values)
-
     let i = 0
     while (true) {
-      // console.log("------------------------")
-      if (++i > 128) {
-        // console.log("MAX ITERATIONS !!")
-        break
-      }
+      if (++i > 128) break
       if (!this.next(context)) break
-
-      // console.log(...this.stack.values)
-      // console.log(...this.operations)
     }
-    // console.log(...this.stack.values)
-    // console.log(...this.operations)
+    this.executed = i
+
+    this.operations = mergeOperations(this.operations)
     return this.operations
   }
 

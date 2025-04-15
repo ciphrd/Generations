@@ -16,6 +16,12 @@
     "fxhash": "latest"
   },
   "dependencies": {
+    "@babel/core": "^7.26.10",
+    "@babel/preset-react": "^7.26.3",
+    "babel-loader": "^10.0.0",
+    "classnames": "^2.5.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
     "sharp": "^0.33.5",
     "stats.js": "^0.17.0"
   }

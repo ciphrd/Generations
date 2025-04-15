@@ -2,7 +2,7 @@ import { vec2 } from "../utils/vec"
 import { angleForLerp, clamp, lerp, mod } from "../utils/math"
 import { Token } from "../network/token"
 import { rnd } from "../utils/rnd"
-import { CPU } from "../bytecode/cpu"
+import { CPU, mergeOperations } from "../bytecode/cpu"
 import { ActivationBytecode } from "../bytecode/activation"
 import { Actions } from "./actions"
 
@@ -102,52 +102,21 @@ export class Body {
   processSignals(t, dt) {
     this.operations.length = 0
 
-    // Todos
-    // - implement token merging
-    // - maybe we don't send token class anymore and just a tuple
-    //   [chemical, quantity] for memory efficiency (which is passed as fn
-    //   parameter, simply)
-
-    // if (this.id === 1) {
-    //   console.log("----------------")
-    //   console.log([...this.signals])
-    // }
-
     let quantity
     for (let i = 0; i < 4; i++) {
       quantity = this.signals[i]
+      this.cpus[i].prepare()
       if (quantity === 0) continue
 
-      if (this.cpu) {
-        this.operations.push(
-          ...this.cpus[i].run(
-            { body: this, chemicalStrength: quantity },
-            quantity
-          )
+      this.operations.push(
+        ...this.cpus[i].run(
+          { body: this, chemicalStrength: quantity },
+          quantity
         )
-        // if (window.selection.selected === this) {
-        //   console.log(this.cpu.instructions)
-        //   console.log(...this.cpu.stack.values)
-        // }
-      }
-      //! NOTE
-      // Here we can use a different model, where instead of sending each
-      // chemical to a different node, all chemicals are sent to the same one.
-
-      // quantity *= 0.95
-      // if (quantity > 0.01) this.sendSignal(i, quantity)
+      )
     }
 
-    this.operations = this.mergeOperations(this.operations)
-    // if (window.selection.selected === this) {
-    //   console.log(...this.operations)
-    // }
-
-    // todo.
-    // Here operations are processed with the same chemical quanity, even if
-    // generated from different signals. the quantity is updated in the for
-    // loop above, that's wrong.
-    // ! this prevents proper signal transmission atm
+    this.operations = mergeOperations(this.operations)
     this.processOperations(this.operations, t, dt)
   }
 

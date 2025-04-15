@@ -1,0 +1,48 @@
+import { useMemo } from "react"
+import { Graph } from "./Graph.jsx"
+
+export function GraphOperations({ operations }) {
+  return (
+    <Graph
+      type="stack"
+      def={useMemo(
+        () => [
+          {
+            name: "actuator",
+            color: `rgba(255,0,0,1)`,
+            min: 0,
+            max: 1,
+          },
+          {
+            name: "grab",
+            color: `rgba(0,255,0,1)`,
+            min: 0,
+            max: 1,
+          },
+          {
+            name: "forward",
+            color: `rgba(255,255,0,1)`,
+            min: 0,
+            max: 1,
+          },
+          {
+            name: "backward",
+            color: `rgba(0,255,255,1)`,
+            min: 0,
+            max: 1,
+          },
+        ],
+        []
+      )}
+      get={() => {
+        const ops = operations()
+        return [
+          ops.find((op) => op.name === "actuate")?.values[0] || 0,
+          ops.find((op) => op.name === "grab")?.values[0] || 0,
+          ops.find((op) => op.name === "forward")?.values[0] || 0,
+          ops.find((op) => op.name === "backward")?.values[0] || 0,
+        ]
+      }}
+    />
+  )
+}

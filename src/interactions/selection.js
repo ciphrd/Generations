@@ -1,4 +1,5 @@
 import { BodyFlags } from "../physics/body"
+import { emitter } from "../utils/emitter"
 import { Mouse } from "./mouse"
 
 const SELECTION_RADIUS = 1
@@ -8,6 +9,7 @@ export class NodeSelection {
     this.world = world
     this.hovered = null
     this.selected = world.organisms[0]
+    this.emitter = emitter()
 
     const part = world.partition(SELECTION_RADIUS, BodyFlags.ORGANISM)
     Mouse.on("move", () => {
@@ -25,7 +27,10 @@ export class NodeSelection {
     })
 
     Mouse.on("down", () => {
-      this.selected = this.hovered
+      if (this.selected !== this.hovered) {
+        this.selected = this.hovered
+        this.emitter.emit("change")
+      }
     })
   }
 

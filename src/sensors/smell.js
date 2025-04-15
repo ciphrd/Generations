@@ -18,7 +18,7 @@ export class SmellSensor extends Sensor {
 
     for (const food of part.posNeighbours(body.pos)) {
       if (body.pos.distSq(food.pos) < (this.dist + food.radius) ** 2) {
-        body.receiveSignal(1, 1)
+        // body.receiveSignal(1, 1)
         break
       }
     }

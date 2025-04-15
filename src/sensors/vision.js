@@ -20,13 +20,13 @@ export class VisionSensor extends Sensor {
     // take N samples along the sensor to check for food
     _v2a.copy(body.pos)
     _v2b.copy(body.forwards).mul(this.length).div(N_SAMPLES)
-    l1: for (let i = 0; i < N_SAMPLES; i++) {
+    for (let i = 0; i < N_SAMPLES; i++) {
       _v2a.add(_v2b)
       if (_v2a.outside()) break
       for (const food of part.posNeighbours(_v2a)) {
         if (_v2a.distSq(food.pos) < food.radius ** 2) {
           body.receiveSignal(0, 1)
-          break l1
+          return
         }
       }
     }

@@ -21,6 +21,7 @@ export function grow(center, dnas, maxNodes) {
       j--
     ) {
       node = rnd.el(nodes)
+      node.cpu.prepare()
       node.cpu.run({
         node,
         nodes,

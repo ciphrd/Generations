@@ -1,9 +1,8 @@
 import { mod } from "../utils/math"
 
 export class Graph {
-  constructor($wrapper, sampler) {
+  constructor($wrapper, ticker, sampler) {
     const bounds = $wrapper.getBoundingClientRect()
-
     this.$wrapper = $wrapper
     this.cvs = document.createElement("canvas")
     this.cvs.width = bounds.width * devicePixelRatio
@@ -24,6 +23,11 @@ export class Graph {
     this.sampler = sampler
     this.samples = sampler.def.map((_) => Array(this.cvs.width))
     this.idx = 0
+
+    this.off = ticker.emitter.on("tick", () => {
+      this.tick()
+      this.draw()
+    })
   }
 
   tick() {
@@ -40,6 +44,15 @@ export class Graph {
   }
 
   draw() {
+    this.drawData()
+
+    this.ctx.fillStyle = "black"
+    this.ctx.fillRect(this.idx / this.cvs.width, 0, this.texelSize, 1)
+    this.ctx.fillStyle = "#ff0000"
+    this.ctx.fillRect((this.idx + 1) / this.cvs.width, 0, this.texelSize, 1)
+  }
+
+  drawData() {
     const def = this.sampler.def,
       N = def.length,
       I = mod(this.idx - 1, this.cvs.width)
@@ -62,10 +75,10 @@ export class Graph {
       this.ctx.lineTo(I / this.cvs.width, this.val(s, I))
       this.ctx.stroke()
     }
+  }
 
-    this.ctx.fillStyle = "black"
-    this.ctx.fillRect(this.idx / this.cvs.width, 0, this.texelSize, 1)
-    this.ctx.fillStyle = "#ff0000"
-    this.ctx.fillRect((this.idx + 1) / this.cvs.width, 0, this.texelSize, 1)
+  release() {
+    this.off()
+    this.cvs.remove()
   }
 }

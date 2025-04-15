@@ -1,9 +1,24 @@
 body {
-  display: flex;
   margin: 1px;
+  background-color: #323c3c;
+  color: #c5d1b8;
+  text-shadow: 0px 2px 0px rgba(0, 0, 0, 0.3);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+#root {
+  display: flex;
   gap: 1px;
-  background-color: #111111;
-  font-family: monospace;
+}
+
+canvas {
+  display: block;
+}
+
+main {
+  width: 312px;
+  box-sizing: border-box;
+  height: 100%;
 }
 
 #graphs {
@@ -13,18 +28,11 @@ body {
 }
 
 .bytecode {
-  width: 300px;
-  background-color: #161616;
-  color: #aaa;
-  padding: 0.3em;
-  box-sizing: border-box;
-}
-
-.code {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   gap: 0.3em;
+  font-size: 0.8em;
 }
 
 .words {
@@ -34,23 +42,60 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5em;
+  font-size: 0.8em;
 }
 
 .stack {
-  display: flex;
-  flex-direction: row;
-  margin-bottom: 1em;
-  gap: 0.7em;
   font-size: 0.8em;
 }
 
 .details {
   display: grid;
   grid-template-columns: max-content max-content;
-  gap: 0.2em 0.5em;
+  gap: 0.2em 0.8em;
   margin-bottom: 0.5em;
 }
 
 .details > *:nth-child(2n + 1) {
   font-weight: bold;
+}
+
+/*******/
+button {
+  color: inherit;
+  font-family: inherit;
+  text-shadow: inherit;
+}
+
+/*******/
+
+.tabs-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.tabs {
+  display: flex;
+  flex-direction: row;
+}
+
+.tab {
+  background: #323c3c;
+  border: 1px solid #1b2020;
+  border-bottom: none;
+  box-shadow: inset 0px 1px 0px 0px #384343;
+}
+
+.tabs-content {
+  border: 1px solid #1b2020;
+  box-shadow: inset 0px 0px 0px 1px rgba(255, 255, 255, 0.1),
+    0px 0px 0px 1px rgba(0, 0, 0, 0.6);
+  border-radius: 1px;
+  padding: 5px;
+}
+
+/*******/
+.graph-wrapper {
+  width: 300px;
+  height: 120px;
 }

@@ -3,7 +3,7 @@ import { mod } from "../utils/math"
 import { Graph } from "./graph"
 
 export class StackGraph extends Graph {
-  draw() {
+  drawData() {
     const def = this.sampler.def,
       N = def.length,
       I = mod(this.idx - 1, this.cvs.width),
@@ -28,10 +28,5 @@ export class StackGraph extends Graph {
       )
       stack += v
     }
-
-    this.ctx.fillStyle = "black"
-    this.ctx.fillRect(this.idx / this.cvs.width, 0, this.texelSize, 1)
-    this.ctx.fillStyle = "#ff0000"
-    this.ctx.fillRect((this.idx + 1) / this.cvs.width, 0, this.texelSize, 1)
   }
 }

@@ -43,6 +43,8 @@ import { NodeSelection } from "./interactions/selection"
 import { StackGraph } from "./ui/stacks"
 import { dnahex, logdna } from "./utils/string"
 import { Clusters } from "./physics/constraints/clusters"
+import { ui } from "./ui/index.jsx"
+import { Ticker } from "./engine/ticker"
 
 Object.getOwnPropertyNames(Math).forEach((el) => (window[el] = Math[el]))
 window.TAU = 2 * PI
@@ -104,7 +106,7 @@ async function start() {
 
   const world = new World()
 
-  const nodes = grow(vec2(0.501, 0.502), dnas, 200)
+  const nodes = grow(vec2(0.501, 0.502), dnas, 30)
   console.log({ nodes })
   const dnahexes = {}
   nodes.forEach((node) => {
@@ -275,229 +277,27 @@ async function start() {
   world.setConstraints(constraints)
 
   const solver = new Solver(world)
+  const ticker = new Ticker(8.333, stats)
 
   const selection = new NodeSelection(world)
   window.selection = selection
 
   const renderer = new CanvasRenderer([allBodies, constraints.pre, [selection]])
   Mouse.init(renderer.cvs)
+  ui({ world, selection, ticker })
 
-  const $graphs = document.createElement("div")
-  $graphs.id = "graphs"
-  document.body.appendChild($graphs)
+  let t, dt
+  ticker.emitter.on("tick", () => {
+    t = ticker.time
+    dt = ticker.dt
 
-  const $g0 = document.createElement("div")
-  $graphs.appendChild($g0)
-  $g0.style.width = "300px"
-  $g0.style.height = "120px"
-  const g0 = new Graph($g0, {
-    def: [
-      { name: "axis", color: "#777", min: 0, max: 2 },
-      { name: "energy", color: "#0000ff", lineWidth: 4, min: 0, max: 2 },
-      { name: "selected energy", color: "#0000ff", min: 0, max: 2 },
-    ],
-    get: () => {
-      return [
-        1,
-        arr.sum(bodies, (b) => b.energy) / bodies.length,
-        selection.selected.energy,
-      ]
-    },
-  })
-
-  const $g1 = document.createElement("div")
-  $graphs.appendChild($g1)
-  $g1.style.width = "300px"
-  $g1.style.height = "120px"
-  const g1 = new Graph($g1, {
-    def: [
-      {
-        name: "token-chem0",
-        color: "#00ff00",
-        min: 0,
-        max: 1,
-      },
-      {
-        name: "token-chem1",
-        color: "#ff00ff",
-        min: 0,
-        max: 1,
-      },
-      {
-        name: "token-chem2",
-        color: "#00ffff",
-        min: 0,
-        max: 1,
-      },
-      {
-        name: "token-chem3",
-        color: "#ff0000",
-        min: 0,
-        max: 1,
-      },
-    ],
-    get: () => {
-      // what do we want To graph ?
-      // - tokens received
-      // - actions taken by CPU update
-
-      return selection.selected.signals.map((s) => clamp(s, 0, 16))
-    },
-  })
-
-  const $g2 = document.createElement("div")
-  $graphs.appendChild($g2)
-  $g2.style.width = "300px"
-  $g2.style.height = "120px"
-  const g2 = new StackGraph($g2, {
-    def: [
-      {
-        name: "actuator",
-        color: `rgba(255,0,0,1)`,
-        min: 0,
-        max: 1,
-      },
-      {
-        name: "grab",
-        color: `rgba(0,255,0,1)`,
-        min: 0,
-        max: 1,
-      },
-      {
-        name: "forward",
-        color: `rgba(255,255,0,1)`,
-        min: 0,
-        max: 1,
-      },
-      {
-        name: "backward",
-        color: `rgba(0,255,255,1)`,
-        min: 0,
-        max: 1,
-      },
-    ],
-    get: () => {
-      return [
-        selection.selected.operations.find((op) => op.name === "actuate")
-          ?.values[0] || 0,
-        selection.selected.operations.find((op) => op.name === "grab")
-          ?.values[0] || 0,
-        selection.selected.operations.find((op) => op.name === "forward")
-          ?.values[0] || 0,
-        selection.selected.operations.find((op) => op.name === "backward")
-          ?.values[0] || 0,
-      ]
-    },
-  })
-
-  const $g3 = document.createElement("div")
-  $graphs.appendChild($g3)
-  $g3.style.width = "300px"
-  $g3.style.height = "120px"
-  const g3 = new Graph($g3, {
-    def: [
-      {
-        name: "friction",
-        color: "#ff0000",
-        min: 0,
-        max: 1,
-      },
-    ],
-    get: () => {
-      return [selection.selected.friction]
-    },
-  })
-
-  function bytecodeViewer(body) {
-    let current
-
-    const $root = document.createElement("div")
-    $root.classList.add("bytecode")
-    $graphs.appendChild($root)
-
-    const $details = document.createElement("div")
-    $details.classList.add("details")
-    $root.appendChild($details)
-
-    const $stackWrapper = document.createElement("div")
-    $stackWrapper.innerHTML = "<span>stack:</span>"
-    $root.appendChild($stackWrapper)
-
-    const $stack = document.createElement("div")
-    $stack.classList.add("stack")
-    $stackWrapper.appendChild($stack)
-
-    const $bytecode = document.createElement("div")
-    $bytecode.classList.add("code")
-    $root.appendChild($bytecode)
-
-    const $words = document.createElement("div")
-    $words.classList.add("words")
-    $root.appendChild($words)
-
-    const refresh = () => {
-      current = selection.selected
-      $bytecode.innerHTML = ""
-      $words.innerHTML = ""
-
-      $details.innerHTML = `<span>ID:</span> <span>${current.id}</span>`
-      $details.innerHTML += `<span>ORGANISM:</span> <span>${current.data.organism}</span>`
-
-      for (const ins of current.cpu.instructions) {
-        const $el = document.createElement("div")
-        $el.innerHTML = ins.toString(16).padStart(2, "0")
-        $bytecode.appendChild($el)
-
-        const $el2 = document.createElement("div")
-        $el2.innerHTML = current.cpu.bytecode.mnemonics[ins]
-        $words.appendChild($el2)
-      }
-    }
-    refresh()
-
-    return {
-      draw() {
-        if (selection.selected !== current) refresh()
-
-        $stack.innerHTML = current.cpu.stack.values
-          .map((v) => `<span>${v.toFixed(1)}</span>`)
-          .join("")
-      },
-    }
-  }
-  const viewer = bytecodeViewer()
-
-  function tick(t, dt) {
     world.update()
 
     solver.prepare(t, dt)
-    g0.tick()
-    g1.tick()
-    g2.tick()
-    g3.tick()
     solver.solve(t, dt)
 
     renderer.render()
-    g0.draw()
-    g1.draw()
-    g2.draw()
-    g3.draw()
-    viewer.draw()
-  }
-
-  let time = 0,
-    lastTime = 0,
-    dt = 0.0083333
-  function loop() {
-    stats.begin()
-    //! enforce dt to ensure sim consistency
-    lastTime = time
-    time = lastTime + 8.3333
-
-    tick(time, dt)
-    requestAnimationFrame(loop)
-    stats.end()
-  }
-  loop()
+  })
+  ticker.start()
 }
 start()

@@ -1,4 +1,9 @@
 export const arr = {
+  new(length, val = (i) => i) {
+    const arr = Array(length)
+    for (let i = 0; i < length; i++) arr[i] = val(i)
+    return arr
+  },
   dedup(A) {
     for (let i = A.length - 1; i >= 0; i--) {
       for (let j = i - 1; j >= 0; j--) {
