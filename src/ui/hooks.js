@@ -5,14 +5,22 @@ export function useSim() {
   return useContext(Sim)
 }
 
+export function useEngine() {
+  return useSim().engine
+}
+
+export function useRunning() {
+  return useSim().running
+}
+
 export function useSelected() {
   return useSim().selected
 }
 
 export function useWorld() {
-  return useSim().world
+  return useEngine().world
 }
 
 export function useTicker() {
-  return useSim().ticker
+  return useEngine().ticker
 }

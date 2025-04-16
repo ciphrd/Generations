@@ -10,12 +10,12 @@ import { GraphOperations } from "./components/GraphOperations.jsx"
 const a4 = arr.new(4)
 
 export function Cell() {
-  const { ticker, selected } = useSim()
+  const { engine, selected } = useSim()
 
   const $energy = useRef()
   useEffect(
     () =>
-      ticker.emitter.on("tick", () => {
+      engine.ticker.emitter.on("tick", () => {
         if (!$energy.current) return
         $energy.current.innerText = selected.energy.toFixed(2)
       }),

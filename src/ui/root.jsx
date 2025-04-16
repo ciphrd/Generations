@@ -2,6 +2,7 @@ import { createContext, useState, useEffect } from "react"
 import { Cell } from "./Cell.jsx"
 import { Tabs } from "./components/Tabs.jsx"
 import { General } from "./General.jsx"
+import { Viewer } from "./Viewer.jsx"
 
 export const Sim = createContext({})
 
@@ -38,26 +39,39 @@ export const Sim = createContext({})
  *   -
  */
 
-export function Root({ engine: { world, selection, ticker } }) {
+export function Root({ engine }) {
   const [state, setState] = useState({
-    world,
-    ticker,
+    engine,
     selected: selection.selected,
+    running: engine.ticker.running,
   })
 
   useEffect(() => {
-    const off = selection.emitter.on("change", () => {
-      setState((state) => ({
-        ...state,
-        selected: selection.selected,
-      }))
-    })
-    return () => off()
+    setState((state) => ({
+      ...state,
+      running: engine.ticker.running,
+    }))
+    const offs = [
+      engine.selection.emitter.on("change", () =>
+        setState((state) => ({
+          ...state,
+          selected: selection.selected,
+        }))
+      ),
+      engine.ticker.emitter.on("start/stop", () =>
+        setState((state) => ({
+          ...state,
+          running: engine.ticker.running,
+        }))
+      ),
+    ]
+    return () => offs.forEach((off) => off())
   }, [])
 
   return (
     <Sim.Provider value={state}>
-      <main>
+      <Viewer />
+      <aside>
         {state.selected ? (
           <>
             <Tabs tabs={["General", "Cell"]} defaultTab={1}>
@@ -72,7 +86,7 @@ export function Root({ engine: { world, selection, ticker } }) {
         ) : (
           <div>no selection</div>
         )}
-      </main>
+      </aside>
     </Sim.Provider>
   )
 }

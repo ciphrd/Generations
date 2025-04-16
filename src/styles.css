@@ -8,14 +8,24 @@ body {
 
 #root {
   display: flex;
-  gap: 1px;
+  gap: 3px;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sim-wrapper {
+  outline: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 canvas {
   display: block;
 }
 
-main {
+aside {
   width: 312px;
   box-sizing: border-box;
   height: 100%;
@@ -170,4 +180,59 @@ button {
   display: flex;
   flex-direction: column;
   gap: 5px;
+}
+
+/** TOOLBAR **/
+
+.toolbar {
+  display: flex;
+  flex-direction: row;
+  box-shadow: inset 0px 1px 0px 0px rgba(255, 255, 255, 0.1),
+    0px 0px 0px 1px rgba(0, 0, 0, 0.3);
+  border-radius: 1px;
+  padding: 5px;
+  gap: 5px;
+}
+
+.toolbar button {
+  box-shadow: inset 0px 1px 0px 0px rgba(255, 255, 255, 0.1);
+  background: #323c3c;
+  background: linear-gradient(
+    180deg,
+    rgba(50, 60, 60, 1) 0%,
+    rgba(50, 60, 60, 1) 47%,
+    rgba(33, 40, 40, 1) 53%,
+    rgba(33, 40, 40, 1) 100%
+  );
+  border: 1px solid #161a1a;
+  border-radius: 2px;
+  height: 28px;
+  padding: 0 10px;
+  cursor: pointer;
+}
+
+.toolbar button:hover {
+  background: #465454;
+  background: linear-gradient(
+    180deg,
+    #384343 0%,
+    #384343 47%,
+    #283030 53%,
+    #283030 100%
+  );
+}
+
+.toolbar button:active {
+  box-shadow: inset 0px 1px 0px 0px rgba(0, 0, 0, 0.4);
+  background: #283030;
+  padding-top: 2px;
+}
+
+.toolbar button:disabled {
+  background: #4c5252;
+  border: 1px solid #282a2a;
+  box-shadow: none;
+  cursor: default;
+  pointer-events: none;
+  opacity: 0.7;
 }

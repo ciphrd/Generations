@@ -45,6 +45,7 @@ import { dnahex, logdna } from "./utils/string"
 import { Clusters } from "./physics/constraints/clusters"
 import { ui } from "./ui/index.jsx"
 import { Ticker } from "./engine/ticker"
+import { Engine } from "./engine/engine"
 
 Object.getOwnPropertyNames(Math).forEach((el) => (window[el] = Math[el]))
 window.TAU = 2 * PI
@@ -284,20 +285,18 @@ async function start() {
 
   const renderer = new CanvasRenderer([allBodies, constraints.pre, [selection]])
   Mouse.init(renderer.cvs)
-  ui({ world, selection, ticker })
 
-  let t, dt
-  ticker.emitter.on("tick", () => {
-    t = ticker.time
-    dt = ticker.dt
-
-    world.update()
-
-    solver.prepare(t, dt)
-    solver.solve(t, dt)
-
-    renderer.render()
+  const engine = new Engine({
+    world,
+    solver,
+    selection,
+    ticker,
+    renderer,
   })
-  ticker.start()
+
+  console.log("---")
+  console.log(engine.world)
+
+  ui(engine)
 }
 start()

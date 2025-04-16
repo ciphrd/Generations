@@ -43,8 +43,6 @@ export class World {
   }
 
   update() {
-    for (const K in this.partitions) {
-      this.partitions[K].update()
-    }
+    for (const K in this.partitions) this.partitions[K].update()
   }
 }

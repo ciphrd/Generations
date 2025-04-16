@@ -39,8 +39,13 @@ export class CanvasRenderer {
     this.ctx.scale(1, -1)
     this.ctx.translate(-0.5, -0.5)
     this.texelSize = 1 / this.cvs.width
-    document.body.querySelector("#sim").appendChild(this.cvs)
   }
+
+  providerRenderingContainer($container) {
+    this.$container = $container
+    this.$container.appendChild(this.cvs)
+  }
+
   render() {
     this.ctx.fillStyle = "black"
     this.ctx.fillRect(0, 0, 1, 1)

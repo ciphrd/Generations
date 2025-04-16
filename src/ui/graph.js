@@ -147,10 +147,10 @@ class GraphHover {
   onMouseMove = (evt) => {
     const bounds = this.$wrapper.getBoundingClientRect()
     const samples = this.graph.samples.map((samples) => samples[evt.offsetX])
-    console.log(samples)
 
     const x = evt.offsetX / bounds.width
     const y = evt.offsetY / bounds.height
+    const I = floor(evt.offsetX * devicePixelRatio)
 
     this.$values.style.left = `${evt.offsetX + 3}px`
     this.$values.innerHTML = ""
@@ -178,7 +178,7 @@ class GraphHover {
     this.ctx.restore()
 
     for (let i = 0; i < this.graph.samples.length; i++) {
-      const val = this.graph.samples[i][floor(evt.offsetX)]
+      const val = this.graph.samples[i][I]
       if (typeof val === "undefined") {
         this.onMouseLeave()
         return

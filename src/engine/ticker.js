@@ -7,6 +7,7 @@ export class Ticker {
     this.lastTime = 0
     this.emitter = emitter()
     this.stats = stats
+    this.running = false
   }
 
   tick = () => {
@@ -16,6 +17,7 @@ export class Ticker {
   }
 
   loop = () => {
+    if (!this.running) return
     this.stats.begin()
     this.tick()
     requestAnimationFrame(this.loop)
@@ -23,6 +25,13 @@ export class Ticker {
   }
 
   start() {
+    this.running = true
+    this.emitter.emit("start/stop")
     this.loop()
+  }
+
+  stop() {
+    this.running = false
+    this.emitter.emit("start/stop")
   }
 }

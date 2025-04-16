@@ -22,6 +22,8 @@ export class Solver {
   }
 
   solve(t, dt) {
+    this.prepare(t, dt)
+
     for (const body of this.world.organisms) {
       body.processSignals(t, dt)
     }
