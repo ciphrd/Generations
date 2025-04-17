@@ -1,3 +1,5 @@
+import { emitter } from "../utils/emitter"
+
 export class Engine {
   constructor({ world, solver, selection, ticker, renderer }) {
     this.world = world
@@ -6,6 +8,7 @@ export class Engine {
     this.renderer = renderer
     this.ticker = ticker
 
+    this.emitter = emitter()
     this.ticker.emitter.on("tick", this.tick)
   }
 
@@ -32,6 +35,7 @@ export class Engine {
     this.world.update()
     this.solver.solve(t, dt)
 
+    this.emitter.emit("solved")
     if (this.ticker.running) this.renderer.render()
   }
 }

@@ -28,8 +28,7 @@ import { Operation } from "./cpu"
  * ; 19    ; eat      ; eat food source if in range
  * ; 1a    ; sin      ; put sin(st0) in st0
  * ; 1b    ; cos      ; put cos(st0) in st0
- * ; 1c    : time     ; push sim time
- * ; 1d-1f ; /        ; yet unallocated plage
+ * ; 1c-1f ; /        ; yet unallocated plage
  *
  * Potential additions:
  *
@@ -74,7 +73,6 @@ const set = [
   "eat",
   "sin",
   "cos",
-  "time",
 ]
 
 export const ActivationBytecode = {
@@ -172,7 +170,7 @@ export const ActivationBytecode = {
       case 0x10:
       case 0x11:
       case 0x12: {
-        operations.push(op("fire", [instruction - 0x0f, stack.get(0)]))
+        operations.push(op("fire", [instruction - 0x0f]))
         break
       }
       // reng

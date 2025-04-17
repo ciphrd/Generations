@@ -2,6 +2,9 @@ import { useEffect, useMemo, useRef } from "react"
 import { useTicker } from "../hooks"
 import { GraphOperations } from "./GraphOperations.jsx"
 import { Graph } from "./Graph.jsx"
+import { arr } from "../../utils/array"
+
+const a10 = arr.new(10)
 
 export function CellCpu({ cpu }) {
   const ticker = useTicker()
@@ -11,9 +14,9 @@ export function CellCpu({ cpu }) {
     () =>
       ticker.emitter.on("tick", () => {
         if (!$stack.current) return
-        $stack.current.innerText = cpu.stack.values
-          .map((v) => v.toFixed(2))
-          .join(" ")
+        for (let i = 0, c = $stack.current.childNodes; i < 10; i++) {
+          c[i].innerText = cpu.stack.values[i].toFixed(2)
+        }
       }),
     []
   )
@@ -22,7 +25,15 @@ export function CellCpu({ cpu }) {
     <div>
       <div>
         <div>Stack</div>
-        <div ref={$stack} className="stack"></div>
+        <table className="stack">
+          <tbody>
+            <tr ref={$stack}>
+              {a10.map((i) => (
+                <td key={i} />
+              ))}
+            </tr>
+          </tbody>
+        </table>
       </div>
       <div>
         <div>Bytecode</div>
@@ -60,3 +71,10 @@ export function CellCpu({ cpu }) {
     </div>
   )
 }
+
+function CpuMeasures() {
+  // return (
+  // )
+}
+
+function CpuBytecode() {}

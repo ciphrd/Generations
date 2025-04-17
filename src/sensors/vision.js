@@ -1,3 +1,4 @@
+import { SensorChemicals } from "."
 import { BodyFlags } from "../physics/body"
 import { vec2 } from "../utils/vec"
 import { Sensor } from "./sensor"
@@ -9,7 +10,7 @@ const LENGTH = 0.2
 
 export class VisionSensor extends Sensor {
   constructor(body, world) {
-    super(body, world)
+    super(body, world, "vision")
     this.length = LENGTH
   }
 
@@ -18,6 +19,7 @@ export class VisionSensor extends Sensor {
     const part = world.partition(0.01, BodyFlags.FOOD)
 
     // take N samples along the sensor to check for food
+    this.activation = 0
     _v2a.copy(body.pos)
     _v2b.copy(body.forwards).mul(this.length).div(N_SAMPLES)
     for (let i = 0; i < N_SAMPLES; i++) {
@@ -25,7 +27,8 @@ export class VisionSensor extends Sensor {
       if (_v2a.outside()) break
       for (const food of part.posNeighbours(_v2a)) {
         if (_v2a.distSq(food.pos) < food.radius ** 2) {
-          body.receiveSignal(0, 1)
+          this.activation = 1
+          body.receiveSignal(SensorChemicals.vision, 1)
           return
         }
       }

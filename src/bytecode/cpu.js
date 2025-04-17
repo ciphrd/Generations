@@ -42,29 +42,32 @@ export class Operation {
   }
 }
 
-export function mergeOperations(ops) {
-  let op
-  const map = {}
-  for (let i = ops.length - 1; i >= 0; i--) {
-    op = ops[i]
-    if (map[op.name]) continue
-    map[op.name] = op
-  }
-  return Object.values(map)
+export function mergeOperations(ops, directCpu = false) {
+  // let op
+  // const map = {}
+  // for (let i = ops.length - 1; i >= 0; i--) {
+  //   op = ops[i]
+  //   if (map[op.name]) continue
+  //   map[op.name] = op
+  // }
+  // return Object.values(map)
 
   //! this strategy uses the merge method of the action; not sure if required
   //! TBD
-  // const grouped = {}
-  // for (const op of ops) {
-  //   if (!grouped[op.name]) grouped[op.name] = []
-  //   grouped[op.name].push(op)
-  // }
-  // const names = Object.keys(grouped)
-  // const merged = Array(names.length)
-  // for (let i = 0; i < names.length; i++) {
-  //   merged[i] = Actions[names[i]].merge(grouped[names[i]])
-  // }
-  // return merged
+  const grouped = {}
+  for (const op of ops) {
+    if (!grouped[op.name]) grouped[op.name] = []
+    grouped[op.name].push(op)
+  }
+  const names = Object.keys(grouped)
+  const merged = []
+  let actionDef, merge
+  for (let i = 0; i < names.length; i++) {
+    actionDef = Actions[names[i]]
+    merge = directCpu ? actionDef.mergeCpu || actionDef.merge : actionDef.merge
+    merged.push(...merge(grouped[names[i]]))
+  }
+  return merged
 }
 
 const MAX_CYCLES = 128
@@ -87,18 +90,25 @@ export class CPU {
     this.executed = 0
     this.lastOperations = this.operations
     this.operations = []
-    this.stack.reset()
+    // this.stack.reset()
   }
 
   run(context, ...initialStack) {
     if (initialStack.length > 0) {
       for (
-        let i = 0, di = 0;
-        i <= this.stack.values.length;
-        i++, di = i % initialStack.length
+        let i = 0, n = min(initialStack.length, this.stack.values.length);
+        i < n;
+        i++
       ) {
-        this.stack.push(initialStack[di])
+        this.stack.values[i] = initialStack[i]
       }
+      // for (
+      //   let i = 0, di = 0;
+      //   i <= this.stack.values.length;
+      //   i++, di = i % initialStack.length
+      // ) {
+      //   this.stack.push(initialStack[di])
+      // }
     }
 
     let i = 0
@@ -108,7 +118,7 @@ export class CPU {
     }
     this.executed = i
 
-    this.operations = mergeOperations(this.operations)
+    this.operations = mergeOperations(this.operations, true)
     return this.operations
   }
 

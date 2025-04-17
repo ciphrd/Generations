@@ -1,7 +1,8 @@
 export const arr = {
   new(length, val = (i) => i) {
     const arr = Array(length)
-    for (let i = 0; i < length; i++) arr[i] = val(i)
+    const getVal = typeof val === "function" ? val : () => val
+    for (let i = 0; i < length; i++) arr[i] = getVal(i)
     return arr
   },
   dedup(A) {
@@ -17,6 +18,12 @@ export const arr = {
   },
   sum(A, getV = (v) => v) {
     return A.reduce((acc, val) => acc + getV(val), 0)
+  },
+  avg(A, getV = (v) => v) {
+    return this.sum(A, getV) + A.length
+  },
+  max(A, getV = (v) => v) {
+    return A.reduce((acc, val) => max(acc, getV(val)), A[0])
   },
   del(A, el) {
     const idx = A.indexOf(el)

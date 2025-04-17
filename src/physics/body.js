@@ -88,12 +88,6 @@ export class Body {
 
   sendSignal(chemical, quantity) {
     if (this.springs.length === 0) return
-
-    // this.netCycle = (this.netCycle + 1) % this.springs.length
-    // const spring = this.springs[this.netCycle]
-    // const other = spring.bodyA === this ? spring.bodyB : spring.bodyA
-    // other.receiveSignal(chemical, quantity)
-
     for (const spring of this.springs) {
       spring.other(this).receiveSignal(chemical, quantity)
     }
@@ -118,31 +112,6 @@ export class Body {
 
     this.operations = mergeOperations(this.operations)
     this.processOperations(this.operations, t, dt)
-  }
-
-  mergeOperations(ops) {
-    let op
-    const map = {}
-    for (let i = ops.length - 1; i >= 0; i--) {
-      op = ops[i]
-      if (map[op.name]) continue
-      map[op.name] = op
-    }
-    return Object.values(map)
-
-    //! this strategy uses the merge method of the action; not sure if required
-    //! TBD
-    // const grouped = {}
-    // for (const op of ops) {
-    //   if (!grouped[op.name]) grouped[op.name] = []
-    //   grouped[op.name].push(op)
-    // }
-    // const names = Object.keys(grouped)
-    // const merged = Array(names.length)
-    // for (let i = 0; i < names.length; i++) {
-    //   merged[i] = Actions[names[i]].merge(grouped[names[i]])
-    // }
-    // return merged
   }
 
   processOperations(ops, t, dt) {

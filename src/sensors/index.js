@@ -2,6 +2,12 @@ import { ClockSensor } from "./clock"
 import { SmellSensor } from "./smell"
 import { VisionSensor } from "./vision"
 
+export const SensorChemicals = {
+  clock: 0,
+  vision: 1,
+  smell: 2,
+}
+
 export const Sensors = {
   clock: ClockSensor,
   smell: SmellSensor,
