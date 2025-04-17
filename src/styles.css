@@ -246,3 +246,15 @@ table td {
 table.col-header td:first-child {
   font-weight: bold;
 }
+
+/** SECTIONS **/
+
+section h2 {
+  margin: 0 0 5px;
+  font-size: 1em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+section + section {
+  margin-top: 8px;
+}

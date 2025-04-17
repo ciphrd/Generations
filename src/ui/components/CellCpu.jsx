@@ -3,6 +3,7 @@ import { useTicker } from "../hooks"
 import { GraphOperations } from "./GraphOperations.jsx"
 import { Graph } from "./Graph.jsx"
 import { arr } from "../../utils/array"
+import { Section } from "./Section.jsx"
 
 const a10 = arr.new(10)
 
@@ -23,8 +24,7 @@ export function CellCpu({ cpu }) {
 
   return (
     <div>
-      <div>
-        <div>Stack</div>
+      <Section title="stack">
         <table className="stack">
           <tbody>
             <tr ref={$stack}>
@@ -34,9 +34,8 @@ export function CellCpu({ cpu }) {
             </tr>
           </tbody>
         </table>
-      </div>
-      <div>
-        <div>Bytecode</div>
+      </Section>
+      <Section title="Bytecode">
         <div className="bytecode">
           {cpu.instructions.map((ins, idx) => (
             <span key={idx}>{ins.toString(16).padStart(2, "0")}</span>
@@ -47,27 +46,28 @@ export function CellCpu({ cpu }) {
             <span key={idx}>{cpu.bytecode.mnemonics[ins]}</span>
           ))}
         </div>
-      </div>
+      </Section>
 
-      <div className="graphs">
-        <div>Measures</div>
-        <GraphOperations operations={() => cpu.operations} />
+      <Section title="Measures">
+        <div className="graphs">
+          <GraphOperations operations={() => cpu.operations} />
 
-        <Graph
-          def={useMemo(
-            () => [
-              {
-                name: "Instrucions executed",
-                color: "#ff0000",
-                min: 0,
-                max: 128,
-              },
-            ],
-            []
-          )}
-          get={() => [cpu.executed]}
-        />
-      </div>
+          <Graph
+            def={useMemo(
+              () => [
+                {
+                  name: "Instrucions executed",
+                  color: "#ff0000",
+                  min: 0,
+                  max: 128,
+                },
+              ],
+              []
+            )}
+            get={() => [cpu.executed]}
+          />
+        </div>
+      </Section>
     </div>
   )
 }
