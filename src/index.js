@@ -10,10 +10,17 @@
 // -
 
 /**
+ * !DEBUG
+ * - ooZFinCejNF6FdgLemP3BhmEQFMuAGPv9k7nEWaAJYzX4Si9UGR
+ */
+
+/**
  * Project inspirations
  * - Stephen Worlfram Physics project
  * - ALIEN simulation
  * - Clusters Jeffrey Ventrella
+ * - https://en.wikipedia.org/wiki/Hebbian_theory
+ * - Petri-Nets
  */
 
 import Stats from "stats.js"
@@ -46,6 +53,9 @@ import { Clusters } from "./physics/constraints/clusters"
 import { ui } from "./ui/index.jsx"
 import { Ticker } from "./engine/ticker"
 import { Engine } from "./engine/engine"
+import { importNetwork } from "./growth/import"
+
+import made from "./maker.json"
 
 Object.getOwnPropertyNames(Math).forEach((el) => (window[el] = Math[el]))
 window.TAU = 2 * PI
@@ -90,24 +100,12 @@ document.body.appendChild(stats.dom)
 
 async function start() {
   const seeds = await getSeeds()
-  console.log({ seeds })
-
   const dnas = generateDNAs(seeds)
-  console.log({ dnas })
-
-  // const bytecode = "02d893d1e0"
-  // const hexBytes = bytecode.match(/.{1,2}/g)
-  // const bytes = hexBytes.map((hex) => parseInt(hex, 16))
-  // console.log({ bytes })
-
-  // const cpu = new CPU(seeds.activations.at(-1), ActivationBytecode)
-  // cpu.run({
-  //   body: new Body(vec2(0.5, 0.5), 0.1),
-  // })
+  console.log({ seeds, dnas })
 
   const world = new World()
 
-  const nodes = grow(vec2(0.501, 0.502), dnas, 30)
+  const nodes = grow(vec2(0.501, 0.502), dnas, 100)
   console.log({ nodes })
   const dnahexes = {}
   nodes.forEach((node) => {
@@ -116,15 +114,12 @@ async function start() {
     dnahexes[hex]++
   })
   console.log(dnahexes)
+  console.log(nodes)
+  // throw null
 
-  // const rule1 = "permut({{{x,y}}->{{x,y}}});"
-  // const rule2 = "permut({{{x,y}}->{{x,y}}});"
-
-  // const n1 = new Node(vec2(0.48, 0.5), rule1)
-  // const n2 = new Node(vec2(0.52, 0.5), rule2)
-  // n1.edges.push(n2)
-  // n1.behaviors.actuator = true
-  // const nodes = [n1, n2]
+  // const nodes = importNetwork(made)
+  // console.log(nodes)
+  // throw null
 
   const bodies = []
   const allBodies = []
@@ -165,7 +160,7 @@ async function start() {
   const food = []
   for (let i = 0; i < 100; i++) {
     food.push(
-      new Food(world, vec2($fx.rand(), $fx.rand()), (fd) => {
+      new Food(world, vec2($fx.rand() * 0.99, $fx.rand() * 0.99), (fd) => {
         console.log("eaten !!!")
         world.removeBody(fd)
       })

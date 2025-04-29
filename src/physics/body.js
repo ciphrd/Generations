@@ -78,30 +78,60 @@ export class Body {
     this.receivedSignals = tmp.fill(0)
   }
 
-  receiveSignal(chemical, quantity) {
-    if (quantity < 0.0001) return
-    this.receivedSignals[chemical] = min(
-      max(this.receivedSignals[chemical], quantity),
-      1
-    )
+  receiveSignal(chemical, quantity, source) {
+    // if (selection.is(this)) {
+    //   console.log("receive", { chemical, quantity, source })
+    // }
+
+    //! multiply signals
+    // if (this.receivedSignals[chemical] === null) {
+    //   this.receivedSignals[chemical] = quantity
+    // } else {
+    //   if (quantity !== 0) {
+    //     this.receivedSignals[chemical] *= quantity
+    //   }
+    // }
+
+    //! add signals
+    // this.receivedSignals[chemical] = clamp(
+    //   this.receivedSignals[chemical] + quantity,
+    //   -1,
+    //   1
+    // )
+
+    //! keep signal with highest intensity
+    if (abs(quantity) > abs(this.receivedSignals[chemical])) {
+      this.receivedSignals[chemical] = clamp(quantity, -1, 1)
+    }
   }
 
   sendSignal(chemical, quantity) {
-    if (this.springs.length === 0) return
+    // if (chemical === 0) {
+    //   console.log(`body:${this.id}`, "send", { quantity })
+    // }
+
+    const N = this.springs.length
+    if (N === 0) return
     for (const spring of this.springs) {
-      spring.other(this).receiveSignal(chemical, quantity)
+      //! Note: this was used when signals were added to each other
+      //! It's not so relevant if the max() is kept instead
+      // spring.sendSignal(this, chemical, quantity / (log(pow(N, 0.5)) + 1))
+
+      spring.sendSignal(this, chemical, quantity)
     }
   }
 
   processSignals(t, dt) {
     this.operations.length = 0
 
+    // if (selection.is(this)) {
+    //   console.log([...this.signals])
+    // }
+
     let quantity
     for (let i = 0; i < 4; i++) {
       quantity = this.signals[i]
       this.cpus[i].prepare()
-      if (quantity === 0) continue
-
       this.operations.push(
         ...this.cpus[i].run(
           { body: this, chemicalStrength: quantity },
@@ -185,7 +215,7 @@ export class Body {
       this.pos.x = 1 - mod(this.pos.x, 1)
       this.vel.x *= -1
     } else if (this.pos.x >= 1) {
-      this.pos.x = 1 - mod(this.pos.x, 1)
+      this.pos.x = 0.9999 - mod(this.pos.x, 1)
       this.vel.x *= -1
     }
 
@@ -193,7 +223,7 @@ export class Body {
       this.pos.y = 1 - mod(this.pos.y, 1)
       this.vel.y *= -1
     } else if (this.pos.y >= 1) {
-      this.pos.y = 1 - mod(this.pos.y, 1)
+      this.pos.y = 0.9999 - mod(this.pos.y, 1)
       this.vel.y *= -1
     }
   }

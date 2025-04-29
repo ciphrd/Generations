@@ -47,19 +47,19 @@ export function Cell() {
               {
                 name: "clock",
                 color: "#00ff00",
-                min: 0,
+                min: -1,
                 max: 1,
               },
               {
                 name: "vision",
                 color: "#ff00ff",
-                min: 0,
+                min: -1,
                 max: 1,
               },
               {
                 name: "smell",
                 color: "#00ffff",
-                min: 0,
+                min: -1,
                 max: 1,
               },
             ],
@@ -78,36 +78,37 @@ export function Cell() {
           }, [selected])}
         />
         <Graph
+          on="solver:prepared"
           def={useMemo(
             () => [
               {
                 name: "chem0",
                 color: "#00ff00",
-                min: 0,
+                min: -1,
                 max: 1,
               },
               {
                 name: "chem1",
                 color: "#ff00ff",
-                min: 0,
+                min: -1,
                 max: 1,
               },
               {
                 name: "chem2",
                 color: "#00ffff",
-                min: 0,
+                min: -1,
                 max: 1,
               },
               {
                 name: "chem3",
                 color: "#ff0000",
-                min: 0,
+                min: -1,
                 max: 1,
               },
             ],
             []
           )}
-          get={useCallback(() => selected.receivedSignals, [selected])}
+          get={useCallback(() => selected.signals, [selected])}
         />
         <Graph
           def={useMemo(
@@ -115,25 +116,25 @@ export function Cell() {
               {
                 name: "emit-chem0",
                 color: "#00ff00",
-                min: 0,
+                min: -1,
                 max: 1,
               },
               {
                 name: "emit-chem1",
                 color: "#ff00ff",
-                min: 0,
+                min: -1,
                 max: 1,
               },
               {
                 name: "emit-chem2",
                 color: "#00ffff",
-                min: 0,
+                min: -1,
                 max: 1,
               },
               {
                 name: "emit-chem3",
                 color: "#ff0000",
-                min: 0,
+                min: -1,
                 max: 1,
               },
             ],
@@ -147,7 +148,7 @@ export function Cell() {
             let found
             for (let i = 0; i < 4; i++) {
               found = fireOps.find((op) => op.values[0] === i)
-              if (found) chems[i] = found.chemicalStrength
+              if (found) chems[i] = found.values[1]
             }
             return chems
           }, [selected])}

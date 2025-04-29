@@ -3,6 +3,11 @@
   "version": "1.0.0",
   "description": "A generative artwork",
   "license": "MIT",
+  "watch": {
+    "make:nodes": {
+      "patterns": "./scripts/maker.js"
+    }
+  },
   "scripts": {
     "postinstall": "fxhash update",
     "update": "fxhash update",
@@ -10,7 +15,9 @@
     "build": "fxhash build",
     "compile:permutations": "node scripts/rules.js",
     "compile:program": "node scripts/compiler.js",
-    "make:seed": "node scripts/make-seed-image.js"
+    "make:seed": "node scripts/make-seed-image.js",
+    "make:nodes": "node scripts/maker.js",
+    "watch:make:nodes": "npm-watch make:nodes"
   },
   "devDependencies": {
     "fxhash": "latest"
@@ -20,6 +27,7 @@
     "@babel/preset-react": "^7.26.3",
     "babel-loader": "^10.0.0",
     "classnames": "^2.5.1",
+    "npm-watch": "^0.13.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "sharp": "^0.33.5",

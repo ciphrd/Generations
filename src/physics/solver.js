@@ -17,13 +17,11 @@ export class Solver {
       }
     }
     for (const body of this.world.organisms) {
-      body.prepare()
+      body.prepare(t, dt)
     }
   }
 
   solve(t, dt) {
-    this.prepare(t, dt)
-
     for (const body of this.world.organisms) {
       body.processSignals(t, dt)
     }

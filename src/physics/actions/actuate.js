@@ -40,12 +40,15 @@ export class ActuateAction extends Action {
   // behaviours if using the values in the stack to drive the actions
 
   activate(t, dt, chemicalQuantity, values) {
+    this.activation = t
+    let v = clamp(values[0], -1, 1)
+
     if (selection.selected === this.body) {
-      // console.log("actuate", (values[0] - 0.5) * 2)
+      console.log("actuate", { v, chemicalQuantity })
     }
 
-    this.activation = t
-    const v = clamp((values[0] - 0.5) * 2, -1, 1)
+    //! test: using chemical quantity instead of value passed
+    v = clamp(chemicalQuantity, -1, 1)
 
     for (const spring of this.body.springs) {
       spring.contraction = lerp(spring.contraction, v, 1)

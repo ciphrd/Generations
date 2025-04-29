@@ -8,7 +8,7 @@ export class NodeSelection {
   constructor(world) {
     this.world = world
     this.hovered = null
-    this.selected = world.organisms[0]
+    this.selected = world.organisms[20]
     this.emitter = emitter()
 
     const part = world.partition(SELECTION_RADIUS, BodyFlags.ORGANISM)

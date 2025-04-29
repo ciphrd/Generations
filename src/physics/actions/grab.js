@@ -8,6 +8,8 @@ export class GrabAction extends Action {
   }
 
   activate(t, dt, chemicalQuantity, values) {
+    return
+    console.log({ val: values[0] })
     this.strength = clamp(values[0], 0.01, 0.8)
   }
 

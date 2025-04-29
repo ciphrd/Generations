@@ -14,7 +14,7 @@ export class VisionSensor extends Sensor {
     this.length = LENGTH
   }
 
-  update() {
+  update(t, dt) {
     const { body, world, dir } = this
     const part = world.partition(0.01, BodyFlags.FOOD)
 
@@ -27,8 +27,8 @@ export class VisionSensor extends Sensor {
       if (_v2a.outside()) break
       for (const food of part.posNeighbours(_v2a)) {
         if (_v2a.distSq(food.pos) < food.radius ** 2) {
-          this.activation = 1
-          body.receiveSignal(SensorChemicals.vision, 1)
+          this.activation = cos(t * 0.04) * 0.5
+          body.receiveSignal(SensorChemicals.vision, this.activation)
           return
         }
       }

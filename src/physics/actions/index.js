@@ -1,6 +1,6 @@
 import { Operation } from "../../bytecode/cpu"
 import { arr } from "../../utils/array"
-import { clamp01 } from "../../utils/math"
+import { clamp, clamp01 } from "../../utils/math"
 import { ActuateAction } from "./actuate"
 import { BackwardAction } from "./backward"
 import { BindAction } from "./bind"
@@ -46,7 +46,7 @@ export const Actions = {
         [arr.sum(operations, (op) => op.values[0]) / operations.length]
       ),
     ],
-    normalize: (v) => clamp01(v),
+    normalize: (v) => clamp(v, -1, 1),
   },
   fire: {
     module: FireAction,
@@ -57,25 +57,52 @@ export const Actions = {
       //! highest of each chemical
       const chems = arr.new(4, 0)
       for (const op of operations) {
-        chems[op.values[0]] = max(chems[op.values[0]], op.chemicalStrength)
+        if (abs(op.values[1]) > abs(chems[op.values[0]])) {
+          chems[op.values[0]] = op.values[1]
+        }
       }
       const fire = []
       for (let i = 0; i < 4; i++) {
-        if (chems[i] > 0) {
-          fire.push(new Operation("fire", chems[i], [i]))
-        }
+        fire.push(new Operation("fire", chems[i], [i, chems[i]]))
       }
       return fire
+
+      //! multiply each chemical
+      // const chems = arr.new(4, null)
+      // for (const op of operations) {
+      //   if (chems[op.values[0]] === null) chems[op.values[0]] = 1
+      //   chems[op.values[0]] *= op.values[1]
+      // }
+      // const fire = []
+      // for (let i = 0; i < 4; i++) {
+      //   if (chems[i] !== null) {
+      //     fire.push(new Operation("fire", chems[i], [i, chems[i]]))
+      //   }
+      // }
+      // return fire
+
+      //! add each chemical
+      // const chems = arr.new(4, 0)
+      // for (const op of operations) {
+      //   chems[op.values[0]] += op.values[1]
+      // }
+      // const fire = []
+      // for (let i = 0; i < 4; i++) {
+      //   if (chems[i] !== null) {
+      //     fire.push(new Operation("fire", chems[i], [i, chems[i]]))
+      //   }
+      // }
+      // return fire
     },
     merge: (operations) => {
       //! always highest chemical
-      let op = operations[0]
-      for (let i = 1; i < operations.length; i++) {
-        if (operations[i].chemicalStrength > op.chemicalStrength) {
-          op = operations[i]
-        }
-      }
-      return [op]
+      // let op = operations[0]
+      // for (let i = 1; i < operations.length; i++) {
+      //   if (operations[i].chemicalStrength > op.chemicalStrength) {
+      //     op = operations[i]
+      //   }
+      // }
+      // return [op]
 
       //! only last
       // return [operations.at(-1)]
@@ -96,28 +123,41 @@ export const Actions = {
       // return fire
 
       //! highest of each chemical
-      // const chems = arr.new(4, 0)
-      // for (const op of operations) {
-      //   chems[op.values[0]] = max(chems[op.values[0]], op.chemicalStrength)
-      // }
-      // const fire = []
-      // for (let i = 0; i < 4; i++) {
-      //   if (chems[i] > 0) {
-      //     fire.push(new Operation("fire", chems[i], [i]))
-      //   }
-      // }
-      // return fire
+      const chems = arr.new(4, 0)
+      for (const op of operations) {
+        if (abs(op.values[1]) > abs(chems[op.values[0]])) {
+          chems[op.values[0]] = op.values[1]
+        }
+      }
+      const fire = []
+      for (let i = 0; i < 4; i++) {
+        fire.push(new Operation("fire", chems[i], [i, chems[i]]))
+      }
+      return fire
 
       //! multiply each chemical
       // const chems = arr.new(4, null)
       // for (const op of operations) {
       //   if (chems[op.values[0]] === null) chems[op.values[0]] = 1
-      //   chems[op.values[0]] *= op.chemicalStrength
+      //   chems[op.values[0]] *= op.values[1]
       // }
       // const fire = []
       // for (let i = 0; i < 4; i++) {
-      //   if (chems[i] !== null && chems[i] > 0) {
-      //     fire.push(new Operation("fire", chems[i], [i]))
+      //   if (chems[i] !== null) {
+      //     fire.push(new Operation("fire", chems[i], [i, chems[i]]))
+      //   }
+      // }
+      // return fire
+
+      //! add each chemical
+      // const chems = arr.new(4, 0)
+      // for (const op of operations) {
+      //   chems[op.values[0]] += op.values[1]
+      // }
+      // const fire = []
+      // for (let i = 0; i < 4; i++) {
+      //   if (chems[i] !== null) {
+      //     fire.push(new Operation("fire", chems[i], [i, chems[i]]))
       //   }
       // }
       // return fire

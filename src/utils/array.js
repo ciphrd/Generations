@@ -23,7 +23,7 @@ export const arr = {
     return this.sum(A, getV) + A.length
   },
   max(A, getV = (v) => v) {
-    return A.reduce((acc, val) => max(acc, getV(val)), A[0])
+    return A.reduce((acc, val) => max(acc, getV(val)), getV(A[0]))
   },
   del(A, el) {
     const idx = A.indexOf(el)

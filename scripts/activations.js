@@ -2,6 +2,10 @@
 // - how to handle the growth operations
 //   bytecode needed at all ? tbd
 
+function withValues(values, code) {
+  return values.map((val) => code(val))
+}
+
 /**
  * These small programs are compiled and encoded into the seed.png image which
  * is used to generate functional initial activation sequences. These small
@@ -9,85 +13,147 @@
  * behaviours for the first generation.
  */
 const seeds = [
-  // always fire chemical 1
+  // always fire chemicals
   `
-fire_1
-`,
-
-  // move forward if chemical 0 signal is received
+    fire_0
+  `,
   `
-zero
-chem_0
-if_more
-fw
-`,
-
-  // add all the chemicals in stack position 0
+    fire_1
+  `,
   `
-chem_0
-chem_1
-add
-swp
-pop
-chem_2
-add
-swp
-pop
-chem_3
-add
-swp
-pop
-`,
-
-  // trigger eat if the value in the stack is greater than zero
+    fire_2
+  `,
   `
-zero
-if_less
-eat
-pop
-`,
+    fire_3
+  `,
 
   // move forward
   `
-fw
-`,
+    fw
+    fire_2
+    fire_3
+  `,
 
   // actuate
   `
-act
-`,
+    act
+    fire_0
+    fire_1
+  `,
 
-  // fire other chemicals when chemical received
+  // simpler counter
   `
-zero
-chem_0
-if_more
-fire_1
-`,
-  `
-zero
-chem_1
-if_more
-fire_2
-`,
-  `
-zero
-chem_2
-if_more
-fire_3
-`,
-  `
-zero
-chem_3
-if_more
-fire_0
-`,
+    rot
+    push 0.01
+    add
+    swp
+    pop
+    swp
+    pop
+    dup
+    rot
+    swp
+  `,
 
-  // push sin(time) to the stack
+  // sin waves at various frequencies
+  ...withValues(
+    [0.01, 0.02, 0.04, 0.08],
+    (val) => `
+      rot
+      push ${val}
+      add
+      swp
+      pop
+      swp
+      pop
+      dup
+      cos
+      swp
+      pop
+      swp
+      rot
+      swp
+      fire_0
+    `
+  ),
+
+  // sawtooth waves at various frequencies
+  ...withValues(
+    [0.01, 0.02, 0.04, 0.08],
+    (freq) => `
+      rot
+      push ${freq}
+      add
+      swp         
+      pop
+      swp
+      pop
+      dup
+      push 1
+      swp
+      mod
+      swp         
+      pop
+      swp
+      pop
+      push 1
+      dup
+      add
+      swp
+      pop
+      swp
+      pop
+      mul
+      push 1
+      swp
+      sub
+      swp
+      pop
+      swp
+      pop
+      swp
+      pop
+      swp
+      pop
+      swp
+      rot
+      fire_0
+    `
+  ),
+
+  // signal 1.5x amplifier
   `
-time
-sin
-`,
+    push 1
+    push 0.5
+    add
+    swp
+    pop
+    swp
+    pop
+    mul
+    swp
+    pop
+    swp
+    pop
+    fire_0
+  `,
+
+  // signal inverter
+  `
+    push 1
+    push 0
+    sub
+    swp
+    pop
+    swp
+    pop
+    mul
+    swp
+    pop
+    swp
+    pop
+    fire_0
+  `,
 
   // todos
   // - more actions
@@ -98,18 +164,17 @@ const InstructionSet = [
   "nop_0",
   "nop_1",
   "pop",
+  "push",
+  "dup",
   "swp",
   "rot",
-  "zero",
   "if_less",
   "if_more",
   "jmp",
   "add",
   "sub",
-  "chem_0",
-  "chem_1",
-  "chem_2",
-  "chem_3",
+  "mul",
+  "mod",
   "fire_0",
   "fire_1",
   "fire_2",
@@ -123,17 +188,44 @@ const InstructionSet = [
   "eat",
   "sin",
   "cos",
-  "time",
 ]
 
-function compile(program) {
+const lnreg = /^[a-z_0-4]+|(?:\d(?:\.\d+)?)|\s$/
+
+export function compile(program) {
   console.log("\n")
   console.log("---------------------------------------------------------------")
   console.log(`Compiling...\n${program}`)
 
-  const lines = program.split("\n").filter((l) => l.length > 0)
-  const words = lines.map((ln) => ln.split(" ").at(0))
-  const bit5s = words.map((word) => InstructionSet.indexOf(word))
+  // parse lines, trim & check format
+  const parsedLines = []
+  const lines = program.split("\n")
+  let c = 0
+  for (let line of lines) {
+    c++
+    line = line.trim()
+    if (line.length === 0) continue
+    if (!lnreg.test(line)) throw Error(`Error at line ${c}: ${line}`)
+    parsedLines.push(line)
+  }
+
+  // parse intructions into their bit5 representation
+  const bit5s = []
+  for (const line of parsedLines) {
+    const segments = line.split(" ")
+    const instruction = segments[0]
+    bit5s.push(InstructionSet.indexOf(instruction))
+
+    if (instruction === "push") {
+      const nb = Math.max(0, Math.min(1, parseFloat(segments[1])))
+      const int = Math.round(nb * 1023)
+      const L = (int >> 5) & 0x1f
+      const R = int & 0x1f
+      bit5s.push(L, R)
+    }
+  }
+
+  // encode bit5 words into a list of bytes
 
   const bytes = []
   let bitIndex = 0
@@ -187,7 +279,7 @@ function compilePrograms(programs) {
  * |SZE|BYTECODE|SZE|BYTECODE| ..... |SZE|BYTECODE| 0 |
  * +---+========+---+========+ - - - +---+========+---+
  */
-function encode(compiledSequences) {
+export function encode(compiledSequences) {
   const bytes = []
   for (const sequence of compiledSequences) {
     bytes.push(sequence.length)

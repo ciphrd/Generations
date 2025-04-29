@@ -1,4 +1,5 @@
 export function mod(n, m) {
+  if (m === 0) return n
   return ((n % m) + m) % m
 }
 
@@ -25,4 +26,8 @@ export function angleForLerp(source, target) {
 
 export function sign(x) {
   return x < 0 ? -1 : x > 0 ? 1 : 0
+}
+
+export function sigmoid(x) {
+  return 1 / (1 + exp(-x))
 }

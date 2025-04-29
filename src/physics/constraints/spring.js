@@ -1,6 +1,14 @@
 import { arr } from "../../utils/array"
-import { mod } from "../../utils/math"
 import { vec2 } from "../../utils/vec"
+import { modulator } from "../signals/modulator"
+
+const a2 = arr.new(2)
+
+/**
+ * todo.
+ * Higher abstraction with Liaison ?
+ * contains a spring & wire
+ */
 
 export class Spring {
   constructor(bodyA, bodyB, restLength, stiffness, damping, color = "255,0,0") {
@@ -25,6 +33,14 @@ export class Spring {
     this.length = restLength
 
     this.color = color
+
+    // for each signal band, there's a modulator controlling the flow
+    this.modulators = arr.new(4, () => modulator(bodyA, bodyB))
+    this.signals = arr.new(8, 0)
+  }
+
+  sendSignal(from, band, value) {
+    this.signals[band * 2 + (from === this.bodyA ? 0 : 1)] = value
   }
 
   contract(strength) {
@@ -40,6 +56,24 @@ export class Spring {
   }
 
   apply(t, dt) {
+    // process the signals
+    for (let i = 0; i < 4; i++) {
+      this.modulators[i].modulate(
+        this.signals[i * 2],
+        this.signals[i * 2 + 1],
+        a2
+      )
+      this.bodyA.receiveSignal(i, a2[1], `body:${this.bodyB.id}`)
+      this.bodyB.receiveSignal(i, a2[0], `body:${this.bodyA.id}`)
+
+      // if (i === 0) {
+      //   console.log([this.signals[0], this.signals[1], ...a2])
+      // }
+    }
+    this.signals.fill(0)
+    // console.log([...this.modulators.map((mod) => mod.modulation)])
+
+    // todo: still need that ? not sure
     this.prevContraction = this.contraction
     this.restLength = this.initial.restLength * (1 - this.contraction)
     // todo.

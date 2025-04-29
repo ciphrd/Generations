@@ -1,3 +1,5 @@
+import { settings } from "../../settings"
+import { clamp } from "../../utils/math"
 import { Action } from "./action"
 
 export class FireAction extends Action {
@@ -6,9 +8,14 @@ export class FireAction extends Action {
   }
 
   activate(t, dt, chemicalStrength, values) {
-    if (chemicalStrength > 0.001) {
-      this.body.sendSignal(values[0], chemicalStrength * 0.96)
-    }
+    let strength = values[1]
+    if (isNaN(strength)) strength = 0
+
+    // this.body.sendSignal(values[0], chemicalStrength * settings.signals.loss)
+    this.body.sendSignal(
+      values[0],
+      clamp(strength * settings.signals.loss, -1, 1)
+    )
   }
 
   apply() {}

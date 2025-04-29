@@ -10,6 +10,8 @@ class Stack {
     return value
   }
   push(value) {
+    if (isNaN(value)) throw null
+    if (abs(value) === Infinity) value = 0
     for (let i = 9; i >= 1; i--) this.values[i] = this.values[i - 1]
     this.values[0] = value
   }
@@ -90,7 +92,6 @@ export class CPU {
     this.executed = 0
     this.lastOperations = this.operations
     this.operations = []
-    // this.stack.reset()
   }
 
   run(context, ...initialStack) {

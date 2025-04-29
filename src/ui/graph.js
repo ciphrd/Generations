@@ -3,7 +3,7 @@ import { mod } from "../utils/math"
 import { vec2 } from "../utils/vec"
 
 export class Graph {
-  constructor($wrapper, engine, sampler) {
+  constructor($wrapper, engine, sampler, on = "solver:updated") {
     const bounds = $wrapper.getBoundingClientRect()
     this.$wrapper = $wrapper
     this.cvs = document.createElement("canvas")
@@ -26,7 +26,7 @@ export class Graph {
     this.samples = sampler.def.map((_) => Array(this.cvs.width))
     this.idx = 0
 
-    this.off = engine.emitter.on("solved", () => {
+    this.off = engine.emitter.on(on, () => {
       this.tick()
       this.draw()
     })

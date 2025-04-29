@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from "react"
-import { useTicker } from "../hooks"
+import { useSelected, useTicker } from "../hooks.js"
 import { GraphOperations } from "./GraphOperations.jsx"
 import { Graph } from "./Graph.jsx"
 import { arr } from "../../utils/array"
@@ -9,6 +9,7 @@ const a10 = arr.new(10)
 
 export function CellCpu({ cpu }) {
   const ticker = useTicker()
+  const selected = useSelected()
 
   const $stack = useRef()
   useEffect(
@@ -19,7 +20,7 @@ export function CellCpu({ cpu }) {
           c[i].innerText = cpu.stack.values[i].toFixed(2)
         }
       }),
-    []
+    [selected]
   )
 
   return (

@@ -2,14 +2,21 @@ import { rnd } from "../utils/rnd"
 
 function generateActivation(seeds) {
   const out = []
-  for (let i = 0, n = rnd.int(2, 6); i < n; i++) {
+  for (let i = 0, n = rnd.int(1, 4); i < n; i++) {
     out.push(...rnd.el(seeds.activations))
   }
 
   // todo: improve ofc
-  for (let i = 0, n = rnd.int(5, 20); i < n; i++) {
-    out.splice(rnd.int(0, out.length - 1), 0, rnd.int(0, 32) & 0xff)
-  }
+
+  // add at the end
+  // for (let i = 0, n = rnd.int(0, 10); i < n; i++) {
+  //   out.push(rnd.int(0, 32) & 0xff)
+  // }
+
+  // within
+  // for (let i = 0, n = rnd.int(0, 10); i < n; i++) {
+  //   out.splice(rnd.int(0, out.length - 1), 0, rnd.int(0, 32) & 0xff)
+  // }
   return out
 }
 

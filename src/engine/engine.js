@@ -30,12 +30,18 @@ export class Engine {
   }
 
   tick = () => {
+    console.log("------------------------")
+
     const t = this.ticker.time,
       dt = this.ticker.dt
     this.world.update()
-    this.solver.solve(t, dt)
 
-    this.emitter.emit("solved")
+    this.solver.prepare(t, dt)
+    this.emitter.emit("solver:prepared")
+
+    this.solver.solve(t, dt)
+    this.emitter.emit("solver:updated")
+
     if (this.ticker.running) this.renderer.render()
   }
 }

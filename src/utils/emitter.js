@@ -14,5 +14,8 @@ export function emitter() {
         listeners[evt].forEach((cb) => cb())
       }
     },
+    pipe(to, evt, evtTarget = evt) {
+      return this.on(evt, () => to.emit(evtTarget))
+    },
   }
 }

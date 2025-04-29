@@ -8,6 +8,9 @@ export const settings = {
   dnas: {
     nb: 10,
   },
+  signals: {
+    loss: 0.99,
+  },
   clusters: {
     nb: 4,
     attr: {

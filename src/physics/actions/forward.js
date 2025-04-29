@@ -1,3 +1,4 @@
+import { clamp } from "../../utils/math"
 import { Action } from "./action"
 
 // todo as general simulation parameter
@@ -10,7 +11,8 @@ export class ForwardAction extends Action {
   }
 
   activate(t, dt, chemicalQuantity, values) {
-    this.strength = values[0] * 2
+    const v = clamp(values[0], 0, 1)
+    this.strength = v
   }
 
   apply(t, dt) {
