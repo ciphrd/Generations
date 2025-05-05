@@ -19,8 +19,17 @@ export class World {
 
   setBodies(bodies) {
     this.bodies = bodies
-    this.food = bodies.filter((body) => body.hasFlag(BodyFlags.FOOD))
-    this.organisms = bodies.filter((body) => body.hasFlag(BodyFlags.ORGANISM))
+    this.#deriveGroups()
+  }
+
+  #deriveGroups() {
+    this.food = this.bodies.filter((body) => body.hasFlag(BodyFlags.FOOD))
+    this.organisms = this.bodies.filter((body) =>
+      body.hasFlag(BodyFlags.ORGANISM)
+    )
+    this.bacterias = this.bodies.filter((body) =>
+      body.hasFlag(BodyFlags.BACTERIA)
+    )
   }
 
   addConstraint(stage, constraint) {
@@ -29,10 +38,12 @@ export class World {
 
   removeConstraint(stage, constraint) {
     arr.del(this.constraints[stage], constraint)
+    this.emitter.emit("constraints:updated")
   }
 
   removeBody(body) {
     arr.del(this.bodies, body)
+    this.#deriveGroups()
     this.emitter.emit("bodies:updated")
   }
 

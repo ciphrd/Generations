@@ -5,6 +5,9 @@ import quadVS from "./shaders/quad.vert.glsl"
 import testFS from "./shaders/test.frag.glsl"
 import liaisonVS from "./shaders/liaison.vert.glsl"
 import liaisonFS from "./shaders/liaison.frag.glsl"
+import bacteriasFS from "./shaders/bacterias.frag.glsl"
+import foodFS from "./shaders/food.frag.glsl"
+import { PointsRenderer } from "./points"
 
 const W = 800
 const H = 800
@@ -75,6 +78,9 @@ export class WebGLRenderer extends Renderer {
     gl.bindVertexArray(this.liaisonVao)
     gl.uniform2fv(this.programs.liaisons.uniforms.u_points, this.organisms)
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, liaisons.length)
+
+    this.bacterias.render()
+    this.food.render()
   }
 
   prepare() {
@@ -92,38 +98,24 @@ export class WebGLRenderer extends Renderer {
       liaisonIndices[i * 2 + 1] = organisms.indexOf(liaisons[i].bodyB)
     }
 
-    const quad = new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1])
-
     this.programs = {
-      quadTest: glu.program(
-        gl,
-        quadVS,
-        testFS,
-        {
+      quadTest: glu.program(gl, quadVS, testFS, {
+        attributes: ["a_position"],
+        uniforms: ["u_points"],
+        variables: {
           NUM_POINTS: nb,
         },
-        {
-          attributes: ["a_position"],
-          uniforms: ["u_points"],
-        }
-      ),
-      liaisons: glu.program(
-        gl,
-        liaisonVS,
-        liaisonFS,
-        {
+      }),
+      liaisons: glu.program(gl, liaisonVS, liaisonFS, {
+        attributes: ["a_position", "a_endpoints"],
+        uniforms: ["u_points"],
+        variables: {
           NUM_POINTS: nb,
         },
-        {
-          attributes: ["a_position", "a_endpoints"],
-          uniforms: ["u_points"],
-        }
-      ),
+      }),
     }
 
-    const positionBuffer = gl.createBuffer()
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
-    gl.bufferData(gl.ARRAY_BUFFER, quad, gl.STATIC_DRAW)
+    const positionBuffer = glu.quadBuffer(gl)
 
     loc = this.programs.quadTest.attributes.a_position
     this.vao = gl.createVertexArray()
@@ -135,18 +127,6 @@ export class WebGLRenderer extends Renderer {
     gl.bindBuffer(gl.ARRAY_BUFFER, liaisonBuffer)
     gl.bufferData(gl.ARRAY_BUFFER, liaisonIndices, gl.STATIC_DRAW)
 
-    console.log("----------------- LIAISONS")
-    console.log("vertex")
-    console.log(liaisonVS)
-    console.log("fragment")
-    console.log(liaisonFS)
-
-    console.log("pos:")
-    console.log(
-      gl.getAttribLocation(this.programs.liaisons.program, "a_position"),
-      gl.getAttribLocation(this.programs.liaisons.program, "a_endpoints")
-    )
-
     loc = this.programs.liaisons.attributes.a_endpoints
     this.liaisonVao = gl.createVertexArray()
     gl.bindVertexArray(this.liaisonVao)
@@ -157,5 +137,12 @@ export class WebGLRenderer extends Renderer {
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
     gl.enableVertexAttribArray(loc)
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
+
+    this.bacterias = new PointsRenderer(gl, bacteriasFS, () => world.bacterias)
+    this.food = new PointsRenderer(gl, foodFS, () => world.food)
+
+    world.emitter.on("bodies:updated", () => {
+      this.bacterias.update()
+    })
   }
 }

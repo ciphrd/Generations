@@ -241,7 +241,7 @@ async function start() {
         settings.radius * 0.4,
         0.02
       )
-      bod.addFlag(BodyFlags.REPELLING | BodyFlags.REPELLED)
+      bod.addFlag(BodyFlags.REPELLING | BodyFlags.REPELLED | BodyFlags.BACTERIA)
       testBodies.push(bod)
     }
   }

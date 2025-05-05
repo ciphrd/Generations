@@ -18,6 +18,7 @@ export const BodyFlags = {
   FOOD_SEEKER: 2 ** 4,
   ORGANISM: 2 ** 5,
   BINDABLE: 2 ** 6,
+  BACTERIA: 2 ** 7,
 }
 
 const MAX_VELOCITY = 0.2

@@ -1,4 +1,39 @@
+let quadBuffer = null
+
 export const glu = {
+  quadBuffer(gl) {
+    if (quadBuffer) return quadBuffer
+    quadBuffer = this.buffer(
+      gl,
+      new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1])
+    )
+    return quadBuffer
+  },
+
+  buffer(gl, geometry, usage = gl.STATIC_DRAW) {
+    const buffer = gl.createBuffer()
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+    gl.bufferData(gl.ARRAY_BUFFER, geometry, usage)
+    return buffer
+  },
+
+  dynamicBuffer(gl, geometry, update) {
+    const buffer = this.buffer(gl, geometry, gl.DYNAMIC_DRAW)
+
+    return {
+      buffer,
+      update: () => {
+        const geo = update()
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+        if (geometry.length === geo.length) {
+          gl.bufferSubData(gl.ARRAY_BUFFER, 0, geo)
+        } else {
+          gl.bufferData(gl.ARRAY_BUFFER, geo, gl.DYNAMIC_DRAW)
+        }
+      },
+    }
+  },
+
   replaceVariables(shader, variables) {
     for (const [variable, value] of Object.entries(variables)) {
       console.log({ variable, value })
@@ -23,8 +58,7 @@ export const glu = {
     gl,
     vertex,
     fragment,
-    variables,
-    { attributes = [], uniforms = [] } = {}
+    { attributes = [], uniforms = [], variables = {} } = {}
   ) {
     const program = gl.createProgram()
 
