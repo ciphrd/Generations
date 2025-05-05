@@ -30,8 +30,6 @@ export class Engine {
   }
 
   tick = () => {
-    console.log("------------------------")
-
     const t = this.ticker.time,
       dt = this.ticker.dt
     this.world.update()

@@ -1,3 +1,4 @@
+import { Renderer } from "../renderer"
 import { renderActuator } from "./actuator"
 import { renderAnchor } from "./anchor"
 import { renderBody } from "./body"
@@ -25,9 +26,11 @@ export function arc(index) {
   return [(index * 2 * PI) / 6, ((index + 1) * 2 * PI) / 6]
 }
 
-export class CanvasRenderer {
-  constructor(entities) {
-    this.entities = entities
+export class CanvasRenderer extends Renderer {
+  constructor(world, selection) {
+    super(world, selection)
+
+    this.entities = [world.bodies, world.constraints.pre, [selection]]
     this.cvs = document.createElement("canvas")
     this.cvs.width = W * devicePixelRatio
     this.cvs.height = H * devicePixelRatio
@@ -42,7 +45,7 @@ export class CanvasRenderer {
   }
 
   providerRenderingContainer($container) {
-    this.$container = $container
+    super.providerRenderingContainer($container)
     this.$container.appendChild(this.cvs)
   }
 

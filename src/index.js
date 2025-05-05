@@ -56,6 +56,7 @@ import { Engine } from "./engine/engine"
 import { importNetwork } from "./growth/import"
 
 import made from "./maker.json"
+import { WebGLRenderer } from "./renderer/webgl/renderer"
 
 Object.getOwnPropertyNames(Math).forEach((el) => (window[el] = Math[el]))
 window.TAU = 2 * PI
@@ -278,7 +279,12 @@ async function start() {
   const selection = new NodeSelection(world)
   window.selection = selection
 
-  const renderer = new CanvasRenderer([allBodies, constraints.pre, [selection]])
+  const Renderer =
+    new URLSearchParams(window.location.href).get("engine") === "canvas"
+      ? CanvasRenderer
+      : WebGLRenderer
+
+  const renderer = new Renderer(world, selection)
   Mouse.init(renderer.cvs)
 
   const engine = new Engine({

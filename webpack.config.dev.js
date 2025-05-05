@@ -11,6 +11,13 @@ module.exports = withFxhashCli(
             loader: "babel-loader",
           },
         },
+        {
+          test: /\.glsl$/,
+          exclude: /node_modules/,
+          use: {
+            loader: "raw-loader",
+          },
+        },
       ],
     },
   }

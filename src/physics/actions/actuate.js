@@ -43,9 +43,9 @@ export class ActuateAction extends Action {
     this.activation = t
     let v = clamp(values[0], -1, 1)
 
-    if (selection.selected === this.body) {
-      console.log("actuate", { v, chemicalQuantity })
-    }
+    // if (selection.selected === this.body) {
+    //   console.log("actuate", { v, chemicalQuantity })
+    // }
 
     //! test: using chemical quantity instead of value passed
     v = clamp(chemicalQuantity, -1, 1)

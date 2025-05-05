@@ -2,6 +2,7 @@ import { SpacePartition } from "../opti/hash-partition"
 import { arr } from "../utils/array"
 import { emitter } from "../utils/emitter"
 import { BodyFlags } from "./body"
+import { Spring } from "./constraints/spring"
 
 export class World {
   constructor(bodies = [], constraints = []) {
@@ -13,6 +14,7 @@ export class World {
 
   setConstraints(constraints) {
     this.constraints = constraints
+    this.liaisons = constraints.pre?.filter((cons) => cons instanceof Spring)
   }
 
   setBodies(bodies) {
