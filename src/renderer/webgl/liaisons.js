@@ -15,6 +15,7 @@ export class LiaisonsRenderer {
     this.world = world
     this.getLiaisons = getLiaisons
     this.liaisons = getLiaisons()
+    this.needsUpdate = false
 
     this.points = world.bodies
     this.program = glu.program(gl, liaisonVS, fragment, {
@@ -57,6 +58,10 @@ export class LiaisonsRenderer {
   render() {
     const { gl, program } = this
 
+    if (this.needsUpdate) {
+      this.allocate()
+    }
+
     for (let i = 0, body; i < this.points.length; i++) {
       body = this.points[i]
       this.pointsBuffer[i * 2 + 0] = body.pos.x
@@ -78,10 +83,10 @@ export class LiaisonsRenderer {
     )
     this.liaisons = this.getLiaisons()
     this.endpointsBuffer.update()
+    this.needsUpdate = false
   }
 
   update() {
-    console.log("here updated liaisons")
-    this.allocate()
+    this.needsUpdate = true
   }
 }
