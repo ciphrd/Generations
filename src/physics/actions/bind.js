@@ -1,6 +1,6 @@
 import { clamp, clamp01, lerp, sign } from "../../utils/math"
 import { BodyFlags } from "../body"
-import { Spring } from "../constraints/spring"
+import { Spring, SpringFlags } from "../constraints/spring"
 import { Action } from "./action"
 
 const BIND_DIST = 0.11
@@ -10,6 +10,17 @@ export class BindAction extends Action {
     super(body)
     this.strength = 0
     this.spring = null
+
+    body.world.emitter.on("bodies:updated", () => {
+      console.log("this is triggered!!!!")
+      if (!this.spring) return
+      if (
+        !body.world.includesBody(this.spring.bodyA) ||
+        !body.world.includesBody(this.spring.bodyB)
+      ) {
+        this.deleteSpring()
+      }
+    })
   }
 
   activate(t, dt, chemicalQuantity, values) {
@@ -31,7 +42,15 @@ export class BindAction extends Action {
     }
 
     if (closest) {
-      this.spring = new Spring(this.body, closest, 0.02, 100, 5, "255,0,255")
+      this.spring = new Spring(
+        this.body,
+        closest,
+        0.02,
+        100,
+        5,
+        "255,0,255",
+        SpringFlags.BIND
+      )
       this.body.world.addConstraint("pre", this.spring)
     }
   }
@@ -40,9 +59,13 @@ export class BindAction extends Action {
     if (!this.spring) return
     this.strength -= 0.01
     if (this.strength <= 0) {
-      this.spring.delete()
-      this.body.world.removeConstraint("pre", this.spring)
-      this.spring = null
+      this.deleteSpring()
     }
+  }
+
+  deleteSpring() {
+    this.spring.delete()
+    this.body.world.removeConstraint("pre", this.spring)
+    this.spring = null
   }
 }

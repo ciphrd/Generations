@@ -22,7 +22,14 @@ export class World {
     this.#deriveGroups()
   }
 
+  includesBody(body) {
+    return body.id in this.bodiesMap
+  }
+
   #deriveGroups() {
+    this.bodiesMap = Object.fromEntries(
+      this.bodies.map((body, i) => [body.id, i])
+    )
     this.food = this.bodies.filter((body) => body.hasFlag(BodyFlags.FOOD))
     this.organisms = this.bodies.filter((body) =>
       body.hasFlag(BodyFlags.ORGANISM)
@@ -34,6 +41,7 @@ export class World {
 
   addConstraint(stage, constraint) {
     this.constraints[stage].push(constraint)
+    this.emitter.emit("constraints:updated")
   }
 
   removeConstraint(stage, constraint) {
@@ -56,6 +64,7 @@ export class World {
   }
 
   update() {
+    this.emitter.runQueue()
     for (const K in this.partitions) this.partitions[K].update()
   }
 }

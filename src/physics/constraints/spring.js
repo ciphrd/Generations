@@ -1,8 +1,13 @@
 import { arr } from "../../utils/array"
 import { vec2 } from "../../utils/vec"
+import { Entity } from "../entity"
 import { modulator } from "../signals/modulator"
 
 const a2 = arr.new(2)
+
+export const SpringFlags = {
+  BIND: 2 ** 0,
+}
 
 /**
  * todo.
@@ -10,8 +15,18 @@ const a2 = arr.new(2)
  * contains a spring & wire
  */
 
-export class Spring {
-  constructor(bodyA, bodyB, restLength, stiffness, damping, color = "255,0,0") {
+export class Spring extends Entity {
+  constructor(
+    bodyA,
+    bodyB,
+    restLength,
+    stiffness,
+    damping,
+    color = "255,0,0",
+    flags = 0
+  ) {
+    super()
+    this.flags = flags
     this.bodyA = bodyA
     this.bodyB = bodyB
     this.initial = {

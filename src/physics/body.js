@@ -5,6 +5,7 @@ import { rnd } from "../utils/rnd"
 import { CPU, mergeOperations } from "../bytecode/cpu"
 import { ActivationBytecode } from "../bytecode/activation"
 import { Actions } from "./actions"
+import { Entity } from "./entity"
 
 let c = 0
 const _v2a = vec2(),
@@ -24,8 +25,9 @@ export const BodyFlags = {
 const MAX_VELOCITY = 0.2
 const MAX_VELOCITY_SQ = MAX_VELOCITY ** 2
 
-export class Body {
+export class Body extends Entity {
   constructor(world, pos, radius, friction = 0, color = "#00ff00") {
+    super()
     this.world = world
     this.id = c++
     this.energy = 1
@@ -35,7 +37,6 @@ export class Body {
     this.vel = vec2()
     this.acc = vec2()
     this.forwards = vec2().fromAngle(rnd.range(0, TAU))
-    this.flags = 0
     this.data = {
       clusterGroup: -1,
       organism: -1,
@@ -227,18 +228,6 @@ export class Body {
       this.pos.y = 0.9999 - mod(this.pos.y, 1)
       this.vel.y *= -1
     }
-  }
-
-  addFlag(flag) {
-    this.flags |= flag
-  }
-
-  removeFlag(flag) {
-    this.flags -= this.flags & flag
-  }
-
-  hasFlag(flag) {
-    return !!(this.flags & flag)
   }
 }
 

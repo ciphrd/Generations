@@ -5,9 +5,12 @@ import quadVS from "./shaders/quad.vert.glsl"
 import testFS from "./shaders/test.frag.glsl"
 import liaisonVS from "./shaders/liaison.vert.glsl"
 import liaisonFS from "./shaders/liaison.frag.glsl"
+import liaisonTempFS from "./shaders/liaison-temp.frag.glsl"
 import bacteriasFS from "./shaders/bacterias.frag.glsl"
 import foodFS from "./shaders/food.frag.glsl"
 import { PointsRenderer } from "./points"
+import { LiaisonsRenderer } from "./liaisons"
+import { Spring, SpringFlags } from "../../physics/constraints/spring"
 
 const W = 800
 const H = 800
@@ -17,11 +20,14 @@ const tH = H * devicePixelRatio
 /**
  * todo.
  *
- * ( ) initial webgl setup
+ * (x) initial webgl setup
  * ( ) render cells & springs
  *   ( ) optimized pipeline for instancing
  *   ( ) instanced rendering of cells
  *   ( ) instanced rendering of springs
+ * ( ) Have a single buffer with all the body positions
+ *   ( ) Pass the buffer as a uniform, use sections of this buffer to render
+ *       different bodies with different shaders ?
  * ( ) render other bodies
  * ( ) optimized updates (new springs, bodies, etc...)
  * ( ) shading of cells/springs
@@ -81,6 +87,7 @@ export class WebGLRenderer extends Renderer {
 
     this.bacterias.render()
     this.food.render()
+    this.bindLiaisons.render()
   }
 
   prepare() {
@@ -140,9 +147,21 @@ export class WebGLRenderer extends Renderer {
 
     this.bacterias = new PointsRenderer(gl, bacteriasFS, () => world.bacterias)
     this.food = new PointsRenderer(gl, foodFS, () => world.food)
+    this.bindLiaisons = new LiaisonsRenderer(gl, world, liaisonTempFS, () =>
+      world.constraints.pre.filter(
+        (cons) => cons instanceof Spring && cons.hasFlag(SpringFlags.BIND)
+      )
+    )
 
     world.emitter.on("bodies:updated", () => {
+      console.log("bodies:updated")
       this.bacterias.update()
+      this.food.update()
+      this.bindLiaisons.update()
+    })
+    world.emitter.on("constraints:updated", () => {
+      console.log("constraints:updated")
+      this.bindLiaisons.update()
     })
   }
 }

@@ -280,7 +280,7 @@ async function start() {
   window.selection = selection
 
   const Renderer =
-    new URLSearchParams(window.location.href).get("engine") === "canvas"
+    new URLSearchParams(window.location.search).get("engine") === "canvas"
       ? CanvasRenderer
       : WebGLRenderer
 
