@@ -12,7 +12,6 @@ export class BindAction extends Action {
     this.spring = null
 
     body.world.emitter.on("bodies:updated", () => {
-      console.log("this is triggered!!!!")
       if (!this.spring) return
       if (
         !body.world.includesBody(this.spring.bodyA) ||

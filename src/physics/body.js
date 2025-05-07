@@ -43,6 +43,7 @@ export class Body extends Entity {
     }
     this.initial = {
       friction,
+      radius,
     }
     this.springs = []
     this.modifiers = []

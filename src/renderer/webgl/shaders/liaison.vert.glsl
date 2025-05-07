@@ -30,6 +30,11 @@ void main() {
   pos.xy += mid;
   pos.xy = pos.xy * 2.0 - 1.0;
 
+  // temp zoom
+  pos.xy -= 0.5;
+  pos.xy *= 3.0;
+  pos.xy += 0.5;
+
   gl_Position = vec4(pos, 0.0, 1.0);
   v_uv = a_position.xy * 0.5 + 0.5;
 }

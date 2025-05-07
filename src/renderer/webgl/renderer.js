@@ -1,6 +1,8 @@
 import { glu } from "../../utils/glu"
 import { vec2 } from "../../utils/vec"
 import { Renderer } from "../renderer"
+import simplex from "./shaders/lib/simplex.glsl"
+import fullVS from "./shaders/full.vert.glsl"
 import quadVS from "./shaders/quad.vert.glsl"
 import testFS from "./shaders/test.frag.glsl"
 import liaisonVS from "./shaders/liaison.vert.glsl"
@@ -8,6 +10,7 @@ import liaisonFS from "./shaders/liaison.frag.glsl"
 import liaisonTempFS from "./shaders/liaison-temp.frag.glsl"
 import bacteriasFS from "./shaders/bacterias.frag.glsl"
 import foodFS from "./shaders/food.frag.glsl"
+import compFS from "./shaders/composition.frag.glsl"
 import { PointsRenderer } from "./points"
 import { LiaisonsRenderer } from "./liaisons"
 import { Spring, SpringFlags } from "../../physics/constraints/spring"
@@ -50,6 +53,14 @@ export class WebGLRenderer extends Renderer {
     this.gl = this.cvs.getContext("webgl2")
     this.texel = vec2(1 / this.cvs.width, 1 / this.cvs.height)
 
+    this.gl.getExtension("EXT_color_buffer_float")
+    this.gl.getExtension("EXT_float_blend")
+    this.gl.getExtension("OES_texture_float_linear")
+
+    glu.libs({
+      simplex,
+    })
+
     this.prepare()
   }
 
@@ -63,8 +74,9 @@ export class WebGLRenderer extends Renderer {
     const { organisms, liaisons } = world
     const nb = organisms.length
 
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb)
     gl.viewport(0, 0, tW, tH)
-    gl.clearColor(0, 0, 0, 1)
+    gl.clearColor(0, 0, 0, 0)
     gl.clear(gl.COLOR_BUFFER_BIT)
 
     gl.enable(gl.BLEND)
@@ -88,6 +100,20 @@ export class WebGLRenderer extends Renderer {
     this.bacterias.render()
     this.food.render()
     this.bindLiaisons.render()
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+    gl.viewport(0, 0, tW, tH)
+    gl.clearColor(0, 0, 0, 1)
+    gl.clear(gl.COLOR_BUFFER_BIT)
+
+    gl.disable(gl.BLEND)
+
+    gl.useProgram(this.programs.comp.program)
+    gl.bindVertexArray(this.compVao)
+    gl.activeTexture(gl.TEXTURE0)
+    gl.bindTexture(gl.TEXTURE_2D, this.target)
+    gl.uniform1i(this.programs.comp.uniforms.u_texture, 0)
+    gl.drawArrays(gl.TRIANGLES, 0, 6)
   }
 
   prepare() {
@@ -120,9 +146,13 @@ export class WebGLRenderer extends Renderer {
           NUM_POINTS: nb,
         },
       }),
+      comp: glu.program(gl, fullVS, compFS, {
+        attributes: ["a_position"],
+        uniforms: ["u_texture"],
+      }),
     }
 
-    const positionBuffer = glu.quadBuffer(gl)
+    const quadBuffer = glu.quadBuffer(gl)
 
     loc = this.programs.quadTest.attributes.a_position
     this.vao = gl.createVertexArray()
@@ -141,7 +171,7 @@ export class WebGLRenderer extends Renderer {
     gl.vertexAttribIPointer(loc, 2, gl.UNSIGNED_SHORT, false, 0, 0)
     gl.vertexAttribDivisor(loc, 1)
     loc = this.programs.liaisons.attributes.a_position
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
+    gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer)
     gl.enableVertexAttribArray(loc)
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
 
@@ -153,14 +183,45 @@ export class WebGLRenderer extends Renderer {
       )
     )
 
+    this.target = gl.createTexture()
+    gl.bindTexture(gl.TEXTURE_2D, this.target)
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA32F,
+      tW,
+      tH,
+      0,
+      gl.RGBA,
+      gl.FLOAT,
+      null
+    )
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+    this.fb = gl.createFramebuffer()
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb)
+    gl.framebufferTexture2D(
+      gl.FRAMEBUFFER,
+      gl.COLOR_ATTACHMENT0,
+      gl.TEXTURE_2D,
+      this.target,
+      0
+    )
+
+    this.compVao = gl.createVertexArray()
+    gl.bindVertexArray(this.compVao)
+    loc = this.programs.comp.attributes.a_position
+    gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer)
+    gl.enableVertexAttribArray(loc)
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
+
     world.emitter.on("bodies:updated", () => {
-      console.log("bodies:updated")
       this.bacterias.update()
       this.food.update()
       this.bindLiaisons.update()
     })
     world.emitter.on("constraints:updated", () => {
-      console.log("constraints:updated")
       this.bindLiaisons.update()
     })
   }

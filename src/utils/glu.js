@@ -1,6 +1,12 @@
+let libs = {}
 let quadBuffer = null
 
+const includeRgx = /^#include <([a-zA-Z\-]+)\.glsl>$/
+
 export const glu = {
+  libs(dict) {
+    libs = dict
+  },
   quadBuffer(gl) {
     if (quadBuffer) return quadBuffer
     quadBuffer = this.buffer(
@@ -35,8 +41,18 @@ export const glu = {
   },
 
   replaceVariables(shader, variables) {
+    const lines = shader.split("\n")
+    for (let i = 0; i < lines.length; i++) {
+      const res = includeRgx.exec(lines[i])
+      if (res) {
+        const lib = res[1]
+        if (!libs[lib])
+          throw `Error when pre-processing shader: lib "${lib}" is not available`
+        lines[i] = libs[lib]
+      }
+    }
+    shader = lines.join("\n")
     for (const [variable, value] of Object.entries(variables)) {
-      console.log({ variable, value })
       shader = shader.replaceAll("$" + variable, value)
     }
     return shader
