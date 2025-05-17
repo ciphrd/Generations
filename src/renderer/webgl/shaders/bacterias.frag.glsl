@@ -31,5 +31,5 @@ void main() {
 
   S -= smoothstep(0.4, 0.01, L) * 0.8;
 
-  outColor = vec4(1., 1., 0.2, S * 0.8);
+  outColor = vec4(1., 1., 0.2, 0.8) * S;
 }

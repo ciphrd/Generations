@@ -2,28 +2,34 @@
 precision highp float;
 
 #include <simplex.glsl>
-#include <liaison.glsl>
+#include <cell.glsl>
 
 uniform sampler2D u_blurred_membrane;
 
 in vec2 v_uv;
 in vec2 v_guv;
-in vec2 v_ids;
-in float v_length;
-
-out vec4 outColor0;
+in float v_id;
+out vec4 outColor;
 
 float N(in vec2 uv, float scale, float seed) {
-  return snoise(vec3(uv * scale, (v_ids.x + 20.0 * v_ids.y) * 0.1 * seed));
+  return snoise(vec3(uv * scale, v_id * seed));
 }
 
+// todos
+// - add more holes to create variations
+// - slightly deform UV space, N() function approach to be rethought
+// - do similar shading on liaisons
+// - reduce lines width compared to cells
+// - write the nucleus
+// - design the passes for processing the membrane
+
 void main() {
+  vec2 uv = cellUV(v_uv, v_id);
+
+  float L = length(uv - 0.5);
+  float S = smoothstep(0.49, 0.45, L);
+
   vec3 C = vec3(0);
-
-  vec2 uv = liaisonUV(v_uv, v_length);
-
-  float L = (1.0 - length(uv - 0.5)) * 2.0;
-  float S = smoothstep(0.98, 1.0, L);
 
   // background noise, small but sutle variations creating base color
   float bgNoise = max(0., N(uv, 1.2 * 20.0, 1.3440)) 
@@ -48,15 +54,15 @@ void main() {
   float reddishBlobNoise = max(0., N(uv, 0.4, 87.12029));
   C += vec3(0.3, 1, 0.8) * reddishBlobNoise * 0.2;
 
-  // depth "vignette"
-  float vignette = texture(u_blurred_membrane, v_guv).r;
-  C += vec3(0.3, 1, 0.8) * S * vignette * 1.5;
-
   // reddish compact red dots
   float redDotsNoise = N(uv, 12.3, 237.0238)
                      * pow(N(uv, 2.2, 109.323), 2.0)
                      * pow(N(uv, 1.3, 83.323), 1.0);
   C += vec3(0.3, 1, 0.8) * redDotsNoise * 0.6;
+
+  // depth "vignette"
+  float vignette = texture(u_blurred_membrane, v_guv).r;
+  C += vec3(0.3, 1, 0.8) * S * vignette * 1.5;
 
   // some holes 
   float holesNoise = N(uv, 11.3, 87.3812)
@@ -69,17 +75,7 @@ void main() {
   C -= vec3(1) * hole2N * 0.1;
   C = clamp(vec3(0), vec3(1), C);
 
-  // smooth transition to connect the cells
-  float k = (1.0 - abs(v_uv.x - 0.5) * 2.0) * v_length;
-  float junctions = pow(length(vec2( k, (v_uv.y - 0.5) * 2.0 )), 2.0);
-  if (junctions < 1.0) {
-    junctions *= pow(k, 0.5);
-  }
-  junctions = clamp(junctions, 0.0, 1.0);
-
-  // alpha
-  float lum = clamp(0.0, 1.0, C.r + C.g + C.b + 1.0);
-  outColor0 = vec4(C, 1) * S;
+  outColor = vec4(C, 1) * S;
 
   // to create a cellular-like pattern we use the depth based on the distance
   // field of the cell. this will create a voronoi-like pattern

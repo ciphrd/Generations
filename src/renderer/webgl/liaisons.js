@@ -1,3 +1,4 @@
+import { settings } from "../../settings"
 import { arr } from "../../utils/array"
 import { glu } from "../../utils/glu"
 import liaisonVS from "./shaders/liaison.vert.glsl"
@@ -23,10 +24,11 @@ export class LiaisonsRenderer {
       uniforms: ["u_points"],
       variables: {
         NUM_POINTS: this.points.length,
+        CELL_SCALE: settings.rendering.cell.scale,
       },
     })
 
-    this.pointsBuffer = new Float32Array(this.points.length * 2)
+    this.pointsBuffer = new Float32Array(this.points.length * 4)
 
     this.endpointsIndices = new Uint16Array(MAX_LIAISONS * 2)
     this.endpointsBuffer = glu.dynamicBuffer(gl, this.endpointsIndices, () => {
@@ -64,15 +66,16 @@ export class LiaisonsRenderer {
 
     for (let i = 0, body; i < this.points.length; i++) {
       body = this.points[i]
-      this.pointsBuffer[i * 2 + 0] = body.pos.x
-      this.pointsBuffer[i * 2 + 1] = body.pos.y
+      this.pointsBuffer[i * 4 + 0] = body.pos.x
+      this.pointsBuffer[i * 4 + 1] = body.pos.y
+      this.pointsBuffer[i * 4 + 2] = body.radius
     }
 
     // console.log(this.pointsBuffer)
 
     gl.useProgram(program.program)
     gl.bindVertexArray(this.vao)
-    gl.uniform2fv(this.program.uniforms.u_points, this.pointsBuffer)
+    gl.uniform4fv(this.program.uniforms.u_points, this.pointsBuffer)
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.liaisons.length)
   }
 

@@ -1,19 +1,28 @@
 import { glu } from "../../utils/glu"
 import { vec2 } from "../../utils/vec"
 import { Renderer } from "../renderer"
-import simplex from "./shaders/lib/simplex.glsl"
+import simplexGL from "./shaders/lib/simplex.glsl"
+import cellGL from "./shaders/lib/cell.glsl"
+import liaisonGL from "./shaders/lib/liaison.glsl"
 import fullVS from "./shaders/full.vert.glsl"
+import textureFS from "./shaders/texture.frag.glsl"
 import quadVS from "./shaders/quad.vert.glsl"
-import testFS from "./shaders/test.frag.glsl"
+import cellFS from "./shaders/cell.frag.glsl"
 import liaisonVS from "./shaders/liaison.vert.glsl"
 import liaisonFS from "./shaders/liaison.frag.glsl"
 import liaisonTempFS from "./shaders/liaison-temp.frag.glsl"
 import bacteriasFS from "./shaders/bacterias.frag.glsl"
+import fieldLiaisonFS from "./shaders/field-liaison.frag.glsl"
+import fieldCellFS from "./shaders/field-cell.frag.glsl"
 import foodFS from "./shaders/food.frag.glsl"
 import compFS from "./shaders/composition.frag.glsl"
+import membraneFS from "./shaders/membrane.frag.glsl"
 import { PointsRenderer } from "./points"
 import { LiaisonsRenderer } from "./liaisons"
 import { Spring, SpringFlags } from "../../physics/constraints/spring"
+import { settings } from "../../settings"
+import { EdgePass } from "./edge"
+import { GaussianPass } from "./gaussian"
 
 const W = 800
 const H = 800
@@ -22,6 +31,11 @@ const tH = H * devicePixelRatio
 
 /**
  * todo.
+ *
+ * ( ) modulate the shape of the cells / membrane on all the fragment shaders
+ *     where these are rendered for consistency
+ *     (include the liaison deformation)
+ *
  *
  * (x) initial webgl setup
  * ( ) render cells & springs
@@ -58,9 +72,12 @@ export class WebGLRenderer extends Renderer {
     this.gl.getExtension("OES_texture_float_linear")
 
     glu.libs({
-      simplex,
+      simplex: simplexGL,
+      cell: cellGL,
+      liaison: liaisonGL,
     })
 
+    this.vaos = {}
     this.prepare()
   }
 
@@ -74,46 +91,102 @@ export class WebGLRenderer extends Renderer {
     const { organisms, liaisons } = world
     const nb = organisms.length
 
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb)
-    gl.viewport(0, 0, tW, tH)
-    gl.clearColor(0, 0, 0, 0)
-    gl.clear(gl.COLOR_BUFFER_BIT)
-
-    gl.enable(gl.BLEND)
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-
     for (let i = 0; i < nb; i++) {
-      this.organisms[i * 2 + 0] = organisms[i].pos.x
-      this.organisms[i * 2 + 1] = organisms[i].pos.y
+      this.organisms[i * 4 + 0] = organisms[i].pos.x
+      this.organisms[i * 4 + 1] = organisms[i].pos.y
+      this.organisms[i * 4 + 2] = organisms[i].radius
+      this.organisms[i * 4 + 3] = organisms[i].id
     }
 
-    gl.useProgram(this.programs.quadTest.program)
-    gl.bindVertexArray(this.vao)
-    gl.uniform2fv(this.programs.quadTest.uniforms.u_points, this.organisms)
+    //
+    // Render field, merging the cells / liaisons in a smooth way
+    //
+    glu.bindFB(gl, W, H, this.fieldRT.fb)
+    gl.enable(gl.BLEND)
+    gl.blendEquation(gl.MAX)
+
+    gl.useProgram(this.programs.fieldCell.program)
+    gl.bindVertexArray(this.vaos.fieldCell)
+    gl.uniform4fv(this.programs.fieldCell.uniforms.u_points, this.organisms)
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, nb)
 
+    gl.useProgram(this.programs.fieldLiaison.program)
+    gl.bindVertexArray(this.vaos.fieldLiaison)
+    gl.uniform4fv(this.programs.fieldLiaison.uniforms.u_points, this.organisms)
+    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, liaisons.length)
+
+    //
+    // Compute edges on the field to create the shell of the membrane
+    //
+    this.edgePass1.render()
+    this.edgePass2.render()
+    this.blurredMembranePass.render()
+
+    //
+    // Render the light absorption layer, composed of the different bodies
+    // which absorb light
+    //
+
+    gl.enable(gl.DEPTH_TEST)
+    gl.depthFunc(gl.LESS)
+    glu.blend(gl, null)
+
+    glu.bindFB(gl, tW, tH, this.absorbRT.fb)
+    // glu.blend(gl, gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+
+    gl.useProgram(this.programs.cells.program)
+    gl.bindVertexArray(this.vao)
+    gl.uniform4fv(this.programs.cells.uniforms.u_points, this.organisms)
+    glu.uniformTex(
+      gl,
+      this.programs.cells.uniforms.u_blurred_membrane,
+      this.blurredMembranePass.output
+    )
+    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, nb)
+
+    // glu.blend(gl, gl.ONE, gl.ONE)
     gl.useProgram(this.programs.liaisons.program)
     gl.bindVertexArray(this.liaisonVao)
-    gl.uniform2fv(this.programs.liaisons.uniforms.u_points, this.organisms)
+    gl.uniform4fv(this.programs.liaisons.uniforms.u_points, this.organisms)
+    glu.uniformTex(
+      gl,
+      this.programs.liaisons.uniforms.u_blurred_membrane,
+      this.blurredMembranePass.output
+    )
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, liaisons.length)
+
+    gl.disable(gl.DEPTH_TEST)
+
+    glu.blend(gl, gl.ONE, gl.ONE)
+    gl.useProgram(this.programs.membrane.program)
+    gl.bindVertexArray(this.vaos.membrane)
+    glu.uniformTex(
+      gl,
+      this.programs.membrane.uniforms.u_texture,
+      this.edgePass2.rt.texture
+    )
+    gl.drawArrays(gl.TRIANGLES, 0, 6)
 
     this.bacterias.render()
     this.food.render()
     this.bindLiaisons.render()
 
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-    gl.viewport(0, 0, tW, tH)
-    gl.clearColor(0, 0, 0, 1)
-    gl.clear(gl.COLOR_BUFFER_BIT)
-
-    gl.disable(gl.BLEND)
+    glu.bindFB(gl, tW, tH, null)
+    glu.blend(gl, null)
 
     gl.useProgram(this.programs.comp.program)
     gl.bindVertexArray(this.compVao)
     gl.activeTexture(gl.TEXTURE0)
-    gl.bindTexture(gl.TEXTURE_2D, this.target)
+    gl.bindTexture(gl.TEXTURE_2D, this.absorbRT.texture)
     gl.uniform1i(this.programs.comp.uniforms.u_texture, 0)
     gl.drawArrays(gl.TRIANGLES, 0, 6)
+
+    // gl.useProgram(this.programs.tex.program)
+    // gl.bindVertexArray(this.vaos.tex)
+    // gl.activeTexture(gl.TEXTURE0)
+    // gl.bindTexture(gl.TEXTURE_2D, this.absorbRT.texture)
+    // gl.uniform1i(this.programs.tex.uniforms.u_texture, 0)
+    // gl.drawArrays(gl.TRIANGLES, 0, 6)
   }
 
   prepare() {
@@ -122,7 +195,7 @@ export class WebGLRenderer extends Renderer {
     const { organisms, liaisons } = world
 
     const nb = organisms.length
-    this.organisms = new Float32Array(nb * 2)
+    this.organisms = new Float32Array(nb * 4)
 
     const nbLiaisons = liaisons.length
     const liaisonIndices = new Uint16Array(nbLiaisons * 2)
@@ -132,21 +205,47 @@ export class WebGLRenderer extends Renderer {
     }
 
     this.programs = {
-      quadTest: glu.program(gl, quadVS, testFS, {
+      fieldCell: glu.program(gl, quadVS, fieldCellFS, {
         attributes: ["a_position"],
         uniforms: ["u_points"],
         variables: {
           NUM_POINTS: nb,
+          CELL_SCALE: settings.rendering.cell.scale,
         },
       }),
-      liaisons: glu.program(gl, liaisonVS, liaisonFS, {
+      fieldLiaison: glu.program(gl, liaisonVS, fieldLiaisonFS, {
         attributes: ["a_position", "a_endpoints"],
         uniforms: ["u_points"],
         variables: {
           NUM_POINTS: nb,
+          CELL_SCALE: settings.rendering.cell.scale,
+        },
+      }),
+      membrane: glu.program(gl, fullVS, membraneFS, {
+        attributes: ["a_position"],
+        uniforms: ["u_texture"],
+      }),
+      cells: glu.program(gl, quadVS, cellFS, {
+        attributes: ["a_position"],
+        uniforms: ["u_points", "u_blurred_membrane"],
+        variables: {
+          NUM_POINTS: nb,
+          CELL_SCALE: settings.rendering.cell.scale,
+        },
+      }),
+      liaisons: glu.program(gl, liaisonVS, liaisonFS, {
+        attributes: ["a_position", "a_endpoints"],
+        uniforms: ["u_points", "u_blurred_membrane"],
+        variables: {
+          NUM_POINTS: nb,
+          CELL_SCALE: settings.rendering.cell.scale,
         },
       }),
       comp: glu.program(gl, fullVS, compFS, {
+        attributes: ["a_position"],
+        uniforms: ["u_texture"],
+      }),
+      tex: glu.program(gl, fullVS, textureFS, {
         attributes: ["a_position"],
         uniforms: ["u_texture"],
       }),
@@ -154,9 +253,21 @@ export class WebGLRenderer extends Renderer {
 
     const quadBuffer = glu.quadBuffer(gl)
 
-    loc = this.programs.quadTest.attributes.a_position
+    this.vaos.fieldCell = gl.createVertexArray()
+    loc = this.programs.fieldCell.attributes.a_position
+    gl.bindVertexArray(this.vaos.fieldCell)
+    gl.enableVertexAttribArray(loc)
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
+
     this.vao = gl.createVertexArray()
+    loc = this.programs.cells.attributes.a_position
     gl.bindVertexArray(this.vao)
+    gl.enableVertexAttribArray(loc)
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
+
+    this.vaos.membrane = gl.createVertexArray()
+    loc = this.programs.membrane.attributes.a_position
+    gl.bindVertexArray(this.vaos.membrane)
     gl.enableVertexAttribArray(loc)
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
 
@@ -164,13 +275,25 @@ export class WebGLRenderer extends Renderer {
     gl.bindBuffer(gl.ARRAY_BUFFER, liaisonBuffer)
     gl.bufferData(gl.ARRAY_BUFFER, liaisonIndices, gl.STATIC_DRAW)
 
-    loc = this.programs.liaisons.attributes.a_endpoints
     this.liaisonVao = gl.createVertexArray()
+    loc = this.programs.liaisons.attributes.a_endpoints
     gl.bindVertexArray(this.liaisonVao)
     gl.enableVertexAttribArray(loc)
     gl.vertexAttribIPointer(loc, 2, gl.UNSIGNED_SHORT, false, 0, 0)
     gl.vertexAttribDivisor(loc, 1)
     loc = this.programs.liaisons.attributes.a_position
+    gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer)
+    gl.enableVertexAttribArray(loc)
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
+
+    this.vaos.fieldLiaison = gl.createVertexArray()
+    loc = this.programs.fieldLiaison.attributes.a_endpoints
+    gl.bindVertexArray(this.vaos.fieldLiaison)
+    gl.enableVertexAttribArray(loc)
+    gl.bindBuffer(gl.ARRAY_BUFFER, liaisonBuffer)
+    gl.vertexAttribIPointer(loc, 2, gl.UNSIGNED_SHORT, false, 0, 0)
+    gl.vertexAttribDivisor(loc, 1)
+    loc = this.programs.fieldLiaison.attributes.a_position
     gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer)
     gl.enableVertexAttribArray(loc)
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
@@ -183,34 +306,29 @@ export class WebGLRenderer extends Renderer {
       )
     )
 
-    this.target = gl.createTexture()
-    gl.bindTexture(gl.TEXTURE_2D, this.target)
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      0,
-      gl.RGBA32F,
-      tW,
-      tH,
-      0,
-      gl.RGBA,
-      gl.FLOAT,
-      null
-    )
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-    this.fb = gl.createFramebuffer()
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb)
-    gl.framebufferTexture2D(
-      gl.FRAMEBUFFER,
-      gl.COLOR_ATTACHMENT0,
-      gl.TEXTURE_2D,
-      this.target,
-      0
+    this.absorbRT = glu.renderTarget(gl, tW, tH, gl.RGBA32F, { depth: true })
+    this.fieldRT = glu.renderTarget(gl, W, H, gl.RGBA32F)
+    this.membraneRT = glu.renderTarget(gl, tW, tH, gl.RGBA32F)
+
+    this.edgePass1 = new EdgePass(gl, vec2(W, H), this.fieldRT.texture)
+    this.edgePass2 = new EdgePass(gl, vec2(W, H), this.edgePass1.rt.texture)
+
+    this.blurredMembranePass = new GaussianPass(
+      gl,
+      vec2(W, H),
+      this.edgePass2.rt.texture,
+      11
     )
 
     this.compVao = gl.createVertexArray()
     gl.bindVertexArray(this.compVao)
+    loc = this.programs.comp.attributes.a_position
+    gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer)
+    gl.enableVertexAttribArray(loc)
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
+
+    this.vaos.tex = gl.createVertexArray()
+    gl.bindVertexArray(this.vaos.tex)
     loc = this.programs.comp.attributes.a_position
     gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer)
     gl.enableVertexAttribArray(loc)

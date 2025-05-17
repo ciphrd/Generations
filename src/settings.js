@@ -4,7 +4,12 @@ import { Eater } from "./interactions/eat"
 import { FoodSeeker } from "./interactions/food-seeker"
 
 export const settings = {
-  radius: 0.005,
+  radius: 0.006,
+  rendering: {
+    cell: {
+      scale: 2.001,
+    },
+  },
   dnas: {
     nb: 10,
   },

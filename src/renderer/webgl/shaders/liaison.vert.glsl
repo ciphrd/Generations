@@ -1,27 +1,34 @@
 #version 300 es
+#define CELL_SCALE $CELL_SCALE
 
-uniform vec2 u_points[$NUM_POINTS];
+uniform vec4 u_points[$NUM_POINTS];
 
 layout(location = 0) in vec4 a_position;
 layout(location = 1) in uvec2 a_endpoints;
 
 out vec2 v_uv;
+out vec2 v_guv;
+out vec2 v_ids;
+out float v_length;
 
 void main() {
 
   // get left/right endpoints positions of segment
-  vec2 L = u_points[a_endpoints.x];
-  vec2 R = u_points[a_endpoints.y];
-  vec2 LR = R - L;
-  vec2 mid = (L + R) * .5;
+  vec4 L = u_points[a_endpoints.x];
+  vec4 R = u_points[a_endpoints.y];
+  vec2 LR = R.xy - L.xy;
+  vec2 mid = (L.xy + R.xy) * .5;
+  float LRlen = length(LR);
+
+  float width = mix( L.z, R.z, (a_position.x + 1.0) * 0.5 ) * CELL_SCALE;
 
   float A = -atan(LR.y, LR.x);
 
   vec2 pos = a_position.xy;
 
   // scale
-  pos.x *= length(LR) / 2.0;
-  pos.y *= 0.01;
+  pos.x *= LRlen / 2.0;
+  pos.y *= width;
   // rotate
   vec2 P = pos;
   pos.x = P.x *  cos(A) + P.y * sin(A);
@@ -31,10 +38,11 @@ void main() {
   pos.xy = pos.xy * 2.0 - 1.0;
 
   // temp zoom
-  pos.xy -= 0.5;
   pos.xy *= 3.0;
-  pos.xy += 0.5;
 
   gl_Position = vec4(pos, 0.0, 1.0);
   v_uv = a_position.xy * 0.5 + 0.5;
+  v_guv = pos.xy * 0.5 + 0.5;
+  v_ids = vec2(L.w, R.w);
+  v_length = LRlen / 2.0 / width;
 }

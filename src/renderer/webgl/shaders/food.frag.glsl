@@ -96,5 +96,5 @@ void main() {
     C += vec4(0.4) * Sd * (1.0 - nuc);
   }
 
-  outColor = C;
+  outColor = C * S;
 }
