@@ -1,6 +1,7 @@
 import { glu } from "../../utils/glu"
 import { vec2 } from "../../utils/vec"
 import { Renderer } from "../renderer"
+import mathGL from "./shaders/lib/math.glsl"
 import simplexGL from "./shaders/lib/simplex.glsl"
 import cellGL from "./shaders/lib/cell.glsl"
 import liaisonGL from "./shaders/lib/liaison.glsl"
@@ -72,6 +73,7 @@ export class WebGLRenderer extends Renderer {
     this.gl.getExtension("OES_texture_float_linear")
 
     glu.libs({
+      math: mathGL,
       simplex: simplexGL,
       cell: cellGL,
       liaison: liaisonGL,
@@ -96,6 +98,9 @@ export class WebGLRenderer extends Renderer {
       this.organisms[i * 4 + 1] = organisms[i].pos.y
       this.organisms[i * 4 + 2] = organisms[i].radius
       this.organisms[i * 4 + 3] = organisms[i].id
+
+      this.organisms2[i * 4 + 0] = organisms[i].forwards.x
+      this.organisms2[i * 4 + 1] = organisms[i].forwards.y
     }
 
     //
@@ -108,6 +113,7 @@ export class WebGLRenderer extends Renderer {
     gl.useProgram(this.programs.fieldCell.program)
     gl.bindVertexArray(this.vaos.fieldCell)
     gl.uniform4fv(this.programs.fieldCell.uniforms.u_points, this.organisms)
+    gl.uniform4fv(this.programs.fieldCell.uniforms.u_points2, this.organisms2)
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, nb)
 
     gl.useProgram(this.programs.fieldLiaison.program)
@@ -135,8 +141,9 @@ export class WebGLRenderer extends Renderer {
     // glu.blend(gl, gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
     gl.useProgram(this.programs.cells.program)
-    gl.bindVertexArray(this.vao)
+    gl.bindVertexArray(this.vaos.cells)
     gl.uniform4fv(this.programs.cells.uniforms.u_points, this.organisms)
+    gl.uniform4fv(this.programs.cells.uniforms.u_points2, this.organisms2)
     glu.uniformTex(
       gl,
       this.programs.cells.uniforms.u_blurred_membrane,
@@ -146,7 +153,7 @@ export class WebGLRenderer extends Renderer {
 
     // glu.blend(gl, gl.ONE, gl.ONE)
     gl.useProgram(this.programs.liaisons.program)
-    gl.bindVertexArray(this.liaisonVao)
+    gl.bindVertexArray(this.vaos.liaisons)
     gl.uniform4fv(this.programs.liaisons.uniforms.u_points, this.organisms)
     glu.uniformTex(
       gl,
@@ -184,7 +191,7 @@ export class WebGLRenderer extends Renderer {
     // gl.useProgram(this.programs.tex.program)
     // gl.bindVertexArray(this.vaos.tex)
     // gl.activeTexture(gl.TEXTURE0)
-    // gl.bindTexture(gl.TEXTURE_2D, this.absorbRT.texture)
+    // gl.bindTexture(gl.TEXTURE_2D, this.fieldRT.texture)
     // gl.uniform1i(this.programs.tex.uniforms.u_texture, 0)
     // gl.drawArrays(gl.TRIANGLES, 0, 6)
   }
@@ -196,6 +203,7 @@ export class WebGLRenderer extends Renderer {
 
     const nb = organisms.length
     this.organisms = new Float32Array(nb * 4)
+    this.organisms2 = new Float32Array(nb * 4)
 
     const nbLiaisons = liaisons.length
     const liaisonIndices = new Uint16Array(nbLiaisons * 2)
@@ -207,7 +215,7 @@ export class WebGLRenderer extends Renderer {
     this.programs = {
       fieldCell: glu.program(gl, quadVS, fieldCellFS, {
         attributes: ["a_position"],
-        uniforms: ["u_points"],
+        uniforms: ["u_points", "u_points2"],
         variables: {
           NUM_POINTS: nb,
           CELL_SCALE: settings.rendering.cell.scale,
@@ -227,7 +235,7 @@ export class WebGLRenderer extends Renderer {
       }),
       cells: glu.program(gl, quadVS, cellFS, {
         attributes: ["a_position"],
-        uniforms: ["u_points", "u_blurred_membrane"],
+        uniforms: ["u_points", "u_points2", "u_blurred_membrane"],
         variables: {
           NUM_POINTS: nb,
           CELL_SCALE: settings.rendering.cell.scale,
@@ -259,9 +267,9 @@ export class WebGLRenderer extends Renderer {
     gl.enableVertexAttribArray(loc)
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
 
-    this.vao = gl.createVertexArray()
+    this.vaos.cells = gl.createVertexArray()
     loc = this.programs.cells.attributes.a_position
-    gl.bindVertexArray(this.vao)
+    gl.bindVertexArray(this.vaos.cells)
     gl.enableVertexAttribArray(loc)
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
 
@@ -275,9 +283,9 @@ export class WebGLRenderer extends Renderer {
     gl.bindBuffer(gl.ARRAY_BUFFER, liaisonBuffer)
     gl.bufferData(gl.ARRAY_BUFFER, liaisonIndices, gl.STATIC_DRAW)
 
-    this.liaisonVao = gl.createVertexArray()
+    this.vaos.liaisons = gl.createVertexArray()
     loc = this.programs.liaisons.attributes.a_endpoints
-    gl.bindVertexArray(this.liaisonVao)
+    gl.bindVertexArray(this.vaos.liaisons)
     gl.enableVertexAttribArray(loc)
     gl.vertexAttribIPointer(loc, 2, gl.UNSIGNED_SHORT, false, 0, 0)
     gl.vertexAttribDivisor(loc, 1)

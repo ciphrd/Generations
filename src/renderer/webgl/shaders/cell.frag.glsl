@@ -23,11 +23,16 @@ float N(in vec2 uv, float scale, float seed) {
 // - write the nucleus
 // - design the passes for processing the membrane
 
+// todos
+// - find a way for cells to be streched based on how streched (or compressed)
+//   their edges are
+// - cells should rotate in a more realistic way
+
 void main() {
   vec2 uv = cellUV(v_uv, v_id);
 
   float L = length(uv - 0.5);
-  float S = smoothstep(0.49, 0.45, L);
+  float S = smoothstep(0.5, 0.48, L);
 
   vec3 C = vec3(0);
 
@@ -62,7 +67,7 @@ void main() {
 
   // depth "vignette"
   float vignette = texture(u_blurred_membrane, v_guv).r;
-  C += vec3(0.3, 1, 0.8) * S * vignette * 1.5;
+  C += vec3(0.3, 1, 0.8) * vignette * 1.5;
 
   // some holes 
   float holesNoise = N(uv, 11.3, 87.3812)
@@ -79,5 +84,5 @@ void main() {
 
   // to create a cellular-like pattern we use the depth based on the distance
   // field of the cell. this will create a voronoi-like pattern
-  gl_FragDepth = length(uv - 0.5);
+  gl_FragDepth = length(uv - 0.5) + N(uv, 10.2, 2982.23) * 0.01;
 }

@@ -188,7 +188,8 @@ export class Body extends Entity {
     } else {
       let other, dE
       _v2b.set(0, 0)
-      for (const spring of this.springs) {
+      for (let i = 0, spring; i < this.springs.length; i++) {
+        spring = this.springs[i]
         other = spring.bodyA === this ? spring.bodyB : spring.bodyA
         _v2a.copy(other.pos).sub(this.pos)
         _v2b.add(_v2a)
@@ -199,11 +200,11 @@ export class Body extends Entity {
           this.energy -= dE
           other.energy += dE
         }
+
+        if (i === 0) {
+          this.forwards.copy(_v2a).normalize()
+        }
       }
-      _v2b.div(-this.springs.length).normalize()
-      const At = _v2b.angle()
-      const As = this.forwards.angle()
-      this.forwards.fromAngle(lerp(As, angleForLerp(As, At), 0.05))
     }
 
     this.friction = lerp(this.friction, this.initial.friction, 0.1)
