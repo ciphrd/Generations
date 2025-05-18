@@ -47,7 +47,7 @@ export const glu = {
   },
 
   /**
-   * @param {WebGLRenderingContext} gl
+   * @param {WebGL2RenderingContext} gl
    */
   renderTargetN(
     gl,
@@ -63,6 +63,7 @@ export const glu = {
   ) {
     const formats = {
       [gl.RGBA32F]: [gl.RGBA, gl.FLOAT],
+      [gl.R32F]: [gl.RED, gl.FLOAT],
     }
     const internal = formats[format]
     if (!internal) throw `unsupported format`

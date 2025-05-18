@@ -64,3 +64,12 @@ float snoise(vec3 v){
   return 42.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1), 
                                 dot(p2,x2), dot(p3,x3) ) );
 }
+
+// Mark Jarzynski and Marc Olano, Hash Functions for GPU Rendering, 
+// Journal of Computer Graphics Techniques (JCGT), vol. 9, no. 3, 21-38, 2020
+// Available online http://jcgt.org/published/0009/03/02/
+vec3 hash31(float p){
+   vec3 p3 = fract(vec3(p,p,p) * vec3(.1031, .1030, .0973));
+   p3 += dot(p3, p3.yzx+33.33);
+   return fract((p3.xxy+p3.yzz)*p3.zyx);
+}

@@ -9,5 +9,5 @@ out vec4 outColor;
 void main() {
   float edge = texture(u_texture, v_uv).r;
   vec3 C = vec3(0.12, 0.92, 0.14);
-  outColor = vec4(C, 1) * edge * 1.5;
+  outColor = vec4(C, 1) * clamp(0.0, 1.0, edge);
 }

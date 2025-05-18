@@ -1,7 +1,7 @@
 #version 300 es
 precision highp float;
 
-#include <simplex.glsl>
+#include <noise.glsl>
 #include <cell.glsl>
 
 uniform sampler2D u_blurred_membrane;
@@ -84,5 +84,5 @@ void main() {
 
   // to create a cellular-like pattern we use the depth based on the distance
   // field of the cell. this will create a voronoi-like pattern
-  gl_FragDepth = length(uv - 0.5) + N(uv, 10.2, 2982.23) * 0.01;
+  gl_FragDepth = length(uv - 0.5);
 }

@@ -2,7 +2,7 @@ import { glu } from "../../utils/glu"
 import { vec2 } from "../../utils/vec"
 import { Renderer } from "../renderer"
 import mathGL from "./shaders/lib/math.glsl"
-import simplexGL from "./shaders/lib/simplex.glsl"
+import noiseGL from "./shaders/lib/noise.glsl"
 import cellGL from "./shaders/lib/cell.glsl"
 import liaisonGL from "./shaders/lib/liaison.glsl"
 import fullVS from "./shaders/full.vert.glsl"
@@ -24,6 +24,7 @@ import { Spring, SpringFlags } from "../../physics/constraints/spring"
 import { settings } from "../../settings"
 import { EdgePass } from "./edge"
 import { GaussianPass } from "./gaussian"
+import { MembranePass } from "./membrane"
 
 const W = 800
 const H = 800
@@ -53,6 +54,17 @@ const tH = H * devicePixelRatio
  *   ( ) agent-based simulation for dust-noise pattern, influenced by the
  *       the motion of bodies in the space
  *   ( ) various patterns to add texture, controllable via parameters
+ *
+ * ( ) 3d lighting using the field map as a depth layer. can be used to add
+ *     subtle depth which can be observed through the microscope sometimes
+ * ( ) subtle reaction diffusion trail
+ * ( ) apply (edge2)->[blur]->[sharpness] to remove the 1px artifact on the
+ *     edges due to the 2 passes of [edge] on the field
+ * ( ) looking at touch, there's a limit node between the 2 edge passes, which
+ *     allows getting much better edges. to test
+ * ( ) to try
+ *     potentially render every cell with a different color, such that
+ *     there is a visual border which can be used to compute the edges
  */
 
 export class WebGLRenderer extends Renderer {
@@ -74,7 +86,7 @@ export class WebGLRenderer extends Renderer {
 
     glu.libs({
       math: mathGL,
-      simplex: simplexGL,
+      noise: noiseGL,
       cell: cellGL,
       liaison: liaisonGL,
     })
@@ -94,38 +106,41 @@ export class WebGLRenderer extends Renderer {
     const nb = organisms.length
 
     for (let i = 0; i < nb; i++) {
-      this.organisms[i * 4 + 0] = organisms[i].pos.x
-      this.organisms[i * 4 + 1] = organisms[i].pos.y
-      this.organisms[i * 4 + 2] = organisms[i].radius
-      this.organisms[i * 4 + 3] = organisms[i].id
+      this.cells.geo1[i * 4 + 0] = organisms[i].pos.x
+      this.cells.geo1[i * 4 + 1] = organisms[i].pos.y
+      this.cells.geo1[i * 4 + 2] = organisms[i].radius
+      this.cells.geo1[i * 4 + 3] = organisms[i].id
 
-      this.organisms2[i * 4 + 0] = organisms[i].forwards.x
-      this.organisms2[i * 4 + 1] = organisms[i].forwards.y
+      this.cells.geo2[i * 4 + 0] = organisms[i].forwards.x
+      this.cells.geo2[i * 4 + 1] = organisms[i].forwards.y
     }
 
     //
     // Render field, merging the cells / liaisons in a smooth way
     //
     glu.bindFB(gl, W, H, this.fieldRT.fb)
-    gl.enable(gl.BLEND)
-    gl.blendEquation(gl.MAX)
+    gl.enable(gl.DEPTH_TEST)
+    gl.depthFunc(gl.LESS)
+    glu.blend(gl, null)
 
     gl.useProgram(this.programs.fieldCell.program)
     gl.bindVertexArray(this.vaos.fieldCell)
-    gl.uniform4fv(this.programs.fieldCell.uniforms.u_points, this.organisms)
-    gl.uniform4fv(this.programs.fieldCell.uniforms.u_points2, this.organisms2)
+    gl.uniform4fv(this.programs.fieldCell.uniforms.u_points, this.cells.geo1)
+    gl.uniform4fv(this.programs.fieldCell.uniforms.u_points2, this.cells.geo2)
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, nb)
 
     gl.useProgram(this.programs.fieldLiaison.program)
     gl.bindVertexArray(this.vaos.fieldLiaison)
-    gl.uniform4fv(this.programs.fieldLiaison.uniforms.u_points, this.organisms)
+    gl.uniform4fv(this.programs.fieldLiaison.uniforms.u_points, this.cells.geo1)
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, liaisons.length)
+
+    gl.disable(gl.DEPTH_TEST)
 
     //
     // Compute edges on the field to create the shell of the membrane
     //
     this.edgePass1.render()
-    this.edgePass2.render()
+    this.membranePass.render()
     this.blurredMembranePass.render()
 
     //
@@ -142,8 +157,8 @@ export class WebGLRenderer extends Renderer {
 
     gl.useProgram(this.programs.cells.program)
     gl.bindVertexArray(this.vaos.cells)
-    gl.uniform4fv(this.programs.cells.uniforms.u_points, this.organisms)
-    gl.uniform4fv(this.programs.cells.uniforms.u_points2, this.organisms2)
+    gl.uniform4fv(this.programs.cells.uniforms.u_points, this.cells.geo1)
+    gl.uniform4fv(this.programs.cells.uniforms.u_points2, this.cells.geo2)
     glu.uniformTex(
       gl,
       this.programs.cells.uniforms.u_blurred_membrane,
@@ -154,7 +169,7 @@ export class WebGLRenderer extends Renderer {
     // glu.blend(gl, gl.ONE, gl.ONE)
     gl.useProgram(this.programs.liaisons.program)
     gl.bindVertexArray(this.vaos.liaisons)
-    gl.uniform4fv(this.programs.liaisons.uniforms.u_points, this.organisms)
+    gl.uniform4fv(this.programs.liaisons.uniforms.u_points, this.cells.geo1)
     glu.uniformTex(
       gl,
       this.programs.liaisons.uniforms.u_blurred_membrane,
@@ -170,7 +185,7 @@ export class WebGLRenderer extends Renderer {
     glu.uniformTex(
       gl,
       this.programs.membrane.uniforms.u_texture,
-      this.edgePass2.rt.texture
+      this.membranePass.output
     )
     gl.drawArrays(gl.TRIANGLES, 0, 6)
 
@@ -188,12 +203,12 @@ export class WebGLRenderer extends Renderer {
     gl.uniform1i(this.programs.comp.uniforms.u_texture, 0)
     gl.drawArrays(gl.TRIANGLES, 0, 6)
 
-    // gl.useProgram(this.programs.tex.program)
-    // gl.bindVertexArray(this.vaos.tex)
-    // gl.activeTexture(gl.TEXTURE0)
-    // gl.bindTexture(gl.TEXTURE_2D, this.fieldRT.texture)
-    // gl.uniform1i(this.programs.tex.uniforms.u_texture, 0)
-    // gl.drawArrays(gl.TRIANGLES, 0, 6)
+    gl.useProgram(this.programs.tex.program)
+    gl.bindVertexArray(this.vaos.tex)
+    gl.activeTexture(gl.TEXTURE0)
+    gl.bindTexture(gl.TEXTURE_2D, this.membranePass.output)
+    gl.uniform1i(this.programs.tex.uniforms.u_texture, 0)
+    gl.drawArrays(gl.TRIANGLES, 0, 6)
   }
 
   prepare() {
@@ -202,8 +217,10 @@ export class WebGLRenderer extends Renderer {
     const { organisms, liaisons } = world
 
     const nb = organisms.length
-    this.organisms = new Float32Array(nb * 4)
-    this.organisms2 = new Float32Array(nb * 4)
+    this.cells = {
+      geo1: new Float32Array(nb * 4),
+      geo2: new Float32Array(nb * 4),
+    }
 
     const nbLiaisons = liaisons.length
     const liaisonIndices = new Uint16Array(nbLiaisons * 2)
@@ -315,17 +332,16 @@ export class WebGLRenderer extends Renderer {
     )
 
     this.absorbRT = glu.renderTarget(gl, tW, tH, gl.RGBA32F, { depth: true })
-    this.fieldRT = glu.renderTarget(gl, W, H, gl.RGBA32F)
+    this.fieldRT = glu.renderTarget(gl, W, H, gl.RGBA32F, { depth: true })
     this.membraneRT = glu.renderTarget(gl, tW, tH, gl.RGBA32F)
 
     this.edgePass1 = new EdgePass(gl, vec2(W, H), this.fieldRT.texture)
-    this.edgePass2 = new EdgePass(gl, vec2(W, H), this.edgePass1.rt.texture)
-
+    this.membranePass = new MembranePass(gl, vec2(W, H), this.edgePass1.output)
     this.blurredMembranePass = new GaussianPass(
       gl,
-      vec2(W, H),
-      this.edgePass2.rt.texture,
-      11
+      vec2(W / 2, H / 2),
+      this.membranePass.output,
+      19
     )
 
     this.compVao = gl.createVertexArray()

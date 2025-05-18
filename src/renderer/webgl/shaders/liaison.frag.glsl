@@ -1,7 +1,7 @@
 #version 300 es
 precision highp float;
 
-#include <simplex.glsl>
+#include <noise.glsl>
 #include <liaison.glsl>
 
 uniform sampler2D u_blurred_membrane;
@@ -20,7 +20,8 @@ float N(in vec2 uv, float scale, float seed) {
 void main() {
   vec3 C = vec3(0);
 
-  vec2 uv = liaisonUV(v_uv, v_length);
+  float id = v_ids.x + 20.0 * v_ids.y;
+  vec2 uv = liaisonUV(v_uv, id, v_length);
 
   float L = (1.0 - length(uv - 0.5)) * 2.0;
   float S = smoothstep(0.98, 1.0, L);

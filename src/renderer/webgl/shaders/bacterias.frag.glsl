@@ -1,7 +1,7 @@
 #version 300 es
 precision highp float;
 
-#include <simplex.glsl>
+#include <noise.glsl>
 
 in vec2 v_uv;
 in vec4 v_properties;

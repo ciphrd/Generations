@@ -1,15 +1,35 @@
 #version 300 es
 precision highp float;
 
-#include <simplex.glsl>
+#include <noise.glsl>
 #include <liaison.glsl>
 
 in vec2 v_uv;
+in vec2 v_ids;
 in float v_length;
 out vec4 outColor;
 
 void main() {
-  vec2 uv = liaisonUV(v_uv, v_length);
-  float S = max(0.0, 1.0 - length(uv - 0.5) * 2.0);
-  outColor = vec4(S);
+  float id = v_ids.x + 20.0 * v_ids.y;
+  vec2 uv = liaisonUV(v_uv, id, v_length);
+
+  float L = length(uv - 0.5);
+  float S = smoothstep(0.5, 0.49, L);
+  L += snoise(vec3(uv * 10.2, 2982.23)) * 0.02 * S;
+  float S2 = max(0.0, 1.0 - L * 2.0);
+
+  vec3 C = hash31(id);
+  float lC = C.r + C.g + C.g;
+  if (lC < 0.6) {
+    C = (C + 0.1) / max(lC, 0.1);
+  }
+  // C.r += snoise(vec3(v_uv * 3.0, id * 123.938)) * 0.2;
+  // C.g += snoise(vec3(v_uv * 3.0, id * 22.9)) * 0.2;
+  // C.b += snoise(vec3(v_uv * 3.0, id * 13.291)) * 0.2;
+
+  outColor = vec4(C * S, S2); 
+          //  * (1.0 + snoise(vec3(uv * 1.2, 22.23)) * 0.7)
+           ;
+
+  gl_FragDepth = L;
 } 

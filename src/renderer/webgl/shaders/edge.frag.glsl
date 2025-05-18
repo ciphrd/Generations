@@ -22,24 +22,25 @@ void main() {
   );
 
   // Get surrounding pixels
-  float samples[9];
+  vec3 samples[9];
   int i = 0;
   vec2 offset;
   for (int y = -1; y <= 1; y++) {
     for (int x = -1; x <= 1; x++) {
       offset.x = float(x) * u_texel_size.x;
       offset.y = float(y) * u_texel_size.y;
-      samples[i++] = texture(u_texture, v_uv + offset).r;
+      samples[i++] = texture(u_texture, v_uv + offset).rgb;
     }
   }
 
   // Convert to grayscale and apply Sobel filter
-  vec2 g = vec2(0);
+  vec3 gx = vec3(0);
+  vec3 gy = vec3(0);
   for (int j = 0; j < 9; j++) {
-    g.x += samples[j] * kernelX[j];
-    g.y += samples[j] * kernelY[j];
+    gx += samples[j] * kernelX[j];
+    gy += samples[j] * kernelY[j];
   }
 
-  float edge = length(g);
-  outColor = vec4(edge);
+  vec3 edge = sqrt(gx * gx + gy * gy);
+  outColor = vec4(edge, 1);
 }

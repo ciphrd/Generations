@@ -1,14 +1,14 @@
 import { glu } from "../../utils/glu"
 import fullVS from "./shaders/full.vert.glsl"
-import edgeFS from "./shaders/edge.frag.glsl"
+import edgeMembraneFS from "./shaders/membrane/edge-membrane.frag.glsl"
 
 let initialized
 function initProgram(gl) {
   if (initialized) return initialized
 
-  const program = glu.program(gl, fullVS, edgeFS, {
+  const program = glu.program(gl, fullVS, edgeMembraneFS, {
     attributes: ["a_position"],
-    uniforms: ["u_texture", "u_texel_size"],
+    uniforms: ["u_memb_edge"],
   })
 
   let loc = program.attributes.a_position
@@ -26,15 +26,15 @@ function initProgram(gl) {
   return initialized
 }
 
-export class EdgePass {
+export class MembranePass {
   /**
    * @param {WebGL2RenderingContext} gl
    */
-  constructor(gl, res, texture) {
+  constructor(gl, res, colorField) {
     this.gl = gl
     this.res = res
-    this.texture = texture
-    this.rt = glu.renderTarget(gl, res.x, res.y, gl.RGBA32F, {
+    this.colorField = colorField
+    this.rt = glu.renderTarget(gl, res.x, res.y, gl.R32F, {
       sampling: gl.LINEAR,
     })
     this.output = this.rt.texture
@@ -46,17 +46,14 @@ export class EdgePass {
   }
 
   render() {
-    const { gl, res, rt, program, texture, vao } = this
+    const { gl, res, rt, program, colorField, vao } = this
 
     glu.bindFB(gl, res.x, res.y, rt.fb)
     glu.blend(gl, null)
 
     gl.useProgram(program.program)
     gl.bindVertexArray(vao)
-    gl.activeTexture(gl.TEXTURE0)
-    gl.bindTexture(gl.TEXTURE_2D, texture)
-    gl.uniform1i(program.uniforms.u_texture, 0)
-    gl.uniform2f(program.uniforms.u_texel_size, this.texel.x, this.texel.y)
+    glu.uniformTex(gl, program.uniforms.u_memb_edge, colorField)
     gl.drawArrays(gl.TRIANGLES, 0, 6)
   }
 }
