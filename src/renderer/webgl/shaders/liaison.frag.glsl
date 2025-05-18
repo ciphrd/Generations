@@ -2,7 +2,7 @@
 precision highp float;
 
 #include <noise.glsl>
-#include <liaison.glsl>
+#include <cell.glsl>
 
 uniform sampler2D u_blurred_membrane;
 

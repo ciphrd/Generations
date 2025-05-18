@@ -2,12 +2,14 @@
 precision highp float;
 
 #include <noise.glsl>
-#include <liaison.glsl>
+#include <cell.glsl>
 
 in vec2 v_uv;
 in vec2 v_ids;
 in float v_length;
-out vec4 outColor;
+
+layout (location=0) out vec4 outColor0;
+layout (location=1) out vec4 outColor1;
 
 void main() {
   float id = v_ids.x + 20.0 * v_ids.y;
@@ -15,7 +17,7 @@ void main() {
 
   float L = length(uv - 0.5);
   float S = smoothstep(0.5, 0.49, L);
-  L += snoise(vec3(uv * 10.2, 2982.23)) * 0.02 * S;
+  L += snoise(vec3(uv * 4.2, 2982.23)) * 0.02 * S;
   float S2 = max(0.0, 1.0 - L * 2.0);
 
   vec3 C = hash31(id);
@@ -27,9 +29,11 @@ void main() {
   // C.g += snoise(vec3(v_uv * 3.0, id * 22.9)) * 0.2;
   // C.b += snoise(vec3(v_uv * 3.0, id * 13.291)) * 0.2;
 
-  outColor = vec4(C * S, S2); 
+  outColor0 = vec4(C * S, S2); 
           //  * (1.0 + snoise(vec3(uv * 1.2, 22.23)) * 0.7)
            ;
+  
+  outColor1 = vec4( membraneNoise(uv, id * 26.953) );
 
   gl_FragDepth = L;
 } 

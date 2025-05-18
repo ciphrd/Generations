@@ -4,7 +4,6 @@ import { Renderer } from "../renderer"
 import mathGL from "./shaders/lib/math.glsl"
 import noiseGL from "./shaders/lib/noise.glsl"
 import cellGL from "./shaders/lib/cell.glsl"
-import liaisonGL from "./shaders/lib/liaison.glsl"
 import fullVS from "./shaders/full.vert.glsl"
 import textureFS from "./shaders/texture.frag.glsl"
 import quadVS from "./shaders/quad.vert.glsl"
@@ -88,7 +87,6 @@ export class WebGLRenderer extends Renderer {
       math: mathGL,
       noise: noiseGL,
       cell: cellGL,
-      liaison: liaisonGL,
     })
 
     this.vaos = {}
@@ -122,6 +120,7 @@ export class WebGLRenderer extends Renderer {
     gl.enable(gl.DEPTH_TEST)
     gl.depthFunc(gl.LESS)
     glu.blend(gl, null)
+    gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1])
 
     gl.useProgram(this.programs.fieldCell.program)
     gl.bindVertexArray(this.vaos.fieldCell)
@@ -139,6 +138,8 @@ export class WebGLRenderer extends Renderer {
     //
     // Compute edges on the field to create the shell of the membrane
     //
+    this.blurFieldPass.render()
+
     this.edgePass1.render()
     this.membranePass.render()
     this.blurredMembranePass.render()
@@ -332,11 +333,23 @@ export class WebGLRenderer extends Renderer {
     )
 
     this.absorbRT = glu.renderTarget(gl, tW, tH, gl.RGBA32F, { depth: true })
-    this.fieldRT = glu.renderTarget(gl, W, H, gl.RGBA32F, { depth: true })
+    this.fieldRT = glu.renderTargetN(gl, W, H, 2, gl.RGBA32F, { depth: true })
     this.membraneRT = glu.renderTarget(gl, tW, tH, gl.RGBA32F)
 
-    this.edgePass1 = new EdgePass(gl, vec2(W, H), this.fieldRT.texture)
-    this.membranePass = new MembranePass(gl, vec2(W, H), this.edgePass1.output)
+    this.blurFieldPass = new GaussianPass(
+      gl,
+      vec2(W, H),
+      this.fieldRT.textures[1],
+      21
+    )
+
+    this.edgePass1 = new EdgePass(gl, vec2(W, H), this.fieldRT.textures[0])
+    this.membranePass = new MembranePass(
+      gl,
+      vec2(W, H),
+      this.edgePass1.output,
+      this.fieldRT.textures[1]
+    )
     this.blurredMembranePass = new GaussianPass(
       gl,
       vec2(W / 2, H / 2),
