@@ -29,10 +29,11 @@ float N(in vec2 uv, float scale, float seed) {
 // - cells should rotate in a more realistic way
 
 void main() {
-  vec2 uv = cellUV(v_uv, v_id);
+  float id = v_id;
+  vec2 uv = cellUV(v_uv, id);
 
   float L = length(uv - 0.5);
-  float S = smoothstep(0.5, 0.48, L);
+  float S = smoothstep(0.45, 0.42, L);
 
   vec3 C = vec3(0);
 
@@ -67,7 +68,7 @@ void main() {
 
   // depth "vignette"
   float vignette = texture(u_blurred_membrane, v_guv).r;
-  C += vec3(0.3, 1, 0.8) * vignette * 1.2;
+  C += vec3(0.3, 1, 0.8) * vignette * 1.0;
 
   // some holes 
   float holesNoise = N(uv, 11.3, 87.3812)
@@ -79,6 +80,31 @@ void main() {
   float hole2N = N(uv, 2.3, 834.1332);
   C -= vec3(1) * hole2N * 0.1;
   C = clamp(vec3(0), vec3(1), C);
+
+  // 
+  // the nuccleus
+  // 
+  vec2 nuv = nuccleusUV(uv, id);
+  float nL = length(nuv - 0.5);
+  float nuccleus = smoothstep(0.9, 0.4, nL);
+
+  // base nuccleus background, simple fbm
+  float nucBgNoise = snoise(vec3(nuv * 1.7, id * 832.902));
+  C += mix(
+    vec3(0.4, 0.92, 0.55),
+    vec3(0.7, 0.97, 0.8),
+    nucBgNoise
+  ) * nuccleus * 0.5;
+
+  // nuccleus shell
+  float nucShell = smoothstep(0.12, 0.5, nL);
+  C += vec3(0.75, 0.97, 0.82) * nucShell * nuccleus * 0.2;
+
+  // nuccleus halo
+  float nucHalo = smoothstep(2.0, 0.0, nL);
+  C += vec3(0.68, 0.88, 0.75) * pow(nucHalo, 1.0) * 0.4;
+
+  // C += vec3(1) * nuccleus * nucBgNoise;
 
   outColor = vec4(C, 1) * S;
 

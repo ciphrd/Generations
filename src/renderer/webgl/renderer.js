@@ -65,6 +65,10 @@ const tH = H * devicePixelRatio
  * ( ) to try
  *     potentially render every cell with a different color, such that
  *     there is a visual border which can be used to compute the edges
+ *
+ * ( ) IMPORTANT !
+ *     Do not render the cells/liaisons on the full quads, or it creates
+ *     artifacts on the edges.
  */
 
 export class WebGLRenderer extends Renderer {
@@ -152,7 +156,6 @@ export class WebGLRenderer extends Renderer {
     glu.blend(gl, null)
 
     glu.bindFB(gl, tW, tH, this.absorbRT.fb)
-    // glu.blend(gl, gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
     gl.useProgram(this.programs.cells.program)
     gl.bindVertexArray(this.vaos.cells)
@@ -165,7 +168,6 @@ export class WebGLRenderer extends Renderer {
     )
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, nb)
 
-    // glu.blend(gl, gl.ONE, gl.ONE)
     gl.useProgram(this.programs.liaisons.program)
     gl.bindVertexArray(this.vaos.liaisons)
     gl.uniform4fv(this.programs.liaisons.uniforms.u_points, this.cells.geo1)

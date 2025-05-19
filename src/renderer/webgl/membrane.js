@@ -19,9 +19,7 @@ export class MembranePass {
     this.blurFieldPass = new GaussianPass(gl, res, cellNoiseField, 11)
     this.edgePass1 = new EdgePass(gl, res, colorField)
 
-    this.rt = glu.renderTarget(gl, res.x, res.y, gl.R32F, {
-      sampling: gl.LINEAR,
-    })
+    this.rt = glu.renderTarget(gl, res.x, res.y, gl.R32F)
     this.texel = this.res.clone().apply((comp) => 1 / comp)
 
     this.programs = {}

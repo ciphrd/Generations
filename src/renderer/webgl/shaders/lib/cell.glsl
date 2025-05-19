@@ -38,3 +38,14 @@ float membraneNoise(in vec2 uv, float id) {
       * snoise(vec3(uv * 6.8, id * 71.47 ) )
       * 4.00);
 }
+
+vec2 nuccleusUV(in vec2 cuv, float id) {
+  float scale = mix(0.8, 1.2, hash11(id));
+  vec2 uv = (cuv - 0.5) * 14.0 * scale + 0.5;
+  uv += (hash21(id * 3.023) - 0.5) * 1.5;
+  uv.x += snoise(vec3(cuv * 4.0, id * 12.234)) * 0.2;
+  uv.y += snoise(vec3(cuv * 4.0, id * 33.982)) * 0.2;
+  uv.x += snoise(vec3(cuv * 12.0, id * 12.234)) * 0.1;
+  uv.y += snoise(vec3(cuv * 12.0, id * 33.982)) * 0.1;
+  return uv;
+}

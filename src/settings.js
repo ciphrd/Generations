@@ -7,7 +7,7 @@ export const settings = {
   radius: 0.006,
   rendering: {
     cell: {
-      scale: 2.001,
+      scale: 2.501,
     },
   },
   dnas: {

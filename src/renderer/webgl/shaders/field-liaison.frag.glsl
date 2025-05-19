@@ -16,7 +16,7 @@ void main() {
   vec2 uv = liaisonUV(v_uv, id, v_length);
 
   float L = length(uv - 0.5);
-  float S = smoothstep(0.5, 0.49, L);
+  float S = smoothstep(0.42, 0.4199, L);
   L += snoise(vec3(uv * 4.2, 2982.23)) * 0.02 * S;
   float S2 = max(0.0, 1.0 - L * 2.0);
 

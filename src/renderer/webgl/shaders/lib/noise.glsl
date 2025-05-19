@@ -69,7 +69,20 @@ float snoise(vec3 v){
 // Journal of Computer Graphics Techniques (JCGT), vol. 9, no. 3, 21-38, 2020
 // Available online http://jcgt.org/published/0009/03/02/
 vec3 hash31(float p){
-   vec3 p3 = fract(vec3(p,p,p) * vec3(.1031, .1030, .0973));
-   p3 += dot(p3, p3.yzx+33.33);
-   return fract((p3.xxy+p3.yzz)*p3.zyx);
+  vec3 p3 = fract(vec3(p,p,p) * vec3(.1031, .1030, .0973));
+  p3 += dot(p3, p3.yzx+33.33);
+  return fract((p3.xxy+p3.yzz)*p3.zyx);
+}
+
+float hash11(float p){
+  p = fract(p * .1031);
+  p *= p + 33.33;
+  p *= p + p;
+  return fract(p);
+}
+
+vec2 hash21(float p){
+  vec3 p3 = fract(vec3(p,p,p) * vec3(.1031, .1030, .0973));
+  p3 += dot(p3, p3.yzx + 33.33);
+  return fract((p3.xx+p3.yz)*p3.zy);
 }

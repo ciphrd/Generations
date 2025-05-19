@@ -23,8 +23,8 @@ void main() {
   float id = v_ids.x + 20.0 * v_ids.y;
   vec2 uv = liaisonUV(v_uv, id, v_length);
 
-  float L = (1.0 - length(uv - 0.5)) * 2.0;
-  float S = smoothstep(0.98, 1.0, L);
+  float L = length(uv - 0.5);
+  float S = smoothstep(0.45, 0.42, L);
 
   // background noise, small but sutle variations creating base color
   float bgNoise = max(0., N(uv, 1.2 * 20.0, 1.3440)) 
@@ -51,7 +51,7 @@ void main() {
 
   // depth "vignette"
   float vignette = texture(u_blurred_membrane, v_guv).r;
-  C += vec3(0.3, 1, 0.8) * S * vignette * 1.2;
+  C += vec3(0.3, 1, 0.8) * S * vignette * 1.0;
 
   // reddish compact red dots
   float redDotsNoise = N(uv, 12.3, 237.0238)
@@ -77,6 +77,29 @@ void main() {
     junctions *= pow(k, 0.5);
   }
   junctions = clamp(junctions, 0.0, 1.0);
+
+  // 
+  // the nuccleus
+  // 
+  vec2 nuv = nuccleusUV(uv, id);
+  float nL = length(nuv - 0.5);
+  float nuccleus = smoothstep(1.0, 0.5, nL);
+
+  // base nuccleus background, simple fbm
+  float nucBgNoise = snoise(vec3(nuv * 1.7, id * 832.902));
+  C += mix(
+    vec3(0.4, 0.92, 0.55),
+    vec3(0.7, 0.97, 0.8),
+    nucBgNoise
+  ) * nuccleus * 0.5;
+
+  // nuccleus shell
+  float nucShell = smoothstep(0.5, 0.8, nL);
+  C += vec3(0.75, 0.97, 0.82) * nucShell * nuccleus * 0.6;
+
+  // nuccleus halo
+  float nucHalo = smoothstep(2.0, 0.0, nL);
+  C += vec3(0.68, 0.88, 0.75) * pow(nucHalo, 1.0) * 0.5;
 
   // alpha
   float lum = clamp(0.0, 1.0, C.r + C.g + C.b + 1.0);
