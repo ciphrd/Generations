@@ -32,7 +32,7 @@ void main() {
                 + max(0., N(uv, 1.2 * 18.0, 12.3440))
                 + max(0., N(uv, 1.2 * 18.0, 98.3440))
                 + max(0., N(uv, 1.2 * 18.0, 23.3440));
-  C += vec3(0.1, 0.97, 0.03) * (0.05 + bgNoise * 0.1);
+  C += vec3(0.3, 0.97, 0.3) * (0.05 + bgNoise * 0.1);
 
   // add small dotty-noise
   float dottyNoise = N(uv, 8.0, 0.0)

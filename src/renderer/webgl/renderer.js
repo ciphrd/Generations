@@ -188,9 +188,9 @@ export class WebGLRenderer extends Renderer {
     )
     gl.drawArrays(gl.TRIANGLES, 0, 6)
 
-    this.bacterias.render()
-    this.food.render()
-    this.bindLiaisons.render()
+    // this.bacterias.render()
+    // this.food.render()
+    // this.bindLiaisons.render()
 
     glu.bindFB(gl, tW, tH, null)
     glu.blend(gl, null)

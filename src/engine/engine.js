@@ -10,6 +10,8 @@ export class Engine {
 
     this.emitter = emitter()
     this.ticker.emitter.on("tick", this.tick)
+
+    this.ticks = 0
   }
 
   provideRenderingContainer($container) {
@@ -41,5 +43,8 @@ export class Engine {
     this.emitter.emit("solver:updated")
 
     if (this.ticker.running) this.renderer.render()
+
+    this.ticks++
+    if (this.ticks === 300) this.stop()
   }
 }
