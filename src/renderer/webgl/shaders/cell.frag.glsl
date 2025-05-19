@@ -67,7 +67,7 @@ void main() {
 
   // depth "vignette"
   float vignette = texture(u_blurred_membrane, v_guv).r;
-  C += vec3(0.3, 1, 0.8) * vignette * 1.5;
+  C += vec3(0.3, 1, 0.8) * vignette * 1.2;
 
   // some holes 
   float holesNoise = N(uv, 11.3, 87.3812)

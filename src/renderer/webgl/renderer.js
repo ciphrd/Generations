@@ -24,6 +24,7 @@ import { settings } from "../../settings"
 import { EdgePass } from "./edge"
 import { GaussianPass } from "./gaussian"
 import { MembranePass } from "./membrane"
+import { OuterShell } from "./outer-shell"
 
 const W = 800
 const H = 800
@@ -116,7 +117,7 @@ export class WebGLRenderer extends Renderer {
     //
     // Render field, merging the cells / liaisons in a smooth way
     //
-    glu.bindFB(gl, W, H, this.fieldRT.fb)
+    glu.bindFB(gl, tW, tH, this.fieldRT.fb)
     gl.enable(gl.DEPTH_TEST)
     gl.depthFunc(gl.LESS)
     glu.blend(gl, null)
@@ -138,11 +139,8 @@ export class WebGLRenderer extends Renderer {
     //
     // Compute edges on the field to create the shell of the membrane
     //
-    this.blurFieldPass.render()
-
-    this.edgePass1.render()
     this.membranePass.render()
-    this.blurredMembranePass.render()
+    this.outerShell.render()
 
     //
     // Render the light absorption layer, composed of the different bodies
@@ -163,7 +161,7 @@ export class WebGLRenderer extends Renderer {
     glu.uniformTex(
       gl,
       this.programs.cells.uniforms.u_blurred_membrane,
-      this.blurredMembranePass.output
+      this.outerShell.output
     )
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, nb)
 
@@ -174,7 +172,7 @@ export class WebGLRenderer extends Renderer {
     glu.uniformTex(
       gl,
       this.programs.liaisons.uniforms.u_blurred_membrane,
-      this.blurredMembranePass.output
+      this.outerShell.output
     )
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, liaisons.length)
 
@@ -204,12 +202,12 @@ export class WebGLRenderer extends Renderer {
     gl.uniform1i(this.programs.comp.uniforms.u_texture, 0)
     gl.drawArrays(gl.TRIANGLES, 0, 6)
 
-    gl.useProgram(this.programs.tex.program)
-    gl.bindVertexArray(this.vaos.tex)
-    gl.activeTexture(gl.TEXTURE0)
-    gl.bindTexture(gl.TEXTURE_2D, this.membranePass.output)
-    gl.uniform1i(this.programs.tex.uniforms.u_texture, 0)
-    gl.drawArrays(gl.TRIANGLES, 0, 6)
+    // gl.useProgram(this.programs.tex.program)
+    // gl.bindVertexArray(this.vaos.tex)
+    // gl.activeTexture(gl.TEXTURE0)
+    // gl.bindTexture(gl.TEXTURE_2D, this.membranePass.output)
+    // gl.uniform1i(this.programs.tex.uniforms.u_texture, 0)
+    // gl.drawArrays(gl.TRIANGLES, 0, 6)
   }
 
   prepare() {
@@ -333,28 +331,21 @@ export class WebGLRenderer extends Renderer {
     )
 
     this.absorbRT = glu.renderTarget(gl, tW, tH, gl.RGBA32F, { depth: true })
-    this.fieldRT = glu.renderTargetN(gl, W, H, 2, gl.RGBA32F, { depth: true })
+    this.fieldRT = glu.renderTargetN(gl, tW, tH, 2, gl.RGBA32F, { depth: true })
     this.membraneRT = glu.renderTarget(gl, tW, tH, gl.RGBA32F)
 
-    this.blurFieldPass = new GaussianPass(
-      gl,
-      vec2(W, H),
-      this.fieldRT.textures[1],
-      21
-    )
-
-    this.edgePass1 = new EdgePass(gl, vec2(W, H), this.fieldRT.textures[0])
     this.membranePass = new MembranePass(
       gl,
-      vec2(W, H),
-      this.edgePass1.output,
+      vec2(tW, tH),
+      this.fieldRT.textures[0],
       this.fieldRT.textures[1]
     )
-    this.blurredMembranePass = new GaussianPass(
+
+    this.outerShell = new OuterShell(
       gl,
-      vec2(W / 2, H / 2),
-      this.membranePass.output,
-      19
+      vec2(W, H),
+      this.fieldRT.textures[0],
+      this.fieldRT.textures[1]
     )
 
     this.compVao = gl.createVertexArray()

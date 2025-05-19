@@ -51,7 +51,7 @@ void main() {
 
   // depth "vignette"
   float vignette = texture(u_blurred_membrane, v_guv).r;
-  C += vec3(0.3, 1, 0.8) * S * vignette * 1.5;
+  C += vec3(0.3, 1, 0.8) * S * vignette * 1.2;
 
   // reddish compact red dots
   float redDotsNoise = N(uv, 12.3, 237.0238)

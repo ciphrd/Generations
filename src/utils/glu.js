@@ -19,6 +19,50 @@ export const glu = {
     )
     return quadBuffer
   },
+  quad(gl) {
+    return this.quadBuffer(gl)
+  },
+
+  vao(gl, define) {
+    const vao = gl.createVertexArray()
+    gl.bindVertexArray(vao)
+
+    const utils = {
+      attrib: (
+        loc,
+        buffer,
+        size,
+        type = gl.FLOAT,
+        normalized = false,
+        stride = 0,
+        offset = 0
+      ) => {
+        gl.enableVertexAttribArray(loc)
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+        gl.vertexAttribPointer(loc, size, type, normalized, stride, offset)
+      },
+
+      attribI: (
+        loc,
+        buffer,
+        size,
+        type = gl.UNSIGNED_SHORT,
+        instances = false,
+        normalized = false,
+        stride = 0,
+        offset = 0
+      ) => {
+        gl.enableVertexAttribArray(loc)
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+        gl.vertexAttribIPointer(loc, size, type, normalized, stride, offset)
+        if (instances) {
+          gl.vertexAttribDivisor(loc, 1)
+        }
+      },
+    }
+    define(utils)
+    return vao
+  },
 
   buffer(gl, geometry, usage = gl.STATIC_DRAW) {
     const buffer = gl.createBuffer()

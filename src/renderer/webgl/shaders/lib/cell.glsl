@@ -24,10 +24,17 @@ vec2 liaisonUV(in vec2 uv, float id, float llength) {
 }
 
 float membraneNoise(in vec2 uv, float id) {
-  return 0.5
-    + snoise(vec3(uv * 0.3, id)) * 0.5
-    + snoise(vec3( uv * 3.2, id + 232.2323 )) * 0.2
+  return 0.6
+    + snoise(vec3(uv * 0.3, id)) * 0.4
+    + snoise(vec3( uv * 3.2, id * 232.2323 )) * 0.2
     + snoise(vec3(uv * 0.7, id * 9.876))
       * snoise(vec3(uv * 5.7, id * 87.372))
-      * 0.6;
+      * 0.6
+    - min(1.0,
+      max(0.0, (( snoise(vec3(uv * 0.1, id * 1198.1213 )) 
+      //  * snoise(vec3(uv * 0.7, id * 119.269 ))
+       * snoise(vec3(uv * 0.7, id * 54.269 )))
+       - 0.0))
+      * snoise(vec3(uv * 6.8, id * 71.47 ) )
+      * 4.00);
 }
