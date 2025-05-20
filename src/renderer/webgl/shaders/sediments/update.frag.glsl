@@ -31,15 +31,15 @@ void main() {
   float under = substrate(agent.xy);
 
   // compute the substrate gradient
-  vec2 dir = substrateGrad(pos, 2.0);
-  dir += (hash22(v_uv * 110.23 + vec2(u_time)) - 0.5) * 0.2;
+  vec2 dir = substrateGrad(pos, 1.0);
+  dir += (hash22(v_uv * 110.23 + vec2(u_time)) - 0.5) * 0.5;
 
-  if (under > 0.65) {
+  if (under > 0.7) {
     dir *= -1.0;
   }
 
-  agent.xy += dir * 0.003;
-  agent.xy = clamp(agent.xy, vec2(0.001), vec2(1));
+  agent.xy += dir * 0.001;
+  agent.xy = clamp(agent.xy, vec2(0), vec2(1));
   
   outColor0 = agent;
 }
