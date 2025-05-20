@@ -33,6 +33,7 @@ export const glu = {
         buffer,
         size,
         type = gl.FLOAT,
+        instances = false,
         normalized = false,
         stride = 0,
         offset = 0
@@ -40,6 +41,9 @@ export const glu = {
         gl.enableVertexAttribArray(loc)
         gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
         gl.vertexAttribPointer(loc, size, type, normalized, stride, offset)
+        if (instances) {
+          gl.vertexAttribDivisor(loc, 1)
+        }
       },
 
       attribI: (
@@ -71,43 +75,49 @@ export const glu = {
     return buffer
   },
 
-  renderTarget(
-    gl,
-    width,
-    height,
-    format = gl.RGBA32F,
-    { sampling = gl.LINEAR, wrap = gl.CLAMP_TO_EDGE, depth = false } = {
-      sampling: gl.LINEAR,
-      wrap: gl.CLAMP_TO_EDGE,
-      depth: false,
+  renderTarget(...params) {
+    const { fb, textures } = this.renderTargetN(1, ...params)
+    return { texture: textures[0], fb, tex: textures[0] }
+  },
+
+  pingpong(...params) {
+    const A = this.renderTarget(...params)
+    const B = this.renderTarget(...params)
+    let front = A
+    let back = B
+
+    return {
+      front: () => front,
+      back: () => back,
+      swap: () => ([front, back] = [back, front]),
     }
-  ) {
-    const { fb, textures } = this.renderTargetN(gl, width, height, 1, format, {
-      sampling,
-      wrap,
-      depth,
-    })
-    return { texture: textures[0], fb }
   },
 
   /**
    * @param {WebGL2RenderingContext} gl
    */
   renderTargetN(
+    numAttachments,
     gl,
     width,
     height,
-    numAttachments = 1,
     format = gl.RGBA32F,
-    { sampling = gl.LINEAR, wrap = gl.CLAMP_TO_EDGE, depth = false } = {
+    {
+      sampling = gl.LINEAR,
+      wrap = gl.CLAMP_TO_EDGE,
+      depth = false,
+      data = null,
+    } = {
       sampling: gl.LINEAR,
       wrap: gl.CLAMP_TO_EDGE,
       depth: false,
+      data: null,
     }
   ) {
     const formats = {
       [gl.RGBA32F]: [gl.RGBA, gl.FLOAT],
       [gl.R32F]: [gl.RED, gl.FLOAT],
+      [gl.R8]: [gl.RED, gl.UNSIGNED_BYTE],
     }
     const internal = formats[format]
     if (!internal) throw `unsupported format`
@@ -128,7 +138,7 @@ export const glu = {
         0,
         internal[0],
         internal[1],
-        null
+        data
       )
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, sampling)
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrap)
@@ -166,11 +176,13 @@ export const glu = {
     return { textures, fb }
   },
 
-  bindFB(gl, width, height, framebuffer = null) {
+  bindFB(gl, width, height, framebuffer = null, { clear } = { clear: true }) {
     gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer)
     gl.viewport(0, 0, width, height)
-    gl.clearColor(0, 0, 0, 0)
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+    if (clear) {
+      gl.clearColor(0, 0, 0, 0)
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+    }
   },
 
   blend(gl, fn1, fn2) {
@@ -233,12 +245,20 @@ export const glu = {
     gl,
     vertex,
     fragment,
-    { attributes = [], uniforms = [], variables = {}, debug = false } = {}
+    {
+      attributes = [],
+      uniforms = [],
+      variables = {},
+      debug = false,
+      vao = null,
+    } = {}
   ) {
     vertex = this.replaceVariables(vertex, variables)
     fragment = this.replaceVariables(fragment, variables)
 
-    const hash = `${strHash(vertex)}-${strHash(fragment)}`
+    const hash = `${strHash(vertex)}-${strHash(fragment)}-${strHash(
+      "" + vao?.toString()
+    )}`
     if (programMap[hash]) return programMap[hash]
 
     const program = gl.createProgram()
@@ -266,6 +286,15 @@ export const glu = {
       uniforms: Object.fromEntries(
         uniforms.map((unif) => [unif, gl.getUniformLocation(program, unif)])
       ),
+    }
+
+    if (vao) {
+      programObject.vao = this.vao(gl, vao(programObject))
+    }
+
+    programObject.use = () => {
+      gl.useProgram(program)
+      if (vao) gl.bindVertexArray(programObject.vao)
     }
 
     programMap[hash] = programObject

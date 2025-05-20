@@ -30,11 +30,16 @@ export class EdgePass {
   /**
    * @param {WebGL2RenderingContext} gl
    */
-  constructor(gl, res, texture) {
+  constructor(
+    gl,
+    res,
+    texture,
+    { format = gl.RGBA32F } = { format: gl.RGBA32F }
+  ) {
     this.gl = gl
     this.res = res
     this.texture = texture
-    this.rt = glu.renderTarget(gl, res.x, res.y, gl.RGBA32F, {
+    this.rt = glu.renderTarget(gl, res.x, res.y, format, {
       sampling: gl.LINEAR,
     })
     this.output = this.rt.texture
@@ -45,7 +50,9 @@ export class EdgePass {
     this.vao = cached.vao
   }
 
-  render() {
+  render(tex) {
+    if (tex) this.texture = tex
+
     const { gl, res, rt, program, texture, vao } = this
 
     glu.bindFB(gl, res.x, res.y, rt.fb)

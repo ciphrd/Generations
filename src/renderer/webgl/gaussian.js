@@ -32,51 +32,49 @@ function initProgram(gl, width) {
         .map((v) => v.toFixed(5))
         .join(","),
     },
-    debug: true,
+    vao: (prog) => (u) => {
+      u.attrib(prog.attributes.a_position, glu.quad(gl), 2)
+    },
   })
 
-  let loc = program.attributes.a_position
-  let vao = gl.createVertexArray()
-  gl.bindVertexArray(vao)
-  gl.enableVertexAttribArray(loc)
-  gl.bindBuffer(gl.ARRAY_BUFFER, glu.quadBuffer(gl))
-  gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
-
-  initialized[key] = {
-    program,
-    vao,
-  }
-
+  initialized[key] = program
   return initialized[key]
 }
+export const initGaussianProgram = initProgram
 
 export class GaussianPass {
   /**
    * @param {WebGL2RenderingContext} gl
    */
-  constructor(gl, res, texture, width) {
+  constructor(
+    gl,
+    res,
+    texture,
+    width,
+    { format = gl.RGBA32F } = { format: gl.RGBA32F }
+  ) {
     this.gl = gl
     this.res = res
     this.texture = texture
-    this.rt1 = glu.renderTarget(gl, res.x, res.y)
-    this.rt2 = glu.renderTarget(gl, res.x, res.y)
+    this.rt1 = glu.renderTarget(gl, res.x, res.y, format)
+    this.rt2 = glu.renderTarget(gl, res.x, res.y, format)
     this.texel = this.res.clone().apply((comp) => 1 / comp)
 
-    const cached = initProgram(gl, width)
-    this.program = cached.program
-    this.vao = cached.vao
+    this.program = initProgram(gl, width)
 
     this.output = this.rt2.texture
   }
 
-  render() {
+  render(tex = null) {
+    if (tex) this.texture = tex
+
     const { gl, res, rt1, rt2, program, texture, vao } = this
 
     glu.bindFB(gl, res.x, res.y, rt1.fb)
     glu.blend(gl, null)
 
     gl.useProgram(program.program)
-    gl.bindVertexArray(vao)
+    gl.bindVertexArray(program.vao)
     glu.uniformTex(gl, program.uniforms.u_texture, texture)
     gl.uniform2f(program.uniforms.u_dir, this.texel.x, 0)
     gl.drawArrays(gl.TRIANGLES, 0, 6)

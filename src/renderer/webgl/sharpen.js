@@ -7,11 +7,16 @@ export class SharpenPass {
   /**
    * @param {WebGL2RenderingContext} gl
    */
-  constructor(gl, res, texture) {
+  constructor(
+    gl,
+    res,
+    texture,
+    { format = gl.RGBA32F } = { format: gl.RGBA32F }
+  ) {
     this.gl = gl
     this.res = res
     this.texture = texture
-    this.rt = glu.renderTarget(gl, res.x, res.y)
+    this.rt = glu.renderTarget(gl, res.x, res.y, format)
     this.output = this.rt.texture
     this.texel = this.res.clone().apply((comp) => 1 / comp)
 
@@ -24,7 +29,9 @@ export class SharpenPass {
     })
   }
 
-  render() {
+  render(tex) {
+    if (tex) this.texture = tex
+
     const { gl, res, rt, program, texture, vao } = this
 
     glu.bindFB(gl, res.x, res.y, rt.fb)

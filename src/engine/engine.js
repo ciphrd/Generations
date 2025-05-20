@@ -42,9 +42,9 @@ export class Engine {
     this.solver.solve(t, dt)
     this.emitter.emit("solver:updated")
 
-    if (this.ticker.running) this.renderer.render()
+    if (this.ticker.running) this.renderer.render(t, dt)
 
     this.ticks++
-    if (this.ticks === 300) this.stop()
+    // if (this.ticks === 300) this.stop()
   }
 }

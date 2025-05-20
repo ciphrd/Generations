@@ -47,6 +47,9 @@ export const settings = {
       "white",
     ],
   },
+  sediments: {
+    nbRoot: 128,
+  },
 }
 
 export const permutations = [

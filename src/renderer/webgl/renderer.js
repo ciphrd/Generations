@@ -25,6 +25,7 @@ import { EdgePass } from "./edge"
 import { GaussianPass } from "./gaussian"
 import { MembranePass } from "./membrane"
 import { OuterShell } from "./outer-shell"
+import { Sediments } from "./sediments"
 
 const W = 800
 const H = 800
@@ -103,7 +104,7 @@ export class WebGLRenderer extends Renderer {
     $container.appendChild(this.cvs)
   }
 
-  render() {
+  render(t, dt) {
     const { gl, world } = this
     const { organisms, liaisons } = world
     const nb = organisms.length
@@ -145,6 +146,11 @@ export class WebGLRenderer extends Renderer {
     //
     this.membranePass.render()
     this.outerShell.render()
+
+    //
+    // Sediments
+    //
+    this.sediments.render(t)
 
     //
     // Render the light absorption layer, composed of the different bodies
@@ -204,12 +210,12 @@ export class WebGLRenderer extends Renderer {
     gl.uniform1i(this.programs.comp.uniforms.u_texture, 0)
     gl.drawArrays(gl.TRIANGLES, 0, 6)
 
-    // gl.useProgram(this.programs.tex.program)
-    // gl.bindVertexArray(this.vaos.tex)
-    // gl.activeTexture(gl.TEXTURE0)
-    // gl.bindTexture(gl.TEXTURE_2D, this.membranePass.output)
-    // gl.uniform1i(this.programs.tex.uniforms.u_texture, 0)
-    // gl.drawArrays(gl.TRIANGLES, 0, 6)
+    gl.useProgram(this.programs.tex.program)
+    gl.bindVertexArray(this.vaos.tex)
+    gl.activeTexture(gl.TEXTURE0)
+    gl.bindTexture(gl.TEXTURE_2D, this.sediments.output)
+    gl.uniform1i(this.programs.tex.uniforms.u_texture, 0)
+    gl.drawArrays(gl.TRIANGLES, 0, 6)
   }
 
   prepare() {
@@ -333,7 +339,7 @@ export class WebGLRenderer extends Renderer {
     )
 
     this.absorbRT = glu.renderTarget(gl, tW, tH, gl.RGBA32F, { depth: true })
-    this.fieldRT = glu.renderTargetN(gl, tW, tH, 2, gl.RGBA32F, { depth: true })
+    this.fieldRT = glu.renderTargetN(2, gl, tW, tH, gl.RGBA32F, { depth: true })
     this.membraneRT = glu.renderTarget(gl, tW, tH, gl.RGBA32F)
 
     this.membranePass = new MembranePass(
@@ -363,6 +369,8 @@ export class WebGLRenderer extends Renderer {
     gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer)
     gl.enableVertexAttribArray(loc)
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
+
+    this.sediments = new Sediments(gl, vec2(tW, tH))
 
     world.emitter.on("bodies:updated", () => {
       this.bacterias.update()
