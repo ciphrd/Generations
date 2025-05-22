@@ -5,6 +5,7 @@ precision highp float;
 
 uniform sampler2D u_agents;
 uniform sampler2D u_substrate;
+uniform sampler2D u_distance_field;
 uniform float u_time;
 uniform vec2 u_texel;
 
@@ -24,6 +25,14 @@ vec2 substrateGrad(in vec2 P, float d) {
   return vec2((R - L) * 0.5, (T - B) * 0.5);
 }
 
+vec2 dfGrad(in vec2 P, float d) {
+  float R = texture(u_distance_field, P + vec2(u_texel.x, 0.0) * d).a;
+  float L = texture(u_distance_field, P - vec2(u_texel.x, 0.0) * d).a;
+  float T = texture(u_distance_field, P + vec2(0.0, u_texel.y) * d).a;
+  float B = texture(u_distance_field, P - vec2(0.0, u_texel.y) * d).a;
+  return vec2((R - L) * 0.5, (T - B) * 0.5);
+}
+
 void main() {
   vec4 agent = texture(u_agents, v_uv);
   vec2 pos = agent.xy;
@@ -38,8 +47,16 @@ void main() {
     dir *= -1.0;
   }
 
-  agent.xy += dir * 0.001;
+  float df = clamp(texture(u_distance_field, pos).a * 10.0, 0., 1.);
+  float speed = 0.001 + df * 0.2;
+  speed = 0.001;
+  agent.xy += dir * speed;
   agent.xy = clamp(agent.xy, vec2(0), vec2(1));
+
+  dir = dfGrad(agent.xy, 1.0);
+  agent.xy -= dir * 0.1 * texture(u_distance_field, pos).a;
+
+  agent.a = 1.0; // clamp(1.0 - texture(u_distance_field, pos).a * 10., 0., 1.);
   
   outColor0 = agent;
 }

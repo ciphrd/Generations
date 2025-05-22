@@ -141,6 +141,7 @@ export const glu = {
         data
       )
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, sampling)
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, sampling)
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrap)
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, wrap)
 

@@ -1,6 +1,7 @@
 #version 300 es
 #define CELL_SCALE $CELL_SCALE
 
+uniform vec4 u_view;
 uniform vec4 u_points[$NUM_POINTS];
 
 layout(location = 0) in vec4 a_position;
@@ -10,6 +11,8 @@ out vec2 v_uv;
 out vec2 v_guv;
 out vec2 v_ids;
 out float v_length;
+
+#include <view.glsl>
 
 void main() {
 
@@ -38,7 +41,8 @@ void main() {
   pos.xy = pos.xy * 2.0 - 1.0;
 
   // temp zoom
-  pos.xy *= 3.0;
+  // pos.xy *= 3.0;
+  pos = viewTx(pos);
 
   gl_Position = vec4(pos, 0.0, 1.0);
   v_uv = a_position.xy * 0.5 + 0.5;

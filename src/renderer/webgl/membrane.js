@@ -11,12 +11,15 @@ export class MembranePass {
    * @param {WebGL2RenderingContext} gl
    */
   constructor(gl, res, colorField, cellNoiseField) {
+    res = res.clone().mul(2)
     this.gl = gl
     this.res = res
     this.colorField = colorField
     this.cellNoiseField = cellNoiseField
 
-    this.blurFieldPass = new GaussianPass(gl, res, cellNoiseField, 11)
+    this.blurFieldPass = new GaussianPass(gl, res, cellNoiseField, 5, {
+      format: gl.R32F,
+    })
     this.edgePass1 = new EdgePass(gl, res, colorField)
 
     this.rt = glu.renderTarget(gl, res.x, res.y, gl.R32F)
@@ -33,9 +36,11 @@ export class MembranePass {
       u.attrib(this.programs.postEdge.attributes.a_position, glu.quad(gl), 2)
     })
 
-    this.gaussian1 = new GaussianPass(gl, res, this.rt.texture, 17)
+    this.gaussian1 = new GaussianPass(gl, res, this.rt.texture, 13, {
+      format: gl.R32F,
+    })
 
-    this.postBlurRt = glu.renderTarget(gl, res.x, res.y)
+    this.postBlurRt = glu.renderTarget(gl, res.x, res.y, gl.R32F)
     this.programs.postBlur = glu.program(gl, fullVS, postBlurFS, {
       attributes: ["a_position"],
       uniforms: ["u_texture"],
@@ -44,7 +49,9 @@ export class MembranePass {
       u.attrib(this.programs.postBlur.attributes.a_position, glu.quad(gl), 2)
     })
 
-    this.sharpen = new SharpenPass(gl, res, this.postBlurRt.texture)
+    this.sharpen = new SharpenPass(gl, res, this.postBlurRt.texture, {
+      format: gl.R32F,
+    })
 
     this.output = this.sharpen.output
   }

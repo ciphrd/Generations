@@ -1,9 +1,7 @@
 #version 300 es
 precision highp float;
 
-#include <noise.glsl>
-#include <cell.glsl>
-
+uniform vec4 u_view;
 uniform sampler2D u_blurred_membrane;
 
 in vec2 v_uv;
@@ -12,6 +10,10 @@ in vec2 v_ids;
 in float v_length;
 
 out vec4 outColor0;
+
+#include <noise.glsl>
+#include <cell.glsl>
+#include <view.glsl>
 
 float N(in vec2 uv, float scale, float seed) {
   return snoise(vec3(uv * scale, (v_ids.x + 20.0 * v_ids.y) * 0.1 * seed));
@@ -50,7 +52,7 @@ void main() {
   C += vec3(0.3, 1, 0.8) * reddishBlobNoise * 0.2;
 
   // depth "vignette"
-  float vignette = texture(u_blurred_membrane, v_guv).r;
+  float vignette = texture(u_blurred_membrane, invViewTx(v_guv)).r;
   C += vec3(0.3, 1, 0.8) * S * vignette * 1.0;
 
   // reddish compact red dots

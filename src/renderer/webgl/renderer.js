@@ -4,6 +4,7 @@ import { Renderer } from "../renderer"
 import mathGL from "./shaders/lib/math.glsl"
 import noiseGL from "./shaders/lib/noise.glsl"
 import cellGL from "./shaders/lib/cell.glsl"
+import viewGL from "./shaders/lib/view.glsl"
 import fullVS from "./shaders/full.vert.glsl"
 import textureFS from "./shaders/texture.frag.glsl"
 import quadVS from "./shaders/quad.vert.glsl"
@@ -17,6 +18,7 @@ import fieldCellFS from "./shaders/field-cell.frag.glsl"
 import foodFS from "./shaders/food.frag.glsl"
 import compFS from "./shaders/composition.frag.glsl"
 import membraneFS from "./shaders/membrane.frag.glsl"
+import sedimentsFS from "./shaders/absorption/sediments.frag.glsl"
 import { PointsRenderer } from "./points"
 import { LiaisonsRenderer } from "./liaisons"
 import { Spring, SpringFlags } from "../../physics/constraints/spring"
@@ -26,6 +28,8 @@ import { GaussianPass } from "./gaussian"
 import { MembranePass } from "./membrane"
 import { OuterShell } from "./outer-shell"
 import { Sediments } from "./sediments"
+import { Controls } from "../../controls"
+import { viewUniform } from "./view"
 
 const W = 800
 const H = 800
@@ -70,6 +74,15 @@ const tH = H * devicePixelRatio
  * ( ) IMPORTANT !
  *     Do not render the cells/liaisons on the full quads, or it creates
  *     artifacts on the edges.
+ *
+ * ( ) TODO
+ *     Find a way to handle the view coordinates elegantly without rendering
+ *     more that what's needed.
+ *     Define what is rendered in full screen to preserve dimensions (membrane,)
+ *     and what is rendered in view space for quality (cells)
+ *
+ *     Write an elegant pipeline to support these 2 coordinate systems and
+ *     the different cases
  */
 
 export class WebGLRenderer extends Renderer {
@@ -93,6 +106,7 @@ export class WebGLRenderer extends Renderer {
       math: mathGL,
       noise: noiseGL,
       cell: cellGL,
+      view: viewGL,
     })
 
     this.vaos = {}
@@ -130,12 +144,14 @@ export class WebGLRenderer extends Renderer {
 
     gl.useProgram(this.programs.fieldCell.program)
     gl.bindVertexArray(this.vaos.fieldCell)
+    viewUniform(gl, this.programs.fieldCell, true)
     gl.uniform4fv(this.programs.fieldCell.uniforms.u_points, this.cells.geo1)
     gl.uniform4fv(this.programs.fieldCell.uniforms.u_points2, this.cells.geo2)
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, nb)
 
     gl.useProgram(this.programs.fieldLiaison.program)
     gl.bindVertexArray(this.vaos.fieldLiaison)
+    viewUniform(gl, this.programs.fieldLiaison, true)
     gl.uniform4fv(this.programs.fieldLiaison.uniforms.u_points, this.cells.geo1)
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, liaisons.length)
 
@@ -165,6 +181,7 @@ export class WebGLRenderer extends Renderer {
 
     gl.useProgram(this.programs.cells.program)
     gl.bindVertexArray(this.vaos.cells)
+    viewUniform(gl, this.programs.cells)
     gl.uniform4fv(this.programs.cells.uniforms.u_points, this.cells.geo1)
     gl.uniform4fv(this.programs.cells.uniforms.u_points2, this.cells.geo2)
     glu.uniformTex(
@@ -176,6 +193,7 @@ export class WebGLRenderer extends Renderer {
 
     gl.useProgram(this.programs.liaisons.program)
     gl.bindVertexArray(this.vaos.liaisons)
+    viewUniform(gl, this.programs.liaisons)
     gl.uniform4fv(this.programs.liaisons.uniforms.u_points, this.cells.geo1)
     glu.uniformTex(
       gl,
@@ -189,10 +207,20 @@ export class WebGLRenderer extends Renderer {
     glu.blend(gl, gl.ONE, gl.ONE)
     gl.useProgram(this.programs.membrane.program)
     gl.bindVertexArray(this.vaos.membrane)
+    viewUniform(gl, this.programs.membrane)
     glu.uniformTex(
       gl,
       this.programs.membrane.uniforms.u_texture,
       this.membranePass.output
+    )
+    gl.drawArrays(gl.TRIANGLES, 0, 6)
+
+    this.programs.sediments.use()
+    viewUniform(gl, this.programs.sediments)
+    glu.uniformTex(
+      gl,
+      this.programs.sediments.uniforms.u_sediments,
+      this.sediments.output
     )
     gl.drawArrays(gl.TRIANGLES, 0, 6)
 
@@ -210,12 +238,12 @@ export class WebGLRenderer extends Renderer {
     gl.uniform1i(this.programs.comp.uniforms.u_texture, 0)
     gl.drawArrays(gl.TRIANGLES, 0, 6)
 
-    gl.useProgram(this.programs.tex.program)
-    gl.bindVertexArray(this.vaos.tex)
-    gl.activeTexture(gl.TEXTURE0)
-    gl.bindTexture(gl.TEXTURE_2D, this.sediments.output)
-    gl.uniform1i(this.programs.tex.uniforms.u_texture, 0)
-    gl.drawArrays(gl.TRIANGLES, 0, 6)
+    // gl.useProgram(this.programs.tex.program)
+    // gl.bindVertexArray(this.vaos.tex)
+    // gl.activeTexture(gl.TEXTURE0)
+    // gl.bindTexture(gl.TEXTURE_2D, this.sediments.output)
+    // gl.uniform1i(this.programs.tex.uniforms.u_texture, 0)
+    // gl.drawArrays(gl.TRIANGLES, 0, 6)
   }
 
   prepare() {
@@ -239,7 +267,7 @@ export class WebGLRenderer extends Renderer {
     this.programs = {
       fieldCell: glu.program(gl, quadVS, fieldCellFS, {
         attributes: ["a_position"],
-        uniforms: ["u_points", "u_points2"],
+        uniforms: ["u_view", "u_points", "u_points2"],
         variables: {
           NUM_POINTS: nb,
           CELL_SCALE: settings.rendering.cell.scale,
@@ -247,7 +275,7 @@ export class WebGLRenderer extends Renderer {
       }),
       fieldLiaison: glu.program(gl, liaisonVS, fieldLiaisonFS, {
         attributes: ["a_position", "a_endpoints"],
-        uniforms: ["u_points"],
+        uniforms: ["u_view", "u_points"],
         variables: {
           NUM_POINTS: nb,
           CELL_SCALE: settings.rendering.cell.scale,
@@ -255,11 +283,11 @@ export class WebGLRenderer extends Renderer {
       }),
       membrane: glu.program(gl, fullVS, membraneFS, {
         attributes: ["a_position"],
-        uniforms: ["u_texture"],
+        uniforms: ["u_view", "u_texture"],
       }),
       cells: glu.program(gl, quadVS, cellFS, {
         attributes: ["a_position"],
-        uniforms: ["u_points", "u_points2", "u_blurred_membrane"],
+        uniforms: ["u_view", "u_points", "u_points2", "u_blurred_membrane"],
         variables: {
           NUM_POINTS: nb,
           CELL_SCALE: settings.rendering.cell.scale,
@@ -267,10 +295,17 @@ export class WebGLRenderer extends Renderer {
       }),
       liaisons: glu.program(gl, liaisonVS, liaisonFS, {
         attributes: ["a_position", "a_endpoints"],
-        uniforms: ["u_points", "u_blurred_membrane"],
+        uniforms: ["u_view", "u_points", "u_blurred_membrane"],
         variables: {
           NUM_POINTS: nb,
           CELL_SCALE: settings.rendering.cell.scale,
+        },
+      }),
+      sediments: glu.program(gl, fullVS, sedimentsFS, {
+        attributes: ["a_position"],
+        uniforms: ["u_view", "u_sediments"],
+        vao: (prog) => (u) => {
+          u.attrib(prog.attributes.sediments, glu.quad(gl), 2)
         },
       }),
       comp: glu.program(gl, fullVS, compFS, {
@@ -370,7 +405,7 @@ export class WebGLRenderer extends Renderer {
     gl.enableVertexAttribArray(loc)
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
 
-    this.sediments = new Sediments(gl, vec2(tW, tH))
+    this.sediments = new Sediments(gl, vec2(tW, tH), this.fieldRT.textures[0])
 
     world.emitter.on("bodies:updated", () => {
       this.bacterias.update()

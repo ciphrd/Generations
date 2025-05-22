@@ -20,7 +20,7 @@ export class OuterShell {
     this.colorField = colorField
     this.cellNoiseField = cellNoiseField
 
-    this.edgePass1 = new EdgePass(gl, res.clone().div(2), colorField)
+    this.edgePass1 = new EdgePass(gl, res, colorField)
 
     this.rt = glu.renderTarget(gl, res.x, res.y, gl.R32F, {
       sampling: gl.LINEAR,
@@ -39,12 +39,7 @@ export class OuterShell {
       u.attrib(this.programs.postEdge.attributes.a_position, glu.quad(gl), 2)
     })
 
-    this.gaussian1 = new GaussianPass(
-      gl,
-      res.clone().div(2),
-      this.rt.texture,
-      19
-    )
+    this.gaussian1 = new GaussianPass(gl, res, this.rt.texture, 15)
 
     this.output = this.gaussian1.output
   }

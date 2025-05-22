@@ -23,10 +23,11 @@ export class Sediments {
   /**
    * @param {WebGL2RenderingContext} gl
    */
-  constructor(gl, res) {
+  constructor(gl, res, distanceField) {
     this.gl = gl
     this.res = res
     this.texel = res.clone().apply((c) => 1 / c)
+    this.distanceField = distanceField
 
     const { nbRoot } = settings.sediments
     this.nbRoot = nbRoot
@@ -69,7 +70,13 @@ export class Sediments {
       }),
       update: glu.program(gl, fullVS, updateFS, {
         attributes: ["a_position"],
-        uniforms: ["u_agents", "u_time", "u_substrate", "u_texel"],
+        uniforms: [
+          "u_agents",
+          "u_time",
+          "u_substrate",
+          "u_texel",
+          "u_distance_field",
+        ],
         vao: (prog) => (u) => {
           u.attrib(prog.attributes.a_position, glu.quad(gl), 2)
         },
@@ -90,6 +97,13 @@ export class Sediments {
         },
       }),
     }
+
+    this.blurFieldPass = new GaussianPass(
+      gl,
+      res.clone().div(4),
+      this.distanceField,
+      9
+    )
 
     this.fullSedsRt = glu.renderTarget(gl, res.x, res.y, gl.R32F)
     this.substratePP = glu.pingpong(gl, res.x, res.y, gl.R32F)
@@ -115,6 +129,8 @@ export class Sediments {
   render(time) {
     const { gl, res, programs, pingpong, substratePP, nbRoot, texel } = this
 
+    this.blurFieldPass.render()
+
     pingpong.swap()
     glu.bindFB(gl, nbRoot, nbRoot, pingpong.back().fb)
     programs.update.use()
@@ -124,6 +140,12 @@ export class Sediments {
       programs.update.uniforms.u_substrate,
       substratePP.back().tex,
       1
+    )
+    glu.uniformTex(
+      gl,
+      programs.update.uniforms.u_distance_field,
+      this.blurFieldPass.output,
+      2
     )
     gl.uniform1f(programs.update.uniforms.u_time, time)
     gl.uniform2f(programs.update.uniforms.u_texel, texel.x, texel.y)
