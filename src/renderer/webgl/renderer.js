@@ -155,7 +155,25 @@ export class WebGLRenderer extends Renderer {
     gl.uniform4fv(this.programs.fieldLiaison.uniforms.u_points, this.cells.geo1)
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, liaisons.length)
 
+    //
+    glu.bindFB(gl, tW, tH, this.fieldRT2.fb)
+    gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1])
+
+    gl.useProgram(this.programs.fieldCell.program)
+    gl.bindVertexArray(this.vaos.fieldCell)
+    viewUniform(gl, this.programs.fieldCell)
+    gl.uniform4fv(this.programs.fieldCell.uniforms.u_points, this.cells.geo1)
+    gl.uniform4fv(this.programs.fieldCell.uniforms.u_points2, this.cells.geo2)
+    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, nb)
+
+    gl.useProgram(this.programs.fieldLiaison.program)
+    gl.bindVertexArray(this.vaos.fieldLiaison)
+    viewUniform(gl, this.programs.fieldLiaison)
+    gl.uniform4fv(this.programs.fieldLiaison.uniforms.u_points, this.cells.geo1)
+    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, liaisons.length)
+
     gl.disable(gl.DEPTH_TEST)
+    //
 
     //
     // Compute edges on the field to create the shell of the membrane
@@ -207,7 +225,6 @@ export class WebGLRenderer extends Renderer {
     glu.blend(gl, gl.ONE, gl.ONE)
     gl.useProgram(this.programs.membrane.program)
     gl.bindVertexArray(this.vaos.membrane)
-    viewUniform(gl, this.programs.membrane)
     glu.uniformTex(
       gl,
       this.programs.membrane.uniforms.u_texture,
@@ -241,7 +258,7 @@ export class WebGLRenderer extends Renderer {
     // gl.useProgram(this.programs.tex.program)
     // gl.bindVertexArray(this.vaos.tex)
     // gl.activeTexture(gl.TEXTURE0)
-    // gl.bindTexture(gl.TEXTURE_2D, this.absorbRT.tex)
+    // gl.bindTexture(gl.TEXTURE_2D, this.fieldRT2.textures[0])
     // gl.uniform1i(this.programs.tex.uniforms.u_texture, 0)
     // gl.drawArrays(gl.TRIANGLES, 0, 6)
   }
@@ -283,7 +300,7 @@ export class WebGLRenderer extends Renderer {
       }),
       membrane: glu.program(gl, fullVS, membraneFS, {
         attributes: ["a_position"],
-        uniforms: ["u_view", "u_texture"],
+        uniforms: ["u_texture"],
       }),
       cells: glu.program(gl, quadVS, cellFS, {
         attributes: ["a_position"],
@@ -375,20 +392,23 @@ export class WebGLRenderer extends Renderer {
 
     this.absorbRT = glu.renderTarget(gl, tW, tH, gl.RGBA32F, { depth: true })
     this.fieldRT = glu.renderTargetN(2, gl, tW, tH, gl.RGBA32F, { depth: true })
+    this.fieldRT2 = glu.renderTargetN(2, gl, tW, tH, gl.RGBA32F, {
+      depth: true,
+    })
     this.membraneRT = glu.renderTarget(gl, tW, tH, gl.RGBA32F)
 
     this.membranePass = new MembranePass(
       gl,
       vec2(tW, tH),
-      this.fieldRT.textures[0],
-      this.fieldRT.textures[1]
+      this.fieldRT2.textures[0],
+      this.fieldRT2.textures[1]
     )
 
     this.outerShell = new OuterShell(
       gl,
       vec2(W, H),
-      this.fieldRT.textures[0],
-      this.fieldRT.textures[1]
+      this.fieldRT2.textures[0],
+      this.fieldRT2.textures[1]
     )
 
     this.compVao = gl.createVertexArray()

@@ -11,7 +11,7 @@ export class MembranePass {
    * @param {WebGL2RenderingContext} gl
    */
   constructor(gl, res, colorField, cellNoiseField) {
-    res = res.clone().mul(2)
+    // res = res.clone().mul(2)
     this.gl = gl
     this.res = res
     this.colorField = colorField
@@ -53,7 +53,7 @@ export class MembranePass {
       format: gl.R32F,
     })
 
-    this.output = this.sharpen.output
+    this.output = this.postBlurRt.tex
   }
 
   render() {

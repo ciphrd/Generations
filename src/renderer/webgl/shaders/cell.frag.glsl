@@ -70,8 +70,8 @@ void main() {
   C += vec3(0.3, 1, 0.8) * redDotsNoise * 0.6;
 
   // depth "vignette"
-  float vignette = texture(u_blurred_membrane, invViewTx(v_guv)).r;
-  C += vec3(0.3, 1, 0.8) * vignette * 1.0;
+  // float vignette = texture(u_blurred_membrane, v_guv).r;
+  // C += vec3(0.3, 1, 0.8) * vignette * 1.0;
 
   // some holes 
   float holesNoise = N(uv, 11.3, 87.3812)
@@ -87,25 +87,25 @@ void main() {
   // 
   // the nuccleus
   // 
-  vec2 nuv = nuccleusUV(uv, id);
-  float nL = length(nuv - 0.5);
-  float nuccleus = smoothstep(0.9, 0.4, nL);
+  // vec2 nuv = nuccleusUV(uv, id);
+  // float nL = length(nuv - 0.5);
+  // float nuccleus = smoothstep(0.9, 0.4, nL);
 
-  // base nuccleus background, simple fbm
-  float nucBgNoise = snoise(vec3(nuv * 1.7, id * 832.902));
-  C += mix(
-    vec3(0.4, 0.92, 0.55),
-    vec3(0.7, 0.97, 0.8),
-    nucBgNoise
-  ) * nuccleus * 0.5;
+  // // base nuccleus background, simple fbm
+  // float nucBgNoise = snoise(vec3(nuv * 1.7, id * 832.902));
+  // C += mix(
+  //   vec3(0.4, 0.92, 0.55),
+  //   vec3(0.7, 0.97, 0.8),
+  //   nucBgNoise
+  // ) * nuccleus * 0.5;
 
-  // nuccleus shell
-  float nucShell = smoothstep(0.12, 0.5, nL);
-  C += vec3(0.75, 0.97, 0.82) * nucShell * nuccleus * 0.2;
+  // // nuccleus shell
+  // float nucShell = smoothstep(0.12, 0.5, nL);
+  // C += vec3(0.75, 0.97, 0.82) * nucShell * nuccleus * 0.2;
 
-  // nuccleus halo
-  float nucHalo = smoothstep(2.0, 0.0, nL);
-  C += vec3(0.68, 0.88, 0.75) * pow(nucHalo, 1.0) * 0.4;
+  // // nuccleus halo
+  // float nucHalo = smoothstep(2.0, 0.0, nL);
+  // C += vec3(0.68, 0.88, 0.75) * pow(nucHalo, 1.0) * 0.4;
 
   // C += vec3(1) * nuccleus * nucBgNoise;
 

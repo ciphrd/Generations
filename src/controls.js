@@ -5,7 +5,7 @@ class ControlsClass {
   constructor() {
     this.autoTracking = false
     this.txy = vec2(0, 0)
-    this.scale = 1
+    this.scale = 3
     this.emitter = emitter()
   }
 
