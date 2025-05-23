@@ -44,6 +44,7 @@ export function Root({ engine }) {
     engine,
     selected: selection.selected,
     running: engine.ticker.running,
+    controls: engine.controls.get(),
   })
 
   useEffect(() => {
@@ -64,6 +65,12 @@ export function Root({ engine }) {
           running: engine.ticker.running,
         }))
       ),
+      engine.controls.emitter.on("updated", () => {
+        setState((state) => ({
+          ...state,
+          controls: engine.controls.get(),
+        }))
+      }),
     ]
     return () => offs.forEach((off) => off())
   }, [])

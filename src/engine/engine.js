@@ -1,3 +1,4 @@
+import { Controls } from "../controls"
 import { emitter } from "../utils/emitter"
 
 export class Engine {
@@ -7,6 +8,7 @@ export class Engine {
     this.selection = selection
     this.renderer = renderer
     this.ticker = ticker
+    this.controls = Controls
 
     this.emitter = emitter()
     this.ticker.emitter.on("tick", this.tick)

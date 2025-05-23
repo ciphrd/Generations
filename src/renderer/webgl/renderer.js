@@ -241,7 +241,7 @@ export class WebGLRenderer extends Renderer {
     // gl.useProgram(this.programs.tex.program)
     // gl.bindVertexArray(this.vaos.tex)
     // gl.activeTexture(gl.TEXTURE0)
-    // gl.bindTexture(gl.TEXTURE_2D, this.sediments.output)
+    // gl.bindTexture(gl.TEXTURE_2D, this.absorbRT.tex)
     // gl.uniform1i(this.programs.tex.uniforms.u_texture, 0)
     // gl.drawArrays(gl.TRIANGLES, 0, 6)
   }

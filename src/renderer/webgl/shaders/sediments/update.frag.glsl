@@ -43,14 +43,11 @@ void main() {
   vec2 dir = substrateGrad(pos, 1.0);
   dir += (hash22(v_uv * 110.23 + vec2(u_time)) - 0.5) * 0.5;
 
-  if (under > 0.7) {
+  if (under > 0.5) {
     dir *= -1.0;
   }
 
-  float df = clamp(texture(u_distance_field, pos).a * 10.0, 0., 1.);
-  float speed = 0.001 + df * 0.2;
-  speed = 0.001;
-  agent.xy += dir * speed;
+  agent.xy += dir * 0.001;
   agent.xy = clamp(agent.xy, vec2(0), vec2(1));
 
   dir = dfGrad(agent.xy, 1.0);

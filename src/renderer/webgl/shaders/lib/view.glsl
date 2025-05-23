@@ -10,5 +10,5 @@ vec2 viewTx(in vec2 P) {
 }
 
 vec2 invViewTx(in vec2 P) {
-  return (P - 0.5) / u_view.z + 0.5 - u_view.xy;
+  return ((P - u_view.xy * 0.5) - 0.5) / u_view.z + 0.5;
 }
