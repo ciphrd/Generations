@@ -83,7 +83,7 @@ export class Sediments {
       }),
       substrate: glu.program(gl, fullVS, substrateFS, {
         attributes: ["a_position"],
-        uniforms: ["u_substrate", "u_agents"],
+        uniforms: ["u_substrate", "u_agents", "u_cells"],
         vao: (prog) => (u) => {
           u.attrib(prog.attributes.a_position, glu.quad(gl), 2)
         },
@@ -172,6 +172,12 @@ export class Sediments {
       programs.substrate.uniforms.u_agents,
       this.fullSedsRt.tex,
       1
+    )
+    glu.uniformTex(
+      gl,
+      programs.substrate.uniforms.u_cells,
+      this.blurFieldPass.output,
+      2
     )
     gl.drawArrays(gl.TRIANGLES, 0, 6)
 

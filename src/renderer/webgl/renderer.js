@@ -184,7 +184,7 @@ export class WebGLRenderer extends Renderer {
     //
     // Sediments
     //
-    // this.sediments.render(t)
+    this.sediments.render(t)
 
     //
     // Render the light absorption layer, composed of the different bodies

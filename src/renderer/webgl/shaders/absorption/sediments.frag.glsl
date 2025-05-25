@@ -12,7 +12,9 @@ out vec4 outColor0;
 
 void main() {
   vec2 uv = invViewTx(v_uv);
-  float sediments = texture(u_sediments, uv).r * 0.8;
+  float sediments = texture(u_sediments, uv).r;
+  sediments = clamp(sediments, 0.0, 1.0);
+  sediments = pow(sediments, 0.8);
   vec3 C = vec3(0.4, 0.95, 0.7);
   outColor0 = vec4(C, 1) * sediments;
 }
