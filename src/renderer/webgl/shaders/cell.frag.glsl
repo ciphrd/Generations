@@ -70,8 +70,8 @@ void main() {
   C += vec3(0.3, 1, 0.8) * redDotsNoise * 0.6;
 
   // depth "vignette"
-  // float vignette = texture(u_blurred_membrane, v_guv).r;
-  // C += vec3(0.3, 1, 0.8) * vignette * 1.0;
+  float vignette = texture(u_blurred_membrane, v_guv).r;
+  C += vec3(0.3, 1, 0.8) * S * outerShell(vignette);
 
   // some holes 
   float holesNoise = N(uv, 11.3, 87.3812)

@@ -51,13 +51,16 @@ export class GaussianPass {
     res,
     texture,
     width,
-    { format = gl.RGBA32F } = { format: gl.RGBA32F }
+    { format = gl.RGBA32F, wrap = gl.CLAMP_TO_EDGE } = {
+      format: gl.RGBA32F,
+      wrap: gl.CLAMP_TO_EDGE,
+    }
   ) {
     this.gl = gl
     this.res = res
     this.texture = texture
-    this.rt1 = glu.renderTarget(gl, res.x, res.y, format)
-    this.rt2 = glu.renderTarget(gl, res.x, res.y, format)
+    this.rt1 = glu.renderTarget(gl, res.x, res.y, format, { wrap })
+    this.rt2 = glu.renderTarget(gl, res.x, res.y, format, { wrap })
     this.texel = this.res.clone().apply((comp) => 1 / comp)
 
     this.program = initProgram(gl, width)

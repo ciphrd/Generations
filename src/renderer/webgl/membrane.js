@@ -10,17 +10,16 @@ export class MembranePass {
   /**
    * @param {WebGL2RenderingContext} gl
    */
-  constructor(gl, res, colorField, cellNoiseField) {
-    // res = res.clone().mul(2)
+  constructor(gl, res, fieldRT) {
     this.gl = gl
     this.res = res
-    this.colorField = colorField
-    this.cellNoiseField = cellNoiseField
+    this.colorField = fieldRT.textures[0]
+    this.cellNoiseField = fieldRT.textures[1]
 
-    this.blurFieldPass = new GaussianPass(gl, res, cellNoiseField, 5, {
+    this.blurFieldPass = new GaussianPass(gl, res, this.cellNoiseField, 11, {
       format: gl.R32F,
     })
-    this.edgePass1 = new EdgePass(gl, res, colorField)
+    this.edgePass1 = new EdgePass(gl, res, this.colorField)
 
     this.rt = glu.renderTarget(gl, res.x, res.y, gl.R32F)
     this.texel = this.res.clone().apply((comp) => 1 / comp)
@@ -36,7 +35,7 @@ export class MembranePass {
       u.attrib(this.programs.postEdge.attributes.a_position, glu.quad(gl), 2)
     })
 
-    this.gaussian1 = new GaussianPass(gl, res, this.rt.texture, 13, {
+    this.gaussian1 = new GaussianPass(gl, res, this.rt.texture, 17, {
       format: gl.R32F,
     })
 

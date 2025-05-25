@@ -49,3 +49,7 @@ vec2 nuccleusUV(in vec2 cuv, float id) {
   uv.y += snoise(vec3(cuv * 12.0, id * 33.982)) * 0.1;
   return uv;
 }
+
+float outerShell(float raw) {
+  return pow(raw, 0.6) * 2.5;
+}

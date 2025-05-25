@@ -184,7 +184,7 @@ export class WebGLRenderer extends Renderer {
     //
     // Sediments
     //
-    this.sediments.render(t)
+    // this.sediments.render(t)
 
     //
     // Render the light absorption layer, composed of the different bodies
@@ -258,7 +258,7 @@ export class WebGLRenderer extends Renderer {
     // gl.useProgram(this.programs.tex.program)
     // gl.bindVertexArray(this.vaos.tex)
     // gl.activeTexture(gl.TEXTURE0)
-    // gl.bindTexture(gl.TEXTURE_2D, this.fieldRT2.textures[0])
+    // gl.bindTexture(gl.TEXTURE_2D, this.outerShell.output)
     // gl.uniform1i(this.programs.tex.uniforms.u_texture, 0)
     // gl.drawArrays(gl.TRIANGLES, 0, 6)
   }
@@ -397,18 +397,13 @@ export class WebGLRenderer extends Renderer {
     })
     this.membraneRT = glu.renderTarget(gl, tW, tH, gl.RGBA32F)
 
-    this.membranePass = new MembranePass(
-      gl,
-      vec2(tW, tH),
-      this.fieldRT2.textures[0],
-      this.fieldRT2.textures[1]
-    )
+    this.membranePass = new MembranePass(gl, vec2(tW, tH), this.fieldRT2)
 
     this.outerShell = new OuterShell(
       gl,
       vec2(W, H),
-      this.fieldRT2.textures[0],
-      this.fieldRT2.textures[1]
+      this.membranePass.rt.tex,
+      this.membranePass.blurFieldPass.output
     )
 
     this.compVao = gl.createVertexArray()

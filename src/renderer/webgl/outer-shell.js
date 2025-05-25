@@ -2,8 +2,7 @@ import { glu } from "../../utils/glu"
 import { EdgePass } from "./edge"
 import { GaussianPass } from "./gaussian"
 import fullVS from "./shaders/full.vert.glsl"
-import edgeMembraneFS from "./shaders/membrane/edge-membrane.frag.glsl"
-import postBlurFS from "./shaders/membrane/post-blur.frag.glsl"
+import preBlurFS from "./shaders/membrane/outer-shell-pre-blur.frag.glsl"
 import { SharpenPass } from "./sharpen"
 
 /**
@@ -14,51 +13,49 @@ export class OuterShell {
   /**
    * @param {WebGL2RenderingContext} gl
    */
-  constructor(gl, res, colorField, cellNoiseField) {
+  constructor(gl, res, membrane, cellNoise) {
     this.gl = gl
     this.res = res
-    this.colorField = colorField
-    this.cellNoiseField = cellNoiseField
-
-    this.edgePass1 = new EdgePass(gl, res, colorField)
+    this.res2 = res.clone().div(2)
+    this.texel = this.res.clone().apply((comp) => 1 / comp)
+    this.membrane = membrane
+    this.cellNoise = cellNoise
 
     this.rt = glu.renderTarget(gl, res.x, res.y, gl.R32F, {
       sampling: gl.LINEAR,
       wrap: gl.CLAMP_TO_EDGE,
     })
-    this.texel = this.res.clone().apply((comp) => 1 / comp)
 
-    this.programs = {}
-    this.vaos = {}
-
-    this.programs.postEdge = glu.program(gl, fullVS, edgeMembraneFS, {
-      attributes: ["a_position"],
-      uniforms: ["u_memb_edge", "u_cell_noise"],
-    })
-    this.vaos.postEdge = glu.vao(gl, (u) => {
-      u.attrib(this.programs.postEdge.attributes.a_position, glu.quad(gl), 2)
+    this.blurMembranePass = new GaussianPass(gl, this.res2, this.rt.tex, 21, {
+      format: gl.R32F,
+      wrap: gl.CLAMP_TO_EDGE,
     })
 
-    this.gaussian1 = new GaussianPass(gl, res, this.rt.texture, 15)
+    this.programs = {
+      preBlur: glu.program(gl, fullVS, preBlurFS, {
+        attributes: ["a_position"],
+        uniforms: ["u_memb", "u_cell_noise"],
+        vao: (prg) => (u) => {
+          u.attrib(prg.attributes.a_position, glu.quad(gl), 2)
+        },
+      }),
+    }
 
-    this.output = this.gaussian1.output
+    this.output = this.blurMembranePass.output
   }
 
   render() {
-    const { gl, res, rt, programs, vaos, colorField, cellNoiseField } = this
-    const { postEdge, postBlur } = programs
-
-    this.edgePass1.render()
+    const { gl, res, res2, rt, rt2, programs, blurMembranePass, cellNoise } =
+      this
+    const { preBlur, postBlur } = programs
 
     glu.bindFB(gl, res.x, res.y, rt.fb)
     glu.blend(gl, null)
-
-    gl.useProgram(postEdge.program)
-    gl.bindVertexArray(vaos.postEdge)
-    glu.uniformTex(gl, postEdge.uniforms.u_memb_edge, this.edgePass1.output)
-    glu.uniformTex(gl, postEdge.uniforms.u_cell_noise, this.cellNoiseField, 1)
+    preBlur.use()
+    glu.uniformTex(gl, preBlur.uniforms.u_memb, this.membrane, 0)
+    glu.uniformTex(gl, preBlur.uniforms.u_cell_noise, cellNoise, 1)
     gl.drawArrays(gl.TRIANGLES, 0, 6)
 
-    this.gaussian1.render()
+    blurMembranePass.render()
   }
 }
