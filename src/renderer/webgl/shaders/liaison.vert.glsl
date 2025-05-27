@@ -5,7 +5,7 @@ uniform vec4 u_view;
 
 layout(location = 0) in vec4 a_position;
 layout(location = 1) in mat2x4 a_geometries;
-layout(location = 3) in mat2x3 a_colors;
+layout(location = 3) in vec3 a_color;
 
 out vec2 v_uv;
 out vec2 v_guv;
@@ -16,11 +16,6 @@ out vec3 v_color;
 #include <view.glsl>
 
 void main() {
-  // color mix between cell left & right
-  vec3 Cl = a_colors[0];
-  vec3 Cr = a_colors[1];
-  v_color = mix(Cl, Cr, a_position.x);
-
   // get left/right endpoints positions of segment
   vec4 L = a_geometries[0];
   vec4 R = a_geometries[1];
@@ -33,7 +28,6 @@ void main() {
   float A = -atan(LR.y, LR.x);
 
   vec2 pos = a_position.xy;
-
   // scale
   pos.x *= LRlen / 2.0;
   pos.y *= width;
@@ -51,4 +45,5 @@ void main() {
   v_guv = pos.xy * 0.5 + 0.5;
   v_ids = vec2(L.w, R.w);
   v_length = LRlen / 2.0 / width;
+  v_color = a_color;
 }

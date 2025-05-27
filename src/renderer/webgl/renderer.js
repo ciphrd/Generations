@@ -137,18 +137,14 @@ export class WebGLRenderer extends Renderer {
     const nbLiaisons = liaisons.length
     this.liaisons = {
       geos: new Float32Array(nbLiaisons * 8),
-      cols: new Float32Array(nbLiaisons * 6),
+      col: new Float32Array(nbLiaisons * 3),
     }
-    let bodyA, bodyB
+    let liaison
     for (let i = 0; i < nbLiaisons; i++) {
-      bodyA = liaisons[i].bodyA
-      bodyB = liaisons[i].bodyB
-      this.liaisons.cols[i * 6 + 0] = bodyA.color.r / 255
-      this.liaisons.cols[i * 6 + 1] = bodyA.color.g / 255
-      this.liaisons.cols[i * 6 + 2] = bodyA.color.b / 255
-      this.liaisons.cols[i * 6 + 3] = bodyB.color.r / 255
-      this.liaisons.cols[i * 6 + 4] = bodyB.color.g / 255
-      this.liaisons.cols[i * 6 + 5] = bodyB.color.b / 255
+      liaison = liaisons[i]
+      this.liaisons.col[i * 3 + 0] = liaison.color.r / 255
+      this.liaisons.col[i * 3 + 1] = liaison.color.g / 255
+      this.liaisons.col[i * 3 + 2] = liaison.color.b / 255
     }
 
     this.buffers = {
@@ -183,7 +179,7 @@ export class WebGLRenderer extends Renderer {
           }
           return this.liaisons.geos
         }),
-        cols: glu.buffer(gl, this.liaisons.cols),
+        col: glu.buffer(gl, this.liaisons.col),
       },
     }
 
@@ -214,7 +210,7 @@ export class WebGLRenderer extends Renderer {
         },
       }),
       fieldLiaison: glu.program(gl, liaisonVS, fieldLiaisonFS, {
-        attributes: ["a_position", "a_endpoints", "a_geometries", "a_colors"],
+        attributes: ["a_position", "a_endpoints", "a_geometries", "a_color"],
         uniforms: ["u_view"],
         variables: {
           CELL_SCALE: settings.rendering.cell.scale,
@@ -229,10 +225,9 @@ export class WebGLRenderer extends Renderer {
             gl.FLOAT,
             true
           )
-          u.matAttrib(
-            prg.attributes.a_colors,
-            this.buffers.liaisons.cols,
-            2,
+          u.attrib(
+            prg.attributes.a_color,
+            this.buffers.liaisons.col,
             3,
             gl.FLOAT,
             true
@@ -245,7 +240,7 @@ export class WebGLRenderer extends Renderer {
       }),
       cells: glu.program(gl, quadVS, cellFS, {
         attributes: ["a_position", "a_geometry", "a_color"],
-        uniforms: ["u_view", "u_blurred_membrane"],
+        uniforms: ["u_view", "u_blurred_membrane", "u_color_field"],
         variables: {
           CELL_SCALE: settings.rendering.cell.scale,
         },
@@ -269,8 +264,8 @@ export class WebGLRenderer extends Renderer {
         },
       }),
       liaisons: glu.program(gl, liaisonVS, liaisonFS, {
-        attributes: ["a_position", "a_endpoints", "a_geometries", "a_colors"],
-        uniforms: ["u_view", "u_points", "u_blurred_membrane"],
+        attributes: ["a_position", "a_endpoints", "a_geometries", "a_color"],
+        uniforms: ["u_view", "u_points", "u_blurred_membrane", "u_color_field"],
         variables: {
           CELL_SCALE: settings.rendering.cell.scale,
         },
@@ -284,10 +279,9 @@ export class WebGLRenderer extends Renderer {
             gl.FLOAT,
             true
           )
-          u.matAttrib(
-            prg.attributes.a_colors,
-            this.buffers.liaisons.cols,
-            2,
+          u.attrib(
+            prg.attributes.a_color,
+            this.buffers.liaisons.col,
             3,
             gl.FLOAT,
             true
@@ -333,6 +327,13 @@ export class WebGLRenderer extends Renderer {
       depth: true,
     })
     this.membraneRT = glu.renderTarget(gl, tW, tH, gl.RGBA32F)
+
+    this.blurColorFieldPass = new GaussianPass(
+      gl,
+      vec2(tW, tH).div(2),
+      this.fieldRT2.textures[1],
+      5
+    )
 
     this.membranePass = new MembranePass(gl, vec2(tW, tH), this.fieldRT2)
 
@@ -409,6 +410,8 @@ export class WebGLRenderer extends Renderer {
     gl.disable(gl.DEPTH_TEST)
     //
 
+    this.blurColorFieldPass.render()
+
     //
     // Compute edges on the field to create the shell of the membrane
     //
@@ -436,7 +439,14 @@ export class WebGLRenderer extends Renderer {
     glu.uniformTex(
       gl,
       this.programs.cells.uniforms.u_blurred_membrane,
-      this.outerShell.output
+      this.outerShell.output,
+      0
+    )
+    glu.uniformTex(
+      gl,
+      this.programs.cells.uniforms.u_color_field,
+      this.blurColorFieldPass.output,
+      1
     )
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, nb)
 
@@ -445,7 +455,14 @@ export class WebGLRenderer extends Renderer {
     glu.uniformTex(
       gl,
       this.programs.liaisons.uniforms.u_blurred_membrane,
-      this.outerShell.output
+      this.outerShell.output,
+      0
+    )
+    glu.uniformTex(
+      gl,
+      this.programs.liaisons.uniforms.u_color_field,
+      this.blurColorFieldPass.output,
+      1
     )
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, liaisons.length)
 
@@ -491,7 +508,7 @@ export class WebGLRenderer extends Renderer {
     // gl.useProgram(this.programs.tex.program)
     // gl.bindVertexArray(this.vaos.tex)
     // gl.activeTexture(gl.TEXTURE0)
-    // gl.bindTexture(gl.TEXTURE_2D, this.membranePass.output)
+    // gl.bindTexture(gl.TEXTURE_2D, this.blurColorFieldPass.output)
     // gl.uniform1i(this.programs.tex.uniforms.u_texture, 0)
     // gl.drawArrays(gl.TRIANGLES, 0, 6)
   }

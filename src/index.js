@@ -175,16 +175,6 @@ async function start() {
       nEdges += node2.edges.filter((e) => e === node).length
     }
 
-    // if (nEdges === 1) {
-    //   bod.color = "yellow"
-    //   constraints.pre.push(new FoodSeeker(bod, world), new Eater(bod, world))
-    // }
-
-    // for (const [name, enabled] of Object.entries(node.behaviors)) {
-    //   if (!enabled) continue
-    //   constraints.pre.push(new behaviors[name](bod, world))
-    // }
-
     for (const [name, value] of Object.entries(node.sensors)) {
       const Sens = Sensors[name]
       if (!Sens) continue
@@ -202,23 +192,6 @@ async function start() {
     )
   }
 
-  // todo.
-  // - all parts of the app are responding well to the update to partitions
-  //   & world bodies updates
-
-  // for (let i = 0; i < min(5, bodies.length); i++) {
-  //   const idx = rnd.int(0, bodies.length)
-  //   new VisionSensor(bodies[idx], world)
-  // }
-  // for (let i = 0; i < min(5, bodies.length); i++) {
-  //   const idx = rnd.int(0, bodies.length)
-  //   new SmellSensor(bodies[idx], world)
-  // }
-  // for (let i = 0; i < min(5, bodies.length); i++) {
-  //   const idx = rnd.int(0, bodies.length)
-  //   new ClockSensor(bodies[idx], world)
-  // }
-
   const edgemap = {}
   for (let i = 0; i < nodes.length; i++) {
     const node = nodes[i]
@@ -227,7 +200,14 @@ async function start() {
       if (edgemap[nodeTupleId([node, edge])]) continue
       edgemap[nodeTupleId([node, edge])] = true
       constraints.pre.push(
-        new Spring(bodies[i], bodies[nodes.indexOf(edge)], 0.02, 100, 5)
+        new Spring(
+          bodies[i],
+          bodies[nodes.indexOf(edge)],
+          0.02,
+          100,
+          5,
+          node.edgeColors || node.color.clone()
+        )
       )
     }
   }

@@ -3,10 +3,12 @@ precision highp float;
 
 uniform vec4 u_view;
 uniform sampler2D u_blurred_membrane;
+uniform sampler2D u_color_field;
 
 in vec2 v_uv;
 in vec2 v_guv;
 in float v_id;
+in vec3 v_color;
 
 out vec4 outColor;
 
@@ -110,6 +112,9 @@ void main() {
   // C += vec3(1) * nuccleus * nucBgNoise;
 
   outColor = vec4(C, 1) * S;
+
+  outColor = vec4(vec3(1) - v_color, 1) * S;
+  outColor = vec4(vec3(1) - texture(u_color_field, v_guv).gba, 1) * S;
 
   // to create a cellular-like pattern we use the depth based on the distance
   // field of the cell. this will create a voronoi-like pattern

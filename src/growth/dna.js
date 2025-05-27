@@ -38,7 +38,7 @@ function generateDNA(seeds) {
   }
 
   // add random coloration rules
-  for (let i = 0, m = rnd.int(2, 6); i < m; i++) {
+  for (let i = 0, m = rnd.int(4, 10); i < m; i++) {
     // 4bits for color sequence code, 4bites for a random letter
     growth.push(0xf0 + (rnd.int(0, 16) & 0xf))
     // 8bits for a random rgb332 color

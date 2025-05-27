@@ -255,15 +255,24 @@ export const GrowthBytecode = {
 
       // coloring
       case 0xf: {
-        const letter = GrowthBytecode.decode(stack.get(0), "letter", context)
-        // const s1 = stack.get(1)
-        // const s2 = stack.get(2)
-        const s1 = instructions[min(pointer + 1, instructions.length - 1)]
-        const s2 = instructions[min(pointer + 2, instructions.length - 1)]
+        const letter = GrowthBytecode.decode(
+          instructions[min(pointer + 1, instructions.length - 1)],
+          "letter",
+          context
+        )
+        const s1 = instructions[min(pointer + 2, instructions.length - 1)]
+        const s2 = instructions[min(pointer + 3, instructions.length - 1)]
         const byte = (s1 << 4) + s2
-        nodemap[letter].color = Color.fromByteRgb332(byte)
-        console.log({ color: "" + nodemap[letter].color })
-        pointer += 2
+        const color = Color.fromByteRgb332(byte)
+
+        // half of the time, colors edges, otherwise colors the node
+        if (stack.get(0) >> 3) {
+          nodemap[letter].edgeColors = color
+        } else {
+          nodemap[letter].color = color
+        }
+
+        pointer += 3
         break
       }
 

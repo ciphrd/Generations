@@ -21,7 +21,7 @@ export class LiaisonsRenderer {
 
     this.buffers = {
       geos: new Float32Array(MAX_LIAISONS * 8),
-      cols: new Float32Array(MAX_LIAISONS * 6),
+      col: new Float32Array(MAX_LIAISONS * 3),
     }
 
     this.glBuffers = {
@@ -41,26 +41,20 @@ export class LiaisonsRenderer {
         }
         return this.buffers.geos
       }),
-      cols: glu.dynamicBuffer(gl, this.buffers.cols, () => {
-        let bodyA, bodyB
+      col: glu.dynamicBuffer(gl, this.buffers.col, () => {
+        let liaison
         for (let i = 0; i < this.liaisons.length; i++) {
-          bodyA = this.liaisons[i].bodyA
-          bodyB = this.liaisons[i].bodyB
-          this.buffers.cols[i * 6 + 0] = bodyA.color.r / 255
-          this.buffers.cols[i * 6 + 1] = bodyA.color.g / 255
-          this.buffers.cols[i * 6 + 2] = bodyA.color.b / 255
-          this.buffers.cols[i * 6 + 3] = bodyB.color.r / 255
-          this.buffers.cols[i * 6 + 4] = bodyB.color.g / 255
-          this.buffers.cols[i * 6 + 5] = bodyB.color.b / 255
+          liaison = this.liaisons[i]
+          this.buffers.col[i * 3 + 0] = liaison.color.r / 255
+          this.buffers.col[i * 3 + 1] = liaison.color.g / 255
+          this.buffers.col[i * 3 + 2] = liaison.color.b / 255
         }
-        return this.buffers.cols
+        return this.buffers.col
       }),
     }
 
-    console.log({ liaisonVS, fragment })
-
     this.program = glu.program(gl, liaisonVS, fragment, {
-      attributes: ["a_position", "a_geometries", "a_colors"],
+      attributes: ["a_position", "a_geometries", "a_color"],
       uniforms: ["u_view"],
       variables: {
         CELL_SCALE: settings.rendering.cell.scale,
@@ -75,10 +69,9 @@ export class LiaisonsRenderer {
           gl.FLOAT,
           true
         )
-        u.matAttrib(
-          prg.attributes.a_colors,
-          this.glBuffers.cols.buffer,
-          2,
+        u.attrib(
+          prg.attributes.a_color,
+          this.glBuffers.col.buffer,
           3,
           gl.FLOAT,
           true
@@ -102,7 +95,7 @@ export class LiaisonsRenderer {
 
   allocate() {
     this.liaisons = this.getLiaisons()
-    this.glBuffers.cols.update()
+    this.glBuffers.col.update()
     this.needsUpdate = false
   }
 
