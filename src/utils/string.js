@@ -4,25 +4,27 @@ import { ActivationBytecode } from "../bytecode/activation"
 
 export const str = {
   letters: (s) => arr.dedup(s.match(/[a-z]/g)),
+  hexbyte: (byte) => byte.toString(16).padStart(2, "0"),
+  hexbytes: (bytes) => bytes.map(str.hexbyte),
 }
 
 export function dnahex(dna) {
   const growth = GrowthBytecode.parser(dna[0])
   const activations = [ActivationBytecode.parser(dna[1])]
 
-  let str = ""
+  let s = ""
   for (const u of growth) {
-    str += u.toString(16)
+    s += u.toString(16)
   }
 
   for (const act of activations) {
-    str += "\n"
+    s += "\n"
     for (const u of act) {
-      str += u.toString(16).padStart(2, "0")
+      s += str.hexbyte(u)
     }
   }
 
-  return str
+  return s
 }
 
 export function strHash(str) {

@@ -6,6 +6,7 @@ import { CPU, mergeOperations } from "../bytecode/cpu"
 import { ActivationBytecode } from "../bytecode/activation"
 import { Actions } from "./actions"
 import { Entity } from "./entity"
+import { settings } from "../settings"
 
 let c = 0
 const _v2a = vec2(),
@@ -26,7 +27,13 @@ const MAX_VELOCITY = 0.2
 const MAX_VELOCITY_SQ = MAX_VELOCITY ** 2
 
 export class Body extends Entity {
-  constructor(world, pos, radius, friction = 0, color = "#00ff00") {
+  constructor(
+    world,
+    pos,
+    radius,
+    friction = 0,
+    color = settings.cells.default.color
+  ) {
     super()
     this.world = world
     this.id = c++
@@ -70,10 +77,6 @@ export class Body extends Entity {
     }
     this.cpu = new CPU(dna[1], ActivationBytecode)
   }
-
-  // todo
-  // tokens move more slowly (once every N frame or N ms)
-  // ie tokens are processed after a delay
 
   prepare() {
     let tmp = this.signals
@@ -233,6 +236,6 @@ export class Body extends Entity {
   }
 }
 
-export function body(world, pos, rad, col) {
-  return new Body(world, pos, rad, col)
+export function body(world, pos, rad, friction, col) {
+  return new Body(world, pos, rad, friction, col)
 }

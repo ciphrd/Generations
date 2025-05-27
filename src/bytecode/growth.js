@@ -34,9 +34,9 @@
 
 import { Node } from "../graph/node"
 import { SensorKeys } from "../sensors"
+import { Color } from "../utils/color"
 import { clamp01, mod } from "../utils/math"
 import { rnd } from "../utils/rnd"
-import { Operation } from "./cpu"
 
 const set = [
   "nop",
@@ -253,8 +253,19 @@ export const GrowthBytecode = {
         break
       }
 
-      case 0xf:
+      // coloring
+      case 0xf: {
+        const letter = GrowthBytecode.decode(stack.get(0), "letter", context)
+        // const s1 = stack.get(1)
+        // const s2 = stack.get(2)
+        const s1 = instructions[min(pointer + 1, instructions.length - 1)]
+        const s2 = instructions[min(pointer + 2, instructions.length - 1)]
+        const byte = (s1 << 4) + s2
+        nodemap[letter].color = Color.fromByteRgb332(byte)
+        console.log({ color: "" + nodemap[letter].color })
+        pointer += 2
         break
+      }
 
       default:
         throw "fatal"

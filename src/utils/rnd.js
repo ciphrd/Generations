@@ -8,6 +8,9 @@ export const rnd = {
   int(min, max) {
     return floor(this.range(min, max))
   },
+  byte() {
+    return ($fx.rand() * 256) & 0xff
+  },
   sign() {
     return $fx.rand() < 0.5 ? -1 : 1
   },

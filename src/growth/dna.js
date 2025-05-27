@@ -37,6 +37,14 @@ function generateDNA(seeds) {
     // }
   }
 
+  // add random coloration rules
+  for (let i = 0, m = rnd.int(2, 6); i < m; i++) {
+    // 4bits for color sequence code, 4bites for a random letter
+    growth.push(0xf0 + (rnd.int(0, 16) & 0xf))
+    // 8bits for a random rgb332 color
+    growth.push(rnd.int(0, 256) & 0xff)
+  }
+
   const activations = Array(4)
     .fill(0)
     .map(() => generateActivation(seeds))

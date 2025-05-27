@@ -23,7 +23,7 @@ export function renderBody(ctx, body) {
     ctx.stroke()
   }
 
-  ctx.fillStyle = body.color
+  ctx.fillStyle = body.color.css()
   ctx.beginPath()
   ctx.arc(body.pos.x, body.pos.y, body.radius, 0, 2 * PI)
   ctx.fill()

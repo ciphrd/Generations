@@ -30,7 +30,7 @@ import { CanvasRenderer } from "./renderer/canvas/renderer"
 import { vec2 } from "./utils/vec"
 import { larf } from "./physics/constraints/lar"
 import { Food } from "./physics/entities/food"
-import { clamp, fract } from "./utils/math"
+import { fract } from "./utils/math"
 import { Mouse } from "./interactions/mouse"
 import { GlobalRepulsion } from "./physics/constraints/repulsion"
 import { nodeTupleId } from "./graph/node"
@@ -42,21 +42,15 @@ import { Solver } from "./physics/solver"
 import { settings } from "./settings"
 import { generateDNAs } from "./growth/dna"
 import { grow } from "./growth/growth"
-import { arr } from "./utils/array"
 import { getSeeds } from "./opti/seeds"
 import { Sensors } from "./sensors"
-import { Graph } from "./ui/graph"
 import { NodeSelection } from "./interactions/selection"
-import { StackGraph } from "./ui/stacks"
-import { dnahex, logdna } from "./utils/string"
-import { Clusters } from "./physics/constraints/clusters"
+import { dnahex } from "./utils/string"
 import { ui } from "./ui/index.jsx"
 import { Ticker } from "./engine/ticker"
 import { Engine } from "./engine/engine"
-import { importNetwork } from "./growth/import"
-
-import made from "./maker.json"
 import { WebGLRenderer } from "./renderer/webgl/renderer"
+import { Color } from "./utils/color"
 
 Object.getOwnPropertyNames(Math).forEach((el) => (window[el] = Math[el]))
 window.TAU = 2 * PI
@@ -99,10 +93,49 @@ document.body.appendChild(stats.dom)
 //   by other bodies (we may want to optimize there if we use big bodies, as
 //   the current collisions are computed with small radiuses)
 
+// todo: coloring
+// (x) colors are handled by the DNA
+//     (x) add OP to define colors (8 bits for color)
+//         note: clamp bits if end of DNA ?
+//     (x) color assigned to cell
+// ( ) color rendering
+//     ( ) cells are colored based on instance color
+//     ( ) smooth transitions between cells (HARD)
+//     ( ) improve coloration as a whole
+//         ( ) function to get variations of base color
+//         ( ) add these variations everywhere
+// ( ) sediments
+//     ( ) improve coloring of sediments, rn pretty bad
+//     ( ) too regular: maybe change rules with some noise
+
+// todo:
+// Think about visual variations. Color won't be enough, their should be other
+// properties. Some ideas:
+// - membranes are different
+// - cells are smaller
+// - other microscopy techniques ?
+// - add other kinds of rendering ?
+//   - fish-egg kind of rendering
+//   - only membranes ?
+// -
+
+// todo: mutations
+// for open-form
+// ( ) initial DNA definition based on first hash
+// ( ) add mutations to the DNA based on the list of following hashes
+
+// todo: bugfux
+// ( ) Unknown promise rejection reason
+//     ooxEXWZrKip6H71hEnxvfnWZkh5G9iudmy3FC9XKxg41HvneufY
+// ( )
+
 async function start() {
   const seeds = await getSeeds()
   const dnas = generateDNAs(seeds)
   console.log({ seeds, dnas })
+
+  // todo: use seed0 to pick color
+  settings.cells.default.color = Color.fromByteRgb332(rnd.byte())
 
   const world = new World()
 
@@ -129,7 +162,7 @@ async function start() {
   //
   //
   for (const node of nodes) {
-    const bod = body(world, node.pos, settings.radius, 0.01)
+    const bod = body(world, node.pos, settings.radius, 0.01, node.color)
     bod.data = node.data
     bod.addFlag(BodyFlags.ORGANISM | BodyFlags.BINDABLE)
     bod.setDNA(node.dna)
@@ -224,12 +257,12 @@ async function start() {
     }
   }
 
-  console.log({ clusterRules })
-
-  bodies.forEach((body) => {
-    body.color = settings.clusters.colors[body.data.clusterGroup]
-    body.addFlag(BodyFlags.REPELLING | BodyFlags.REPELLED | BodyFlags.DEBUG)
-  })
+  // todo: clusters, maybe just remove ?
+  // console.log({ clusterRules })
+  // bodies.forEach((body) => {
+  //   body.color = settings.clusters.colors[body.data.clusterGroup]
+  //   body.addFlag(BodyFlags.REPELLING | BodyFlags.REPELLED | BodyFlags.DEBUG)
+  // })
 
   const testBodies = []
   const NB = 20

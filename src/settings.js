@@ -2,6 +2,7 @@ import { Actuator } from "./interactions/actuator"
 import { Anchor } from "./interactions/anchor"
 import { Eater } from "./interactions/eat"
 import { FoodSeeker } from "./interactions/food-seeker"
+import { Color } from "./utils/color"
 
 export const settings = {
   radius: 0.006,
@@ -15,6 +16,17 @@ export const settings = {
   },
   signals: {
     loss: 0.99,
+  },
+  cells: {
+    default: {
+      // will be set during initialization
+      color: new Color(),
+    },
+  },
+  food: {
+    default: {
+      color: new Color(0, 0, 255),
+    },
   },
   clusters: {
     nb: 4,
