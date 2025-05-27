@@ -127,7 +127,8 @@ document.body.appendChild(stats.dom)
 // todo: bugfux
 // ( ) Unknown promise rejection reason
 //     ooxEXWZrKip6H71hEnxvfnWZkh5G9iudmy3FC9XKxg41HvneufY
-// ( )
+// ( ) isNaN on position
+//     oohnPj3cAUVfAVUiLvuCXqUG5HbD1RBCLfTkJJD2bPyAYSvqj3e
 
 async function start() {
   const seeds = await getSeeds()

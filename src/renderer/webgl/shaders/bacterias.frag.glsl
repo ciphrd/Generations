@@ -4,7 +4,7 @@ precision highp float;
 #include <noise.glsl>
 
 in vec2 v_uv;
-in vec4 v_properties;
+in float v_id;
 in vec4 v_geometry;
 
 out vec4 outColor;
@@ -17,7 +17,7 @@ struct Cell {
 } cell;
 
 void main() {
-  cell.id = v_properties.x;
+  cell.id = v_id;
   cell.pos = v_geometry.xy;
   cell.radius = v_geometry.z;
   cell.initialRadius = v_geometry.w;

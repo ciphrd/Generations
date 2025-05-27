@@ -63,6 +63,38 @@ export const glu = {
           gl.vertexAttribDivisor(loc, 1)
         }
       },
+
+      matAttrib: (
+        loc,
+        buffer,
+        numCols,
+        numRows,
+        type = gl.FLOAT,
+        instances = false,
+        normalized = false
+      ) => {
+        console.log({
+          loc,
+          buffer,
+          numCols,
+          numRows,
+          type,
+          instances,
+          normalized,
+        })
+        for (let i = 0; i < numCols; ++i) {
+          utils.attrib(
+            loc + i,
+            buffer,
+            numRows,
+            type,
+            instances,
+            normalized,
+            numCols * numRows * 4,
+            i * numRows * 4
+          )
+        }
+      },
     }
     define(utils)
     return vao

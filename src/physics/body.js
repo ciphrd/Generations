@@ -32,7 +32,7 @@ export class Body extends Entity {
     pos,
     radius,
     friction = 0,
-    color = settings.cells.default.color
+    color = settings.cells.default.color.clone()
   ) {
     super()
     this.world = world

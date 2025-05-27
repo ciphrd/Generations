@@ -2,6 +2,7 @@ import { settings } from "../../settings"
 import { arr } from "../../utils/array"
 import { glu } from "../../utils/glu"
 import liaisonVS from "./shaders/liaison.vert.glsl"
+import { viewUniform } from "./view"
 
 const MAX_LIAISONS = 256
 
@@ -18,74 +19,90 @@ export class LiaisonsRenderer {
     this.liaisons = getLiaisons()
     this.needsUpdate = false
 
-    this.points = world.bodies
+    this.buffers = {
+      geos: new Float32Array(MAX_LIAISONS * 8),
+      cols: new Float32Array(MAX_LIAISONS * 6),
+    }
+
+    this.glBuffers = {
+      geos: glu.dynamicBuffer(gl, this.buffers.geos, () => {
+        let bodyA, bodyB
+        for (let i = 0; i < this.liaisons.length; i++) {
+          bodyA = this.liaisons[i].bodyA
+          bodyB = this.liaisons[i].bodyB
+          this.buffers.geos[i * 8 + 0] = bodyA.pos.x
+          this.buffers.geos[i * 8 + 1] = bodyA.pos.y
+          this.buffers.geos[i * 8 + 2] = bodyA.radius
+          this.buffers.geos[i * 8 + 3] = bodyA.id
+          this.buffers.geos[i * 8 + 4] = bodyB.pos.x
+          this.buffers.geos[i * 8 + 5] = bodyB.pos.y
+          this.buffers.geos[i * 8 + 6] = bodyB.radius
+          this.buffers.geos[i * 8 + 7] = bodyB.id
+        }
+        return this.buffers.geos
+      }),
+      cols: glu.dynamicBuffer(gl, this.buffers.cols, () => {
+        let bodyA, bodyB
+        for (let i = 0; i < this.liaisons.length; i++) {
+          bodyA = this.liaisons[i].bodyA
+          bodyB = this.liaisons[i].bodyB
+          this.buffers.cols[i * 6 + 0] = bodyA.color.r / 255
+          this.buffers.cols[i * 6 + 1] = bodyA.color.g / 255
+          this.buffers.cols[i * 6 + 2] = bodyA.color.b / 255
+          this.buffers.cols[i * 6 + 3] = bodyB.color.r / 255
+          this.buffers.cols[i * 6 + 4] = bodyB.color.g / 255
+          this.buffers.cols[i * 6 + 5] = bodyB.color.b / 255
+        }
+        return this.buffers.cols
+      }),
+    }
+
+    console.log({ liaisonVS, fragment })
+
     this.program = glu.program(gl, liaisonVS, fragment, {
-      attributes: ["a_position", "a_endpoints"],
-      uniforms: ["u_points"],
+      attributes: ["a_position", "a_geometries", "a_colors"],
+      uniforms: ["u_view"],
       variables: {
-        NUM_POINTS: this.points.length,
         CELL_SCALE: settings.rendering.cell.scale,
+      },
+      vao: (prg) => (u) => {
+        u.attrib(prg.attributes.a_position, glu.quad(gl), 2, gl.FLOAT)
+        u.matAttrib(
+          prg.attributes.a_geometries,
+          this.glBuffers.geos.buffer,
+          2,
+          4,
+          gl.FLOAT,
+          true
+        )
+        u.matAttrib(
+          prg.attributes.a_colors,
+          this.glBuffers.cols.buffer,
+          2,
+          3,
+          gl.FLOAT,
+          true
+        )
       },
     })
 
-    this.pointsBuffer = new Float32Array(this.points.length * 4)
-
-    this.endpointsIndices = new Uint16Array(MAX_LIAISONS * 2)
-    this.endpointsBuffer = glu.dynamicBuffer(gl, this.endpointsIndices, () => {
-      for (let i = 0, spr; i < this.liaisons.length; i++) {
-        spr = this.liaisons[i]
-        this.endpointsIndices[i * 2 + 0] = this.pointsMap[spr.bodyA.id]
-        this.endpointsIndices[i * 2 + 1] = this.pointsMap[spr.bodyB.id]
-      }
-      return this.endpointsIndices
-    })
-
     this.allocate()
-
-    this.vao = gl.createVertexArray()
-    gl.bindVertexArray(this.vao)
-
-    loc = this.program.attributes.a_position
-    gl.bindBuffer(gl.ARRAY_BUFFER, glu.quadBuffer(gl))
-    gl.enableVertexAttribArray(loc)
-    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
-
-    loc = this.program.attributes.a_endpoints
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.endpointsBuffer.buffer)
-    gl.enableVertexAttribArray(loc)
-    gl.vertexAttribIPointer(loc, 2, gl.UNSIGNED_SHORT, false, 0, 0)
-    gl.vertexAttribDivisor(loc, 1)
   }
 
   render() {
     const { gl, program } = this
 
-    if (this.needsUpdate) {
-      this.allocate()
-    }
+    if (this.needsUpdate) this.allocate()
+    this.glBuffers.geos.update()
 
-    for (let i = 0, body; i < this.points.length; i++) {
-      body = this.points[i]
-      this.pointsBuffer[i * 4 + 0] = body.pos.x
-      this.pointsBuffer[i * 4 + 1] = body.pos.y
-      this.pointsBuffer[i * 4 + 2] = body.radius
-    }
-
-    // console.log(this.pointsBuffer)
-
-    gl.useProgram(program.program)
-    gl.bindVertexArray(this.vao)
-    gl.uniform4fv(this.program.uniforms.u_points, this.pointsBuffer)
+    program.use()
+    viewUniform(gl, program)
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.liaisons.length)
   }
 
   allocate() {
-    this.points = this.world.bodies
-    this.pointsMap = Object.fromEntries(
-      this.points.map((body, i) => [body.id, i])
-    )
     this.liaisons = this.getLiaisons()
-    this.endpointsBuffer.update()
+    this.glBuffers.cols.update()
     this.needsUpdate = false
   }
 

@@ -48,10 +48,6 @@ export class MembranePass {
       u.attrib(this.programs.postBlur.attributes.a_position, glu.quad(gl), 2)
     })
 
-    this.sharpen = new SharpenPass(gl, res, this.postBlurRt.texture, {
-      format: gl.R32F,
-    })
-
     this.output = this.postBlurRt.tex
   }
 
@@ -83,7 +79,5 @@ export class MembranePass {
     gl.bindVertexArray(vaos.postBlur)
     glu.uniformTex(gl, postBlur.uniforms.u_texture, this.gaussian1.output)
     gl.drawArrays(gl.TRIANGLES, 0, 6)
-
-    this.sharpen.render()
   }
 }

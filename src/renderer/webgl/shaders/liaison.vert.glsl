@@ -2,23 +2,28 @@
 #define CELL_SCALE $CELL_SCALE
 
 uniform vec4 u_view;
-uniform vec4 u_points[$NUM_POINTS];
 
 layout(location = 0) in vec4 a_position;
-layout(location = 1) in uvec2 a_endpoints;
+layout(location = 1) in mat2x4 a_geometries;
+layout(location = 3) in mat2x3 a_colors;
 
 out vec2 v_uv;
 out vec2 v_guv;
 out vec2 v_ids;
 out float v_length;
+out vec3 v_color;
 
 #include <view.glsl>
 
 void main() {
+  // color mix between cell left & right
+  vec3 Cl = a_colors[0];
+  vec3 Cr = a_colors[1];
+  v_color = mix(Cl, Cr, a_position.x);
 
   // get left/right endpoints positions of segment
-  vec4 L = u_points[a_endpoints.x];
-  vec4 R = u_points[a_endpoints.y];
+  vec4 L = a_geometries[0];
+  vec4 R = a_geometries[1];
   vec2 LR = R.xy - L.xy;
   vec2 mid = (L.xy + R.xy) * .5;
   float LRlen = length(LR);
@@ -39,9 +44,6 @@ void main() {
   // translate
   pos.xy += mid;
   pos.xy = pos.xy * 2.0 - 1.0;
-
-  // temp zoom
-  // pos.xy *= 3.0;
   pos = viewTx(pos);
 
   gl_Position = vec4(pos, 0.0, 1.0);

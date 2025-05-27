@@ -6,6 +6,7 @@ precision highp float;
 
 in vec2 v_uv;
 in vec2 v_ids;
+in vec3 v_color;
 in float v_length;
 
 layout (location=0) out vec4 outColor0;
@@ -33,7 +34,7 @@ void main() {
           //  * (1.0 + snoise(vec3(uv * 1.2, 22.23)) * 0.7)
            ;
   
-  outColor1 = vec4( membraneNoise(uv, id * 26.953) );
+  outColor1 = vec4( membraneNoise(uv, id * 26.953), v_color );
 
   gl_FragDepth = L;
 } 

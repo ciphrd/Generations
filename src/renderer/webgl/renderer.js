@@ -118,151 +118,6 @@ export class WebGLRenderer extends Renderer {
     $container.appendChild(this.cvs)
   }
 
-  render(t, dt) {
-    const { gl, world } = this
-    const { organisms, liaisons } = world
-    const nb = organisms.length
-
-    for (let i = 0; i < nb; i++) {
-      this.cells.geo1[i * 4 + 0] = organisms[i].pos.x
-      this.cells.geo1[i * 4 + 1] = organisms[i].pos.y
-      this.cells.geo1[i * 4 + 2] = organisms[i].radius
-      this.cells.geo1[i * 4 + 3] = organisms[i].id
-
-      this.cells.geo2[i * 4 + 0] = organisms[i].forwards.x
-      this.cells.geo2[i * 4 + 1] = organisms[i].forwards.y
-    }
-
-    //
-    // Render field, merging the cells / liaisons in a smooth way
-    //
-    glu.bindFB(gl, tW, tH, this.fieldRT.fb)
-    gl.enable(gl.DEPTH_TEST)
-    gl.depthFunc(gl.LESS)
-    glu.blend(gl, null)
-    gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1])
-
-    gl.useProgram(this.programs.fieldCell.program)
-    gl.bindVertexArray(this.vaos.fieldCell)
-    viewUniform(gl, this.programs.fieldCell, true)
-    gl.uniform4fv(this.programs.fieldCell.uniforms.u_points, this.cells.geo1)
-    gl.uniform4fv(this.programs.fieldCell.uniforms.u_points2, this.cells.geo2)
-    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, nb)
-
-    gl.useProgram(this.programs.fieldLiaison.program)
-    gl.bindVertexArray(this.vaos.fieldLiaison)
-    viewUniform(gl, this.programs.fieldLiaison, true)
-    gl.uniform4fv(this.programs.fieldLiaison.uniforms.u_points, this.cells.geo1)
-    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, liaisons.length)
-
-    //
-    glu.bindFB(gl, tW, tH, this.fieldRT2.fb)
-    gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1])
-
-    gl.useProgram(this.programs.fieldCell.program)
-    gl.bindVertexArray(this.vaos.fieldCell)
-    viewUniform(gl, this.programs.fieldCell)
-    gl.uniform4fv(this.programs.fieldCell.uniforms.u_points, this.cells.geo1)
-    gl.uniform4fv(this.programs.fieldCell.uniforms.u_points2, this.cells.geo2)
-    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, nb)
-
-    gl.useProgram(this.programs.fieldLiaison.program)
-    gl.bindVertexArray(this.vaos.fieldLiaison)
-    viewUniform(gl, this.programs.fieldLiaison)
-    gl.uniform4fv(this.programs.fieldLiaison.uniforms.u_points, this.cells.geo1)
-    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, liaisons.length)
-
-    gl.disable(gl.DEPTH_TEST)
-    //
-
-    //
-    // Compute edges on the field to create the shell of the membrane
-    //
-    this.membranePass.render()
-    this.outerShell.render()
-
-    //
-    // Sediments
-    //
-    this.sediments.render(t)
-
-    //
-    // Render the light absorption layer, composed of the different bodies
-    // which absorb light
-    //
-
-    gl.enable(gl.DEPTH_TEST)
-    gl.depthFunc(gl.LESS)
-    glu.blend(gl, null)
-
-    glu.bindFB(gl, tW, tH, this.absorbRT.fb)
-
-    gl.useProgram(this.programs.cells.program)
-    gl.bindVertexArray(this.vaos.cells)
-    viewUniform(gl, this.programs.cells)
-    gl.uniform4fv(this.programs.cells.uniforms.u_points, this.cells.geo1)
-    gl.uniform4fv(this.programs.cells.uniforms.u_points2, this.cells.geo2)
-    glu.uniformTex(
-      gl,
-      this.programs.cells.uniforms.u_blurred_membrane,
-      this.outerShell.output
-    )
-    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, nb)
-
-    gl.useProgram(this.programs.liaisons.program)
-    gl.bindVertexArray(this.vaos.liaisons)
-    viewUniform(gl, this.programs.liaisons)
-    gl.uniform4fv(this.programs.liaisons.uniforms.u_points, this.cells.geo1)
-    glu.uniformTex(
-      gl,
-      this.programs.liaisons.uniforms.u_blurred_membrane,
-      this.outerShell.output
-    )
-    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, liaisons.length)
-
-    gl.disable(gl.DEPTH_TEST)
-
-    glu.blend(gl, gl.ONE, gl.ONE)
-    gl.useProgram(this.programs.membrane.program)
-    gl.bindVertexArray(this.vaos.membrane)
-    glu.uniformTex(
-      gl,
-      this.programs.membrane.uniforms.u_texture,
-      this.membranePass.output
-    )
-    gl.drawArrays(gl.TRIANGLES, 0, 6)
-
-    this.programs.sediments.use()
-    viewUniform(gl, this.programs.sediments)
-    glu.uniformTex(
-      gl,
-      this.programs.sediments.uniforms.u_sediments,
-      this.sediments.output
-    )
-    gl.drawArrays(gl.TRIANGLES, 0, 6)
-
-    // this.bacterias.render()
-    // this.food.render()
-    // this.bindLiaisons.render()
-
-    glu.bindFB(gl, tW, tH, null)
-    glu.blend(gl, null)
-
-    gl.useProgram(this.programs.comp.program)
-    gl.bindVertexArray(this.compVao)
-    gl.activeTexture(gl.TEXTURE0)
-    gl.bindTexture(gl.TEXTURE_2D, this.absorbRT.texture)
-    gl.uniform1i(this.programs.comp.uniforms.u_texture, 0)
-    gl.drawArrays(gl.TRIANGLES, 0, 6)
-
-    // gl.useProgram(this.programs.tex.program)
-    // gl.bindVertexArray(this.vaos.tex)
-    // gl.activeTexture(gl.TEXTURE0)
-    // gl.bindTexture(gl.TEXTURE_2D, this.outerShell.output)
-    // gl.uniform1i(this.programs.tex.uniforms.u_texture, 0)
-    // gl.drawArrays(gl.TRIANGLES, 0, 6)
-  }
-
   prepare() {
     let loc
     const { gl, world } = this
@@ -270,32 +125,118 @@ export class WebGLRenderer extends Renderer {
 
     const nb = organisms.length
     this.cells = {
-      geo1: new Float32Array(nb * 4),
-      geo2: new Float32Array(nb * 4),
+      geo: new Float32Array(nb * 6),
+      colors: new Float32Array(nb * 3),
+    }
+    for (let i = 0; i < nb; i++) {
+      this.cells.colors[i * 3 + 0] = organisms[i].color.r / 255
+      this.cells.colors[i * 3 + 1] = organisms[i].color.g / 255
+      this.cells.colors[i * 3 + 2] = organisms[i].color.b / 255
     }
 
     const nbLiaisons = liaisons.length
-    const liaisonIndices = new Uint16Array(nbLiaisons * 2)
+    this.liaisons = {
+      geos: new Float32Array(nbLiaisons * 8),
+      cols: new Float32Array(nbLiaisons * 6),
+    }
+    let bodyA, bodyB
     for (let i = 0; i < nbLiaisons; i++) {
-      liaisonIndices[i * 2 + 0] = organisms.indexOf(liaisons[i].bodyA)
-      liaisonIndices[i * 2 + 1] = organisms.indexOf(liaisons[i].bodyB)
+      bodyA = liaisons[i].bodyA
+      bodyB = liaisons[i].bodyB
+      this.liaisons.cols[i * 6 + 0] = bodyA.color.r / 255
+      this.liaisons.cols[i * 6 + 1] = bodyA.color.g / 255
+      this.liaisons.cols[i * 6 + 2] = bodyA.color.b / 255
+      this.liaisons.cols[i * 6 + 3] = bodyB.color.r / 255
+      this.liaisons.cols[i * 6 + 4] = bodyB.color.g / 255
+      this.liaisons.cols[i * 6 + 5] = bodyB.color.b / 255
+    }
+
+    this.buffers = {
+      cells: {
+        geo: glu.dynamicBuffer(gl, this.cells.geo, () => {
+          for (let i = 0; i < nb; i++) {
+            this.cells.geo[i * 6 + 0] = organisms[i].pos.x
+            this.cells.geo[i * 6 + 1] = organisms[i].pos.y
+            this.cells.geo[i * 6 + 2] = organisms[i].radius
+            this.cells.geo[i * 6 + 3] = organisms[i].forwards.x
+            this.cells.geo[i * 6 + 4] = organisms[i].forwards.y
+            this.cells.geo[i * 6 + 5] = organisms[i].id
+          }
+          return this.cells.geo
+        }),
+        col: glu.buffer(gl, this.cells.colors),
+      },
+      liaisons: {
+        geos: glu.dynamicBuffer(gl, this.liaisons.geos, () => {
+          let bodyA, bodyB
+          for (let i = 0; i < nbLiaisons; i++) {
+            bodyA = liaisons[i].bodyA
+            bodyB = liaisons[i].bodyB
+            this.liaisons.geos[i * 8 + 0] = bodyA.pos.x
+            this.liaisons.geos[i * 8 + 1] = bodyA.pos.y
+            this.liaisons.geos[i * 8 + 2] = bodyA.radius
+            this.liaisons.geos[i * 8 + 3] = bodyA.id
+            this.liaisons.geos[i * 8 + 4] = bodyB.pos.x
+            this.liaisons.geos[i * 8 + 5] = bodyB.pos.y
+            this.liaisons.geos[i * 8 + 6] = bodyB.radius
+            this.liaisons.geos[i * 8 + 7] = bodyB.id
+          }
+          return this.liaisons.geos
+        }),
+        cols: glu.buffer(gl, this.liaisons.cols),
+      },
     }
 
     this.programs = {
       fieldCell: glu.program(gl, quadVS, fieldCellFS, {
-        attributes: ["a_position"],
-        uniforms: ["u_view", "u_points", "u_points2"],
+        attributes: ["a_position", "a_geometry", "a_color"],
+        uniforms: ["u_view"],
         variables: {
-          NUM_POINTS: nb,
           CELL_SCALE: settings.rendering.cell.scale,
+        },
+        vao: (prg) => (u) => {
+          u.attrib(prg.attributes.a_position, glu.quad(gl), 2, gl.FLOAT)
+          u.matAttrib(
+            prg.attributes.a_geometry,
+            this.buffers.cells.geo.buffer,
+            2,
+            3,
+            gl.FLOAT,
+            true
+          )
+          u.attrib(
+            prg.attributes.a_color,
+            this.buffers.cells.col,
+            3,
+            gl.FLOAT,
+            true
+          )
         },
       }),
       fieldLiaison: glu.program(gl, liaisonVS, fieldLiaisonFS, {
-        attributes: ["a_position", "a_endpoints"],
-        uniforms: ["u_view", "u_points"],
+        attributes: ["a_position", "a_endpoints", "a_geometries", "a_colors"],
+        uniforms: ["u_view"],
         variables: {
-          NUM_POINTS: nb,
           CELL_SCALE: settings.rendering.cell.scale,
+        },
+        vao: (prg) => (u) => {
+          u.attrib(prg.attributes.a_position, glu.quad(gl), 2, gl.FLOAT)
+          u.matAttrib(
+            prg.attributes.a_geometries,
+            this.buffers.liaisons.geos.buffer,
+            2,
+            4,
+            gl.FLOAT,
+            true
+          )
+          u.matAttrib(
+            prg.attributes.a_colors,
+            this.buffers.liaisons.cols,
+            2,
+            3,
+            gl.FLOAT,
+            true
+          )
         },
       }),
       membrane: glu.program(gl, fullVS, membraneFS, {
@@ -303,26 +244,61 @@ export class WebGLRenderer extends Renderer {
         uniforms: ["u_texture"],
       }),
       cells: glu.program(gl, quadVS, cellFS, {
-        attributes: ["a_position"],
-        uniforms: ["u_view", "u_points", "u_points2", "u_blurred_membrane"],
+        attributes: ["a_position", "a_geometry", "a_color"],
+        uniforms: ["u_view", "u_blurred_membrane"],
         variables: {
-          NUM_POINTS: nb,
           CELL_SCALE: settings.rendering.cell.scale,
+        },
+        vao: (prg) => (u) => {
+          u.attrib(prg.attributes.a_position, glu.quad(gl), 2, gl.FLOAT)
+          u.matAttrib(
+            prg.attributes.a_geometry,
+            this.buffers.cells.geo.buffer,
+            2,
+            3,
+            gl.FLOAT,
+            true
+          )
+          u.attrib(
+            prg.attributes.a_color,
+            this.buffers.cells.col,
+            3,
+            gl.FLOAT,
+            true
+          )
         },
       }),
       liaisons: glu.program(gl, liaisonVS, liaisonFS, {
-        attributes: ["a_position", "a_endpoints"],
+        attributes: ["a_position", "a_endpoints", "a_geometries", "a_colors"],
         uniforms: ["u_view", "u_points", "u_blurred_membrane"],
         variables: {
-          NUM_POINTS: nb,
           CELL_SCALE: settings.rendering.cell.scale,
+        },
+        vao: (prg) => (u) => {
+          u.attrib(prg.attributes.a_position, glu.quad(gl), 2, gl.FLOAT)
+          u.matAttrib(
+            prg.attributes.a_geometries,
+            this.buffers.liaisons.geos.buffer,
+            2,
+            4,
+            gl.FLOAT,
+            true
+          )
+          u.matAttrib(
+            prg.attributes.a_colors,
+            this.buffers.liaisons.cols,
+            2,
+            3,
+            gl.FLOAT,
+            true
+          )
         },
       }),
       sediments: glu.program(gl, fullVS, sedimentsFS, {
         attributes: ["a_position"],
         uniforms: ["u_view", "u_sediments"],
         vao: (prog) => (u) => {
-          u.attrib(prog.attributes.sediments, glu.quad(gl), 2)
+          u.attrib(prog.attributes.a_position, glu.quad(gl), 2)
         },
       }),
       comp: glu.program(gl, fullVS, compFS, {
@@ -337,48 +313,9 @@ export class WebGLRenderer extends Renderer {
 
     const quadBuffer = glu.quadBuffer(gl)
 
-    this.vaos.fieldCell = gl.createVertexArray()
-    loc = this.programs.fieldCell.attributes.a_position
-    gl.bindVertexArray(this.vaos.fieldCell)
-    gl.enableVertexAttribArray(loc)
-    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
-
-    this.vaos.cells = gl.createVertexArray()
-    loc = this.programs.cells.attributes.a_position
-    gl.bindVertexArray(this.vaos.cells)
-    gl.enableVertexAttribArray(loc)
-    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
-
     this.vaos.membrane = gl.createVertexArray()
     loc = this.programs.membrane.attributes.a_position
     gl.bindVertexArray(this.vaos.membrane)
-    gl.enableVertexAttribArray(loc)
-    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
-
-    const liaisonBuffer = gl.createBuffer()
-    gl.bindBuffer(gl.ARRAY_BUFFER, liaisonBuffer)
-    gl.bufferData(gl.ARRAY_BUFFER, liaisonIndices, gl.STATIC_DRAW)
-
-    this.vaos.liaisons = gl.createVertexArray()
-    loc = this.programs.liaisons.attributes.a_endpoints
-    gl.bindVertexArray(this.vaos.liaisons)
-    gl.enableVertexAttribArray(loc)
-    gl.vertexAttribIPointer(loc, 2, gl.UNSIGNED_SHORT, false, 0, 0)
-    gl.vertexAttribDivisor(loc, 1)
-    loc = this.programs.liaisons.attributes.a_position
-    gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer)
-    gl.enableVertexAttribArray(loc)
-    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
-
-    this.vaos.fieldLiaison = gl.createVertexArray()
-    loc = this.programs.fieldLiaison.attributes.a_endpoints
-    gl.bindVertexArray(this.vaos.fieldLiaison)
-    gl.enableVertexAttribArray(loc)
-    gl.bindBuffer(gl.ARRAY_BUFFER, liaisonBuffer)
-    gl.vertexAttribIPointer(loc, 2, gl.UNSIGNED_SHORT, false, 0, 0)
-    gl.vertexAttribDivisor(loc, 1)
-    loc = this.programs.fieldLiaison.attributes.a_position
-    gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer)
     gl.enableVertexAttribArray(loc)
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
 
@@ -430,5 +367,132 @@ export class WebGLRenderer extends Renderer {
     world.emitter.on("constraints:updated", () => {
       this.bindLiaisons.update()
     })
+  }
+
+  render(t, dt) {
+    const { gl, world } = this
+    const { organisms, liaisons } = world
+    const nb = organisms.length
+
+    this.buffers.cells.geo.update()
+    this.buffers.liaisons.geos.update()
+
+    //
+    // Render field, merging the cells / liaisons in a smooth way
+    //
+    glu.bindFB(gl, tW, tH, this.fieldRT.fb)
+    gl.enable(gl.DEPTH_TEST)
+    gl.depthFunc(gl.LESS)
+    glu.blend(gl, null)
+    gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1])
+
+    this.programs.fieldCell.use()
+    viewUniform(gl, this.programs.fieldCell, true)
+    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, nb)
+
+    this.programs.fieldLiaison.use()
+    viewUniform(gl, this.programs.fieldLiaison, true)
+    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, liaisons.length)
+
+    //
+    glu.bindFB(gl, tW, tH, this.fieldRT2.fb)
+    gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1])
+
+    this.programs.fieldCell.use()
+    viewUniform(gl, this.programs.fieldCell)
+    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, nb)
+
+    this.programs.fieldLiaison.use()
+    viewUniform(gl, this.programs.fieldLiaison)
+    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, liaisons.length)
+
+    gl.disable(gl.DEPTH_TEST)
+    //
+
+    //
+    // Compute edges on the field to create the shell of the membrane
+    //
+    this.membranePass.render()
+    this.outerShell.render()
+
+    //
+    // Sediments
+    //
+    this.sediments.render(t)
+
+    //
+    // Render the light absorption layer, composed of the different bodies
+    // which absorb light
+    //
+
+    gl.enable(gl.DEPTH_TEST)
+    gl.depthFunc(gl.LESS)
+    glu.blend(gl, null)
+
+    glu.bindFB(gl, tW, tH, this.absorbRT.fb)
+
+    this.programs.cells.use()
+    viewUniform(gl, this.programs.cells)
+    glu.uniformTex(
+      gl,
+      this.programs.cells.uniforms.u_blurred_membrane,
+      this.outerShell.output
+    )
+    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, nb)
+
+    this.programs.liaisons.use()
+    viewUniform(gl, this.programs.liaisons)
+    glu.uniformTex(
+      gl,
+      this.programs.liaisons.uniforms.u_blurred_membrane,
+      this.outerShell.output
+    )
+    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, liaisons.length)
+
+    gl.disable(gl.DEPTH_TEST)
+
+    glu.blend(gl, gl.ONE, gl.ONE)
+    gl.useProgram(this.programs.membrane.program)
+    gl.bindVertexArray(this.vaos.membrane)
+    glu.uniformTex(
+      gl,
+      this.programs.membrane.uniforms.u_texture,
+      this.membranePass.output
+    )
+    gl.drawArrays(gl.TRIANGLES, 0, 6)
+
+    this.programs.sediments.use()
+    viewUniform(gl, this.programs.sediments)
+    glu.uniformTex(
+      gl,
+      this.programs.sediments.uniforms.u_sediments,
+      this.sediments.output
+    )
+    gl.drawArrays(gl.TRIANGLES, 0, 6)
+
+    // this.bacterias.render()
+    // this.food.render()
+    // this.bindLiaisons.render()
+
+    //
+    // FINAL COMP
+    //
+
+    glu.bindFB(gl, tW, tH, null)
+    glu.blend(gl, null)
+
+    gl.useProgram(this.programs.comp.program)
+    gl.bindVertexArray(this.compVao)
+    gl.activeTexture(gl.TEXTURE0)
+    gl.bindTexture(gl.TEXTURE_2D, this.absorbRT.texture)
+    gl.uniform1i(this.programs.comp.uniforms.u_texture, 0)
+    gl.drawArrays(gl.TRIANGLES, 0, 6)
+
+    // gl.useProgram(this.programs.tex.program)
+    // gl.bindVertexArray(this.vaos.tex)
+    // gl.activeTexture(gl.TEXTURE0)
+    // gl.bindTexture(gl.TEXTURE_2D, this.membranePass.output)
+    // gl.uniform1i(this.programs.tex.uniforms.u_texture, 0)
+    // gl.drawArrays(gl.TRIANGLES, 0, 6)
   }
 }
