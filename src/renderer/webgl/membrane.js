@@ -37,15 +37,22 @@ export class MembranePass {
       }),
     }
 
-    this.blurFieldPass = new GaussianPass(gl, res, this.cellNoiseField, 11, {
+    this.blurFieldPass = new GaussianPass(gl, res, this.cellNoiseField, 13, {
       format: gl.R32F,
     })
-    this.edgePass1 = new EdgePass(gl, res, this.colorField)
-    this.gaussian1 = new GaussianPass(gl, res, this.rt.texture, 17, {
+    this.edgePass = new EdgePass(gl, res, this.colorField)
+    this.blurEdgePass = new GaussianPass(gl, res, this.rt.texture, 9, {
       format: gl.R32F,
     })
 
-    this.output = this.rt.tex
+    this.sharpenPass = new SharpenPass(gl, res, this.postBlurRt.tex, {
+      format: gl.R32F,
+    })
+    this.sharpenPass2 = new SharpenPass(gl, res, this.sharpenPass.output, {
+      format: gl.R32F,
+    })
+
+    this.output = this.postBlurRt.tex
   }
 
   render() {
@@ -53,13 +60,13 @@ export class MembranePass {
     const { postEdge, postBlur } = programs
 
     this.blurFieldPass.render()
-    this.edgePass1.render()
+    this.edgePass.render()
 
     glu.bindFB(gl, res.x, res.y, rt.fb)
     glu.blend(gl, null)
 
     postEdge.use()
-    glu.uniformTex(gl, postEdge.uniforms.u_memb_edge, this.edgePass1.output)
+    glu.uniformTex(gl, postEdge.uniforms.u_memb_edge, this.edgePass.output)
     glu.uniformTex(
       gl,
       postEdge.uniforms.u_cell_noise,
@@ -68,11 +75,14 @@ export class MembranePass {
     )
     gl.drawArrays(gl.TRIANGLES, 0, 6)
 
-    this.gaussian1.render()
+    this.blurEdgePass.render()
 
     glu.bindFB(gl, res.x, res.y, this.postBlurRt.fb)
     postBlur.use()
-    glu.uniformTex(gl, postBlur.uniforms.u_texture, this.gaussian1.output)
+    glu.uniformTex(gl, postBlur.uniforms.u_texture, this.blurEdgePass.output)
     gl.drawArrays(gl.TRIANGLES, 0, 6)
+
+    this.sharpenPass.render()
+    this.sharpenPass2.render()
   }
 }

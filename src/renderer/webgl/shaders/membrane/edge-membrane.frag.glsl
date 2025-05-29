@@ -14,12 +14,7 @@ out vec4 outColor;
 // fairly nice so I chose to keep it as a feature.
 void main() {
   vec3 T = texture(u_memb_edge, v_uv).rgb;
-  float I = clamp(max(T.r, max(T.g, T.b)), 0.0, 1.0);
-  // I = smoothstep(0.5, 0.55, I);
-  outColor = vec4(I * (0.3 + texture(u_cell_noise, v_uv).r * 0.7));
-
-  outColor = vec4(vec3(I * texture(u_cell_noise, v_uv).r), 1);
-
-  outColor = vec4(texture(u_cell_noise, v_uv).r);
-  outColor = vec4(I);
+  float I = max(T.r, max(T.g, T.b));
+  I = step(0.1, I);
+  outColor = vec4(I * pow(texture(u_cell_noise, v_uv).r, 1.3) * 1.2);
 }

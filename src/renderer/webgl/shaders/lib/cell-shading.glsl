@@ -12,7 +12,8 @@ vec4 cellColor(in vec2 uv, in vec3 baseColor) {
   );
   vec3 base2 = colvar(base, vec3(0.1, 0, 0.2));
   vec3 base3 = colvar(base, vec3(-0.1, 0, 0.2));
-  vec3 darker = colvar(base, vec3(0, 0, 1.0));
+  vec3 darker = colvar(base, vec3(0, -0.2, 1.0));
+  vec3 darker2 = colvar(base, vec3(0, -0.6, 1.0));
 
   vec3 C = vec3(0);
 
@@ -47,7 +48,7 @@ vec4 cellColor(in vec2 uv, in vec3 baseColor) {
 
   // depth "vignette"
   float vignette = texture(u_blurred_membrane, v_guv).r;
-  C += base * S * outerShell(vignette) * 0.6;
+  C += darker * S * pow(vignette, 0.4) * 0.6;
 
   // some holes 
   float holesNoise = N(uv, 11.3, 87.3812)

@@ -26,7 +26,7 @@ export class OuterShell {
       wrap: gl.CLAMP_TO_EDGE,
     })
 
-    this.blurMembranePass = new GaussianPass(gl, this.res2, this.rt.tex, 21, {
+    this.blurMembranePass = new GaussianPass(gl, this.res2, this.rt.tex, 11, {
       format: gl.R32F,
       wrap: gl.CLAMP_TO_EDGE,
     })

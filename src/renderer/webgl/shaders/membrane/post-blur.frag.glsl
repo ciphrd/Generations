@@ -9,6 +9,6 @@ out vec4 outColor;
 
 void main() {
   float T = texture(u_texture, v_uv).r;
-  T = smoothstep(0.05, 0.3, pow(T, 1.2));
+  T = smoothstep(0.05, 0.7, pow(T, 0.8));
   outColor = vec4(T);
 }

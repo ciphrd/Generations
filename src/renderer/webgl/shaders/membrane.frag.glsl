@@ -13,6 +13,9 @@ void main() {
   vec2 uv = v_uv;
   float edge = texture(u_membrane, uv).r;
   vec3 C = vec3(1) - texture(u_color_field, uv).gba;
-  C = colvar(C, vec3(0,-0.4,0.5));
+  C = rgb2hsv(C);
+  C.y = 0.3;
+  C.z = 0.5;
+  C = hsv2rgb(C);
   outColor = vec4(C, 1) * edge;
 }

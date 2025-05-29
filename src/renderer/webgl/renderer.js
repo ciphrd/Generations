@@ -516,11 +516,11 @@ export class WebGLRenderer extends Renderer {
     gl.uniform1i(this.programs.comp.uniforms.u_texture, 0)
     gl.drawArrays(gl.TRIANGLES, 0, 6)
 
-    gl.useProgram(this.programs.tex.program)
-    gl.bindVertexArray(this.vaos.tex)
-    gl.activeTexture(gl.TEXTURE0)
-    gl.bindTexture(gl.TEXTURE_2D, this.membranePass.output)
-    gl.uniform1i(this.programs.tex.uniforms.u_texture, 0)
-    gl.drawArrays(gl.TRIANGLES, 0, 6)
+    // gl.useProgram(this.programs.tex.program)
+    // gl.bindVertexArray(this.vaos.tex)
+    // gl.activeTexture(gl.TEXTURE0)
+    // gl.bindTexture(gl.TEXTURE_2D, this.outerShell.output)
+    // gl.uniform1i(this.programs.tex.uniforms.u_texture, 0)
+    // gl.drawArrays(gl.TRIANGLES, 0, 6)
   }
 }
