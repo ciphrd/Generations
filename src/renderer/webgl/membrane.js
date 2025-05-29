@@ -45,13 +45,6 @@ export class MembranePass {
       format: gl.R32F,
     })
 
-    this.sharpenPass = new SharpenPass(gl, res, this.postBlurRt.tex, {
-      format: gl.R32F,
-    })
-    this.sharpenPass2 = new SharpenPass(gl, res, this.sharpenPass.output, {
-      format: gl.R32F,
-    })
-
     this.output = this.postBlurRt.tex
   }
 
@@ -81,8 +74,5 @@ export class MembranePass {
     postBlur.use()
     glu.uniformTex(gl, postBlur.uniforms.u_texture, this.blurEdgePass.output)
     gl.drawArrays(gl.TRIANGLES, 0, 6)
-
-    this.sharpenPass.render()
-    this.sharpenPass2.render()
   }
 }
