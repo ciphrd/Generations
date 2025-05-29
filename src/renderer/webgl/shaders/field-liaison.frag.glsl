@@ -5,7 +5,7 @@ precision highp float;
 #include <cell.glsl>
 
 in vec2 v_uv;
-in vec2 v_ids;
+in float v_id;
 in vec3 v_color;
 in float v_length;
 
@@ -13,7 +13,7 @@ layout (location=0) out vec4 outColor0;
 layout (location=1) out vec4 outColor1;
 
 void main() {
-  float id = v_ids.x + 20.0 * v_ids.y;
+  float id = v_id;
   vec2 uv = liaisonUV(v_uv, id, v_length);
 
   float L = length(uv - 0.5);

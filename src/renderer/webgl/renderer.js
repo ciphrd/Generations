@@ -2,8 +2,10 @@ import { glu } from "../../utils/glu"
 import { vec2 } from "../../utils/vec"
 import { Renderer } from "../renderer"
 import mathGL from "./shaders/lib/math.glsl"
+import colorGL from "./shaders/lib/color.glsl"
 import noiseGL from "./shaders/lib/noise.glsl"
 import cellGL from "./shaders/lib/cell.glsl"
+import cellShadingGL from "./shaders/lib/cell-shading.glsl"
 import viewGL from "./shaders/lib/view.glsl"
 import fullVS from "./shaders/full.vert.glsl"
 import textureFS from "./shaders/texture.frag.glsl"
@@ -103,9 +105,11 @@ export class WebGLRenderer extends Renderer {
     this.gl.getExtension("OES_texture_float_linear")
 
     glu.libs({
+      color: colorGL,
       math: mathGL,
       noise: noiseGL,
       cell: cellGL,
+      "cell-shading": cellShadingGL,
       view: viewGL,
     })
 

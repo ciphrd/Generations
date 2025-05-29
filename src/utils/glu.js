@@ -268,6 +268,12 @@ export const glu = {
     gl.compileShader(shader)
 
     if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+      console.log(
+        source
+          .split("\n")
+          .map((l, i) => `${(i + 1).toString().padEnd(4, " ")}  ${l}`)
+          .join("\n")
+      )
       throw "could not compile shader:" + gl.getShaderInfoLog(shader)
     }
 

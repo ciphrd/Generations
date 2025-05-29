@@ -99,14 +99,21 @@ document.body.appendChild(stats.dom)
 //         note: clamp bits if end of DNA ?
 //     (x) color assigned to cell
 // ( ) color rendering
-//     ( ) cells are colored based on instance color
-//     ( ) smooth transitions between cells (HARD)
+//     (x) cells are colored based on instance color
+//     (x) smooth transitions between cells (HARD — re: no lol)
 //     ( ) improve coloration as a whole
 //         ( ) function to get variations of base color
 //         ( ) add these variations everywhere
 // ( ) sediments
 //     ( ) improve coloring of sediments, rn pretty bad
 //     ( ) too regular: maybe change rules with some noise
+
+// todo: cell deformations
+// Right now only the liaisons are deformed, which creates some un-orgnanic
+// feel to the whole, as cells are never deformed
+// ( ) investigate how cells could get deformed
+// ( ) implement cell deformations
+// ( ) hope for the best
 
 // todo:
 // Think about visual variations. Color won't be enough, their should be other
