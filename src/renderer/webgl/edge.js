@@ -43,7 +43,7 @@ export class EdgePass {
       sampling: gl.LINEAR,
     })
     this.output = this.rt.texture
-    this.texel = this.res.clone().apply((comp) => 1 / comp)
+    this.texel = this.res.clone().inv()
 
     const cached = initProgram(gl)
     this.program = cached.program

@@ -26,7 +26,7 @@ export class Sediments {
   constructor(gl, res, distanceField) {
     this.gl = gl
     this.res = res
-    this.texel = res.clone().apply((c) => 1 / c)
+    this.texel = res.clone().inv()
     this.distanceField = distanceField
 
     const { nbRoot } = settings.sediments

@@ -100,6 +100,10 @@ export class Vec2 {
     this.y = sin(angle)
     return this
   }
+  inv() {
+    this.apply((x) => 1 / x)
+    return this
+  }
 }
 
 export function vec2(a1, a2) {

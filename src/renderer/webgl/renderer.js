@@ -240,7 +240,7 @@ export class WebGLRenderer extends Renderer {
       }),
       membrane: glu.program(gl, fullVS, membraneFS, {
         attributes: ["a_position"],
-        uniforms: ["u_texture"],
+        uniforms: ["u_membrane", "u_color_field"],
       }),
       cells: glu.program(gl, quadVS, cellFS, {
         attributes: ["a_position", "a_geometry", "a_color"],
@@ -477,19 +477,26 @@ export class WebGLRenderer extends Renderer {
     gl.bindVertexArray(this.vaos.membrane)
     glu.uniformTex(
       gl,
-      this.programs.membrane.uniforms.u_texture,
-      this.membranePass.output
+      this.programs.membrane.uniforms.u_membrane,
+      this.membranePass.output,
+      0
+    )
+    glu.uniformTex(
+      gl,
+      this.programs.membrane.uniforms.u_color_field,
+      this.blurColorFieldPass.output,
+      1
     )
     gl.drawArrays(gl.TRIANGLES, 0, 6)
 
-    this.programs.sediments.use()
-    viewUniform(gl, this.programs.sediments)
-    glu.uniformTex(
-      gl,
-      this.programs.sediments.uniforms.u_sediments,
-      this.sediments.output
-    )
-    gl.drawArrays(gl.TRIANGLES, 0, 6)
+    // this.programs.sediments.use()
+    // viewUniform(gl, this.programs.sediments)
+    // glu.uniformTex(
+    //   gl,
+    //   this.programs.sediments.uniforms.u_sediments,
+    //   this.sediments.output
+    // )
+    // gl.drawArrays(gl.TRIANGLES, 0, 6)
 
     // this.bacterias.render()
     // this.food.render()
@@ -509,11 +516,11 @@ export class WebGLRenderer extends Renderer {
     gl.uniform1i(this.programs.comp.uniforms.u_texture, 0)
     gl.drawArrays(gl.TRIANGLES, 0, 6)
 
-    // gl.useProgram(this.programs.tex.program)
-    // gl.bindVertexArray(this.vaos.tex)
-    // gl.activeTexture(gl.TEXTURE0)
-    // gl.bindTexture(gl.TEXTURE_2D, this.blurColorFieldPass.output)
-    // gl.uniform1i(this.programs.tex.uniforms.u_texture, 0)
-    // gl.drawArrays(gl.TRIANGLES, 0, 6)
+    gl.useProgram(this.programs.tex.program)
+    gl.bindVertexArray(this.vaos.tex)
+    gl.activeTexture(gl.TEXTURE0)
+    gl.bindTexture(gl.TEXTURE_2D, this.membranePass.output)
+    gl.uniform1i(this.programs.tex.uniforms.u_texture, 0)
+    gl.drawArrays(gl.TRIANGLES, 0, 6)
   }
 }

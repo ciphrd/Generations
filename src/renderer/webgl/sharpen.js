@@ -18,7 +18,7 @@ export class SharpenPass {
     this.texture = texture
     this.rt = glu.renderTarget(gl, res.x, res.y, format)
     this.output = this.rt.texture
-    this.texel = this.res.clone().apply((comp) => 1 / comp)
+    this.texel = this.res.clone().inv()
 
     this.program = glu.program(gl, fullVS, sharpenFS, {
       attributes: ["a_position"],

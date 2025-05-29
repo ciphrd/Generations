@@ -16,39 +16,36 @@ export class MembranePass {
     this.colorField = fieldRT.textures[0]
     this.cellNoiseField = fieldRT.textures[1]
 
+    this.rt = glu.renderTarget(gl, res.x, res.y, gl.R32F)
+    this.postBlurRt = glu.renderTarget(gl, res.x, res.y, gl.R32F)
+    this.texel = this.res.clone().inv()
+
+    this.programs = {
+      postEdge: glu.program(gl, fullVS, edgeMembraneFS, {
+        attributes: ["a_position"],
+        uniforms: ["u_memb_edge", "u_cell_noise"],
+        vao: (prg) => (u) => {
+          u.attrib(prg.attributes.a_position, glu.quad(gl), 2)
+        },
+      }),
+      postBlur: glu.program(gl, fullVS, postBlurFS, {
+        attributes: ["a_position"],
+        uniforms: ["u_texture"],
+        vao: (prg) => (u) => {
+          u.attrib(prg.attributes.a_position, glu.quad(gl), 2)
+        },
+      }),
+    }
+
     this.blurFieldPass = new GaussianPass(gl, res, this.cellNoiseField, 11, {
       format: gl.R32F,
     })
     this.edgePass1 = new EdgePass(gl, res, this.colorField)
-
-    this.rt = glu.renderTarget(gl, res.x, res.y, gl.R32F)
-    this.texel = this.res.clone().apply((comp) => 1 / comp)
-
-    this.programs = {}
-    this.vaos = {}
-
-    this.programs.postEdge = glu.program(gl, fullVS, edgeMembraneFS, {
-      attributes: ["a_position"],
-      uniforms: ["u_memb_edge", "u_cell_noise"],
-    })
-    this.vaos.postEdge = glu.vao(gl, (u) => {
-      u.attrib(this.programs.postEdge.attributes.a_position, glu.quad(gl), 2)
-    })
-
     this.gaussian1 = new GaussianPass(gl, res, this.rt.texture, 17, {
       format: gl.R32F,
     })
 
-    this.postBlurRt = glu.renderTarget(gl, res.x, res.y, gl.R32F)
-    this.programs.postBlur = glu.program(gl, fullVS, postBlurFS, {
-      attributes: ["a_position"],
-      uniforms: ["u_texture"],
-    })
-    this.vaos.postBlur = glu.vao(gl, (u) => {
-      u.attrib(this.programs.postBlur.attributes.a_position, glu.quad(gl), 2)
-    })
-
-    this.output = this.postBlurRt.tex
+    this.output = this.rt.tex
   }
 
   render() {
@@ -61,8 +58,7 @@ export class MembranePass {
     glu.bindFB(gl, res.x, res.y, rt.fb)
     glu.blend(gl, null)
 
-    gl.useProgram(postEdge.program)
-    gl.bindVertexArray(vaos.postEdge)
+    postEdge.use()
     glu.uniformTex(gl, postEdge.uniforms.u_memb_edge, this.edgePass1.output)
     glu.uniformTex(
       gl,
@@ -75,8 +71,7 @@ export class MembranePass {
     this.gaussian1.render()
 
     glu.bindFB(gl, res.x, res.y, this.postBlurRt.fb)
-    gl.useProgram(postBlur.program)
-    gl.bindVertexArray(vaos.postBlur)
+    postBlur.use()
     glu.uniformTex(gl, postBlur.uniforms.u_texture, this.gaussian1.output)
     gl.drawArrays(gl.TRIANGLES, 0, 6)
   }

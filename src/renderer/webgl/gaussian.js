@@ -61,7 +61,7 @@ export class GaussianPass {
     this.texture = texture
     this.rt1 = glu.renderTarget(gl, res.x, res.y, format, { wrap })
     this.rt2 = glu.renderTarget(gl, res.x, res.y, format, { wrap })
-    this.texel = this.res.clone().apply((comp) => 1 / comp)
+    this.texel = this.res.clone().inv()
 
     this.program = initProgram(gl, width)
 

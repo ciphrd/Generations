@@ -17,7 +17,7 @@ export class OuterShell {
     this.gl = gl
     this.res = res
     this.res2 = res.clone().div(2)
-    this.texel = this.res.clone().apply((comp) => 1 / comp)
+    this.texel = this.res.clone().inv()
     this.membrane = membrane
     this.cellNoise = cellNoise
 
