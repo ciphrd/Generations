@@ -1,20 +1,13 @@
 #version 300 es
 precision highp float; 
 
-uniform sampler2D u_texture;
+uniform sampler2D u_tex;
 uniform vec2 u_texel_size;
 
 in vec2 v_uv;
 out vec4 outColor;
 
-const float kernel[9] = float[](
-  -1.0, -1.0, -1.0,
-  -1.0,  9.0, -1.0,
-  -1.0, -1.0, -1.0
-  // 0.0, -1.0, -0.0,
-  // -1.0,  5.0, -1.0,
-  // -0.0, -1.0, -0.0
-);
+const float kernel[9] = float[]($KERNEL);
 
 void main() {
 
@@ -25,7 +18,7 @@ void main() {
     for (int x = -1; x <= 1; x++) {
       offset.x = float(x) * u_texel_size.x;
       offset.y = float(y) * u_texel_size.y;
-      samples[i++] = texture(u_texture, v_uv + offset).r;
+      samples[i++] = texture(u_tex, v_uv + offset).r;
     }
   }
 

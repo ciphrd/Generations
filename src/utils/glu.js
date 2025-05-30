@@ -95,6 +95,10 @@ export const glu = {
           )
         }
       },
+
+      quad: (program) => {
+        utils.attrib(program.attributes.a_position, glu.quad(gl), 2)
+      },
     }
     define(utils)
     return vao
@@ -344,5 +348,11 @@ export const glu = {
     gl.activeTexture(gl.TEXTURE0 + index)
     gl.bindTexture(gl.TEXTURE_2D, texture)
     gl.uniform1i(location, index)
+  },
+
+  draw: {
+    quad(gl) {
+      gl.drawArrays(gl.TRIANGLES, 0, 6)
+    },
   },
 }

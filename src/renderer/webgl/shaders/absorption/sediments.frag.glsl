@@ -15,6 +15,6 @@ void main() {
   float sediments = texture(u_sediments, uv).r;
   sediments = clamp(sediments, 0.0, 1.0);
   sediments = pow(sediments, 0.8);
-  vec3 C = vec3(0.4, 0.95, 0.7);
+  vec3 C = vec3(1);
   outColor0 = vec4(C, 1) * sediments;
 }

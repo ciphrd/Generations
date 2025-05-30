@@ -18,7 +18,6 @@ import bacteriasFS from "./shaders/bacterias.frag.glsl"
 import fieldLiaisonFS from "./shaders/field-liaison.frag.glsl"
 import fieldCellFS from "./shaders/field-cell.frag.glsl"
 import foodFS from "./shaders/food.frag.glsl"
-import compFS from "./shaders/composition.frag.glsl"
 import membraneFS from "./shaders/membrane.frag.glsl"
 import sedimentsFS from "./shaders/absorption/sediments.frag.glsl"
 import { PointsRenderer } from "./points"
@@ -32,6 +31,7 @@ import { OuterShell } from "./outer-shell"
 import { Sediments } from "./sediments"
 import { Controls } from "../../controls"
 import { viewUniform } from "./view"
+import { CompositionPass } from "./composition"
 
 const W = 800
 const H = 800
@@ -299,10 +299,6 @@ export class WebGLRenderer extends Renderer {
           u.attrib(prog.attributes.a_position, glu.quad(gl), 2)
         },
       }),
-      comp: glu.program(gl, fullVS, compFS, {
-        attributes: ["a_position"],
-        uniforms: ["u_texture"],
-      }),
       tex: glu.program(gl, fullVS, textureFS, {
         attributes: ["a_position"],
         uniforms: ["u_texture"],
@@ -348,21 +344,20 @@ export class WebGLRenderer extends Renderer {
       this.membranePass.blurFieldPass.output
     )
 
-    this.compVao = gl.createVertexArray()
-    gl.bindVertexArray(this.compVao)
-    loc = this.programs.comp.attributes.a_position
-    gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer)
-    gl.enableVertexAttribArray(loc)
-    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
-
     this.vaos.tex = gl.createVertexArray()
     gl.bindVertexArray(this.vaos.tex)
-    loc = this.programs.comp.attributes.a_position
+    loc = this.programs.tex.attributes.a_position
     gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer)
     gl.enableVertexAttribArray(loc)
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
 
     this.sediments = new Sediments(gl, vec2(tW, tH), this.fieldRT.textures[0])
+
+    this.compositionPass = new CompositionPass(
+      gl,
+      vec2(tW, tH),
+      this.absorbRT.tex
+    )
 
     world.emitter.on("bodies:updated", () => {
       this.bacterias.update()
@@ -489,14 +484,14 @@ export class WebGLRenderer extends Renderer {
     )
     gl.drawArrays(gl.TRIANGLES, 0, 6)
 
-    // this.programs.sediments.use()
-    // viewUniform(gl, this.programs.sediments)
-    // glu.uniformTex(
-    //   gl,
-    //   this.programs.sediments.uniforms.u_sediments,
-    //   this.sediments.output
-    // )
-    // gl.drawArrays(gl.TRIANGLES, 0, 6)
+    this.programs.sediments.use()
+    viewUniform(gl, this.programs.sediments)
+    glu.uniformTex(
+      gl,
+      this.programs.sediments.uniforms.u_sediments,
+      this.sediments.output
+    )
+    gl.drawArrays(gl.TRIANGLES, 0, 6)
 
     // this.bacterias.render()
     // this.food.render()
@@ -505,21 +500,12 @@ export class WebGLRenderer extends Renderer {
     //
     // FINAL COMP
     //
-
-    glu.bindFB(gl, tW, tH, null)
-    glu.blend(gl, null)
-
-    gl.useProgram(this.programs.comp.program)
-    gl.bindVertexArray(this.compVao)
-    gl.activeTexture(gl.TEXTURE0)
-    gl.bindTexture(gl.TEXTURE_2D, this.absorbRT.texture)
-    gl.uniform1i(this.programs.comp.uniforms.u_texture, 0)
-    gl.drawArrays(gl.TRIANGLES, 0, 6)
+    this.compositionPass.render()
 
     // gl.useProgram(this.programs.tex.program)
     // gl.bindVertexArray(this.vaos.tex)
     // gl.activeTexture(gl.TEXTURE0)
-    // gl.bindTexture(gl.TEXTURE_2D, this.outerShell.output)
+    // gl.bindTexture(gl.TEXTURE_2D, this.sediments.output)
     // gl.uniform1i(this.programs.tex.uniforms.u_texture, 0)
     // gl.drawArrays(gl.TRIANGLES, 0, 6)
   }
