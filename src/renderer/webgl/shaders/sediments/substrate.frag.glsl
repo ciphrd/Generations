@@ -23,9 +23,8 @@ void main() {
             + agent * (0.4 + 0.6 * n1) * 2.5
             - smoothstep(0.0, 0.8, cells);
 
-  substrate = max(substrate, 0.0);
+  substrate = max(-3.0, substrate);
 
   outColor0 = vec4(substrate);
 
-  // outColor0 = vec4(n1);
 }
