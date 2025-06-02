@@ -1,8 +1,6 @@
 #version 300 es
 precision highp float;
 
-#include <noise.glsl>
-
 uniform sampler2D u_agents;
 uniform sampler2D u_substrate;
 uniform sampler2D u_distance_field;
@@ -12,6 +10,8 @@ uniform vec2 u_texel;
 in vec2 v_uv;
 
 out vec4 outColor0;
+
+#include <noise.glsl>
 
 float substrate(in vec2 P) {
   return texture(u_substrate, P).r;
@@ -40,14 +40,16 @@ void main() {
   float under = substrate(agent.xy);
 
   // compute the substrate gradient
-  vec2 dir = substrateGrad(pos, 1.0);
-  dir += (hash22(v_uv * 110.23 + vec2(u_time)) - 0.5) * 0.5;
+  vec2 dir = substrateGrad(pos, 2.0);
+  dir += (hash22(v_uv * 110.23 + vec2(u_time)) - 0.5) * 0.3;
 
-  if (under > 0.5) {
+  float n1 = snoise(vec3(agent.xy * 4.0, u_time * 0.1));
+
+  if (under > 0.5 - 0.8 * n1) {
     dir *= -1.0;
   }
 
-  agent.xy += dir * 0.001;
+  agent.xy += dir * (0.001 + 0.003 * max(0.0, n1));
   agent.xy = clamp(agent.xy, vec2(0), vec2(1));
 
   dir = dfGrad(agent.xy, 1.0);

@@ -5,10 +5,12 @@ import pointsVS from "./shaders/sediments/points.vert.glsl"
 import pointsFS from "./shaders/sediments/points.frag.glsl"
 import updateFS from "./shaders/sediments/update.frag.glsl"
 import substrateFS from "./shaders/sediments/substrate.frag.glsl"
-import correctionFS from "./shaders/sediments/correction.frag.glsl"
+import smoothFS from "./shaders/sediments/smooth.frag.glsl"
+import viewFS from "./shaders/view.frag.glsl"
 import { GaussianPass, initGaussianProgram } from "./gaussian"
 import { EdgePass } from "./edge"
 import { SharpenPass } from "./sharpen"
+import { viewUniform } from "./view"
 
 /**
  * The Sediments are tiny particles with very small interactions with the
@@ -83,17 +85,24 @@ export class Sediments {
       }),
       substrate: glu.program(gl, fullVS, substrateFS, {
         attributes: ["a_position"],
-        uniforms: ["u_substrate", "u_agents", "u_cells"],
+        uniforms: ["u_substrate", "u_agents", "u_cells", "u_time"],
         vao: (prog) => (u) => {
           u.attrib(prog.attributes.a_position, glu.quad(gl), 2)
         },
       }),
       gaussian: initGaussianProgram(gl, 7),
-      correction: glu.program(gl, fullVS, correctionFS, {
+      view: glu.program(gl, fullVS, viewFS, {
         attributes: ["a_position"],
-        uniforms: ["u_texture"],
-        vao: (prog) => (u) => {
-          u.attrib(prog.attributes.a_position, glu.quad(gl), 2)
+        uniforms: ["u_tex", "u_view"],
+        vao: (prg) => (u) => {
+          u.quad(prg)
+        },
+      }),
+      smooth: glu.program(gl, fullVS, smoothFS, {
+        attributes: ["a_position"],
+        uniforms: ["u_tex_old", "u_tex_new"],
+        vao: (prg) => (u) => {
+          u.quad(prg)
         },
       }),
     }
@@ -108,22 +117,21 @@ export class Sediments {
     this.fullSedsRt = glu.renderTarget(gl, res.x, res.y, gl.R32F)
     this.substratePP = glu.pingpong(gl, res.x, res.y, gl.R32F)
 
+    this.viewRt = glu.renderTarget(gl, res.x, res.y, gl.R32F)
+    this.smoothPp = glu.pingpong(gl, res.x, res.y)
+
     this.edgePass1 = new EdgePass(gl, res, null, { format: gl.R32F })
     this.edgePass2 = new EdgePass(gl, res, this.edgePass1.output, {
       format: gl.R32F,
     })
-    this.gaussianPass = new GaussianPass(gl, res, this.edgePass2.output, 5, {
-      format: gl.R32F,
-    })
-    this.edgePass3 = new EdgePass(gl, res, this.gaussianPass.output, {
+    this.gaussianPass = new GaussianPass(gl, res, this.edgePass2.output, 11, {
       format: gl.R32F,
     })
     this.sharpenPass = new SharpenPass(gl, res, this.gaussianPass.output, {
       format: gl.R32F,
     })
 
-    this.correctionRt = glu.renderTarget(gl, res.x, res.y, gl.R32F)
-    this.output = this.correctionRt.tex
+    this.output = this.sharpenPass.output
   }
 
   render(time) {
@@ -147,7 +155,7 @@ export class Sediments {
       this.blurFieldPass.output,
       2
     )
-    gl.uniform1f(programs.update.uniforms.u_time, time)
+    gl.uniform1f(programs.update.uniforms.u_time, time * 0.001)
     gl.uniform2f(programs.update.uniforms.u_texel, texel.x, texel.y)
     gl.drawArrays(gl.TRIANGLES, 0, 6)
 
@@ -179,6 +187,7 @@ export class Sediments {
       this.blurFieldPass.output,
       2
     )
+    gl.uniform1f(programs.substrate.uniforms.u_time, time * 0.001)
     gl.drawArrays(gl.TRIANGLES, 0, 6)
 
     // blur substrate horizontally
@@ -204,18 +213,30 @@ export class Sediments {
     gl.uniform2f(programs.gaussian.uniforms.u_dir, 0, this.texel.y)
     gl.drawArrays(gl.TRIANGLES, 0, 6)
 
-    this.edgePass1.render(substratePP.back().tex)
+    //
+    // Render on view, post-processing for cool-looking effect
+    //
+    glu.bindFB(gl, res.x, res.y, this.viewRt.fb)
+    programs.view.use()
+    viewUniform(gl, programs.view)
+    glu.uniformTex(gl, programs.view.uniforms.u_tex, substratePP.back().tex)
+    glu.draw.quad(gl)
+
+    this.smoothPp.swap()
+    glu.bindFB(gl, res.x, res.y, this.smoothPp.back().fb)
+    programs.smooth.use()
+    glu.uniformTex(
+      gl,
+      programs.smooth.uniforms.u_tex_old,
+      this.smoothPp.front().tex,
+      0
+    )
+    glu.uniformTex(gl, programs.smooth.uniforms.u_tex_new, this.viewRt.tex, 1)
+    glu.draw.quad(gl)
+
+    this.edgePass1.render(this.smoothPp.back().tex)
     this.edgePass2.render()
     this.gaussianPass.render()
     this.sharpenPass.render()
-
-    glu.bindFB(gl, res.x, res.y, this.correctionRt.fb)
-    programs.correction.use()
-    glu.uniformTex(
-      gl,
-      programs.correction.uniforms.u_texture,
-      this.sharpenPass.output
-    )
-    gl.drawArrays(gl.TRIANGLES, 0, 6)
   }
 }
