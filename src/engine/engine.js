@@ -36,6 +36,8 @@ export class Engine {
   tick = () => {
     const t = this.ticker.time,
       dt = this.ticker.dt
+
+    Controls.update(t, dt)
     this.world.update()
 
     this.solver.prepare(t, dt)

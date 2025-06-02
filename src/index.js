@@ -51,6 +51,7 @@ import { Ticker } from "./engine/ticker"
 import { Engine } from "./engine/engine"
 import { WebGLRenderer } from "./renderer/webgl/renderer"
 import { Color } from "./utils/color"
+import { Controls } from "./controls"
 
 Object.getOwnPropertyNames(Math).forEach((el) => (window[el] = Math[el]))
 window.TAU = 2 * PI
@@ -247,10 +248,10 @@ async function start() {
 
   // todo: clusters, maybe just remove ?
   // console.log({ clusterRules })
-  // bodies.forEach((body) => {
-  //   body.color = settings.clusters.colors[body.data.clusterGroup]
-  //   body.addFlag(BodyFlags.REPELLING | BodyFlags.REPELLED | BodyFlags.DEBUG)
-  // })
+  bodies.forEach((body) => {
+    // body.color = settings.clusters.colors[body.data.clusterGroup]
+    body.addFlag(BodyFlags.REPELLING | BodyFlags.REPELLED | BodyFlags.DEBUG)
+  })
 
   const testBodies = []
   const NB = 20
@@ -315,6 +316,8 @@ async function start() {
     ticker,
     renderer,
   })
+
+  Controls.init(world)
 
   console.log("---")
   console.log(engine.world)

@@ -187,7 +187,7 @@ export class Body extends Entity {
     this.clamp()
 
     if (this.springs.length === 0) {
-      this.forwards.copy(this.vel).normalize()
+      this.forwards.set(1, 0)
     } else {
       let other, dE
       _v2b.set(0, 0)

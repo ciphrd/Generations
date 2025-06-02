@@ -104,6 +104,31 @@ export class Vec2 {
     this.apply((x) => 1 / x)
     return this
   }
+  min(a1, a2) {
+    if (isVec(a1)) {
+      this.x = min(this.x, a1.x)
+      this.y = min(this.y, a1.y)
+    } else {
+      this.x = min(this.x, a1)
+      this.y = min(this.y, a2)
+    }
+    return this
+  }
+  max(a1, a2) {
+    if (isVec(a1)) {
+      this.x = max(this.x, a1.x)
+      this.y = max(this.y, a1.y)
+    } else {
+      this.x = max(this.x, a1)
+      this.y = max(this.y, a2)
+    }
+    return this
+  }
+  clamp(v1, v2) {
+    this.min(v1)
+    this.max(v2)
+    return this
+  }
 }
 
 export function vec2(a1, a2) {
