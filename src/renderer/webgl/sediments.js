@@ -5,12 +5,12 @@ import pointsVS from "./shaders/sediments/points.vert.glsl"
 import pointsFS from "./shaders/sediments/points.frag.glsl"
 import updateFS from "./shaders/sediments/update.frag.glsl"
 import substrateFS from "./shaders/sediments/substrate.frag.glsl"
-import smoothFS from "./shaders/sediments/smooth.frag.glsl"
 import viewFS from "./shaders/view.frag.glsl"
 import { GaussianPass, initGaussianProgram } from "./gaussian"
 import { EdgePass } from "./edge"
 import { SharpenPass } from "./sharpen"
 import { viewUniform } from "./view"
+import { TrailPass } from "./trail"
 
 /**
  * The Sediments are tiny particles with very small interactions with the
@@ -98,13 +98,6 @@ export class Sediments {
           u.quad(prg)
         },
       }),
-      smooth: glu.program(gl, fullVS, smoothFS, {
-        attributes: ["a_position"],
-        uniforms: ["u_tex_old", "u_tex_new"],
-        vao: (prg) => (u) => {
-          u.quad(prg)
-        },
-      }),
     }
 
     this.blurFieldPass = new GaussianPass(
@@ -118,7 +111,6 @@ export class Sediments {
     this.substratePP = glu.pingpong(gl, res.x, res.y, gl.R32F)
 
     this.viewRt = glu.renderTarget(gl, res.x, res.y, gl.R32F)
-    this.smoothPp = glu.pingpong(gl, res.x, res.y)
 
     this.edgePass1 = new EdgePass(gl, res, null, { format: gl.R32F })
     this.edgePass2 = new EdgePass(gl, res, this.edgePass1.output, {
@@ -222,19 +214,10 @@ export class Sediments {
     glu.uniformTex(gl, programs.view.uniforms.u_tex, substratePP.back().tex)
     glu.draw.quad(gl)
 
-    this.smoothPp.swap()
-    glu.bindFB(gl, res.x, res.y, this.smoothPp.back().fb)
-    programs.smooth.use()
-    glu.uniformTex(
-      gl,
-      programs.smooth.uniforms.u_tex_old,
-      this.smoothPp.front().tex,
-      0
-    )
-    glu.uniformTex(gl, programs.smooth.uniforms.u_tex_new, this.viewRt.tex, 1)
-    glu.draw.quad(gl)
-
-    this.edgePass1.render(this.smoothPp.back().tex)
+    //
+    // Post-processing effects for a cool look
+    //
+    this.edgePass1.render(this.viewRt.tex)
     this.edgePass2.render()
     this.gaussianPass.render()
     this.sharpenPass.render()

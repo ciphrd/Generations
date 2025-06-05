@@ -9,7 +9,7 @@ class ControlsClass {
   constructor() {
     this.autoTracking = true
     this.txy = vec2(0, 0)
-    this.#setScale(3)
+    this.#setScale(2.5)
     this.emitter = emitter()
     this.largestOrganism = null
 

@@ -49,7 +49,7 @@ void main() {
     dir *= -1.0;
   }
 
-  agent.xy += dir * (0.001 + 0.003 * max(0.0, n1));
+  agent.xy += dir * 0.001;
   agent.xy = clamp(agent.xy, vec2(0), vec2(1));
 
   dir = dfGrad(agent.xy, 1.0);

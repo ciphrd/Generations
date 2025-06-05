@@ -24,12 +24,10 @@ import { PointsRenderer } from "./points"
 import { LiaisonsRenderer } from "./liaisons"
 import { Spring, SpringFlags } from "../../physics/constraints/spring"
 import { settings } from "../../settings"
-import { EdgePass } from "./edge"
 import { GaussianPass } from "./gaussian"
 import { MembranePass } from "./membrane"
 import { OuterShell } from "./outer-shell"
 import { Sediments } from "./sediments"
-import { Controls } from "../../controls"
 import { viewUniform } from "./view"
 import { CompositionPass } from "./composition"
 
@@ -294,7 +292,7 @@ export class WebGLRenderer extends Renderer {
       }),
       sediments: glu.program(gl, fullVS, sedimentsFS, {
         attributes: ["a_position"],
-        uniforms: ["u_view", "u_sediments"],
+        uniforms: ["u_view", "u_sediments", "u_cells", "u_membrane"],
         vao: (prog) => (u) => {
           u.attrib(prog.attributes.a_position, glu.quad(gl), 2)
         },
@@ -482,16 +480,51 @@ export class WebGLRenderer extends Renderer {
       this.blurColorFieldPass.output,
       1
     )
-    gl.drawArrays(gl.TRIANGLES, 0, 6)
+    glu.draw.quad(gl)
 
     this.programs.sediments.use()
     viewUniform(gl, this.programs.sediments)
     glu.uniformTex(
       gl,
       this.programs.sediments.uniforms.u_sediments,
-      this.sediments.output
+      this.sediments.output,
+      0
     )
-    gl.drawArrays(gl.TRIANGLES, 0, 6)
+    glu.uniformTex(
+      gl,
+      this.programs.sediments.uniforms.u_cells,
+      this.fieldRT2.textures[0],
+      1
+    )
+    glu.uniformTex(
+      gl,
+      this.programs.sediments.uniforms.u_membrane,
+      this.membranePass.output,
+      2
+    )
+    glu.draw.quad(gl)
+
+    // this.programs.colorSpread.use()
+    // viewUniform(gl, this.programs.colorSpread)
+    // glu.uniformTex(
+    //   gl,
+    //   this.programs.colorSpread.uniforms.u_color_spread,
+    //   this.colorSpread.output,
+    //   0
+    // )
+    // glu.uniformTex(
+    //   gl,
+    //   this.programs.colorSpread.uniforms.u_cells,
+    //   this.fieldRT2.textures[0],
+    //   1
+    // )
+    // glu.uniformTex(
+    //   gl,
+    //   this.programs.colorSpread.uniforms.u_membrane,
+    //   this.membranePass.output,
+    //   2
+    // )
+    // glu.draw.quad(gl)
 
     // this.bacterias.render()
     // this.food.render()
@@ -504,9 +537,11 @@ export class WebGLRenderer extends Renderer {
 
     // gl.useProgram(this.programs.tex.program)
     // gl.bindVertexArray(this.vaos.tex)
-    // gl.activeTexture(gl.TEXTURE0)
-    // gl.bindTexture(gl.TEXTURE_2D, this.sediments.output)
-    // gl.uniform1i(this.programs.tex.uniforms.u_texture, 0)
+    // glu.uniformTex(
+    //   gl,
+    //   this.programs.tex.uniforms.u_texture,
+    //   this.colorSpread.output
+    // )
     // gl.drawArrays(gl.TRIANGLES, 0, 6)
   }
 }
