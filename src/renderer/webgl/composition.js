@@ -2,6 +2,7 @@ import { glu } from "../../utils/glu"
 import fullVS from "./shaders/full.vert.glsl"
 import compFS from "./shaders/composition/composition.frag.glsl"
 import convolveFS from "./shaders/convolve.frag.glsl"
+import { settings } from "../../settings"
 
 /**
  * Simulates the microscopy vision, by using the absorption map.
@@ -30,7 +31,7 @@ export class CompositionPass {
       }),
       composition: glu.program(gl, fullVS, compFS, {
         attributes: ["a_position"],
-        uniforms: ["u_absorption", "u_emboss"],
+        uniforms: ["u_absorption", "u_emboss", "u_backlight_color"],
         vao: (prg) => (u) => {
           u.quad(prg)
         },
@@ -55,6 +56,10 @@ export class CompositionPass {
     programs.composition.use()
     glu.uniformTex(gl, programs.composition.uniforms.u_absorption, absorpTex, 0)
     glu.uniformTex(gl, programs.composition.uniforms.u_emboss, embossRt.tex, 1)
+    gl.uniform3fv(
+      programs.composition.uniforms.u_backlight_color,
+      settings.microscopy.light.backlightColor.rgb
+    )
     glu.draw.quad(gl)
   }
 }

@@ -23,6 +23,7 @@
  * - Petri-Nets
  */
 
+import "./inject.js"
 import Stats from "stats.js"
 import { BodyFlags, body } from "./physics/body"
 import { Spring } from "./physics/constraints/spring"
@@ -52,9 +53,6 @@ import { Engine } from "./engine/engine"
 import { WebGLRenderer } from "./renderer/webgl/renderer"
 import { Color } from "./utils/color"
 import { Controls } from "./controls"
-
-Object.getOwnPropertyNames(Math).forEach((el) => (window[el] = Math[el]))
-window.TAU = 2 * PI
 
 const stats = new Stats()
 stats.showPanel(1)
@@ -99,15 +97,48 @@ document.body.appendChild(stats.dom)
 //     (x) add OP to define colors (8 bits for color)
 //         note: clamp bits if end of DNA ?
 //     (x) color assigned to cell
-// ( ) color rendering
+// (x) color rendering
 //     (x) cells are colored based on instance color
 //     (x) smooth transitions between cells (HARD — re: no lol)
-//     ( ) improve coloration as a whole
-//         ( ) function to get variations of base color
-//         ( ) add these variations everywhere
-// ( ) sediments
-//     ( ) improve coloring of sediments, rn pretty bad
-//     ( ) too regular: maybe change rules with some noise
+//     (x) improve coloration as a whole
+//         (x) function to get variations of base color
+//         (x) add these variations everywhere
+// (x) sediments
+//     (x) improve coloring of sediments, rn pretty bad
+//     (x) too regular: maybe change rules with some noise
+
+//! Scoping the final phase of the project
+// ( ) base requirements
+//     ( ) work on evolutions extensively and make sure it's interesting to
+//         evolve certain organisms (low but existing variance)
+//     ( ) more seed DNAs for a bit more variety
+//     ( ) parametrize the different noises with a seed (as well as the various
+//         color settings such as microscope light, etc)
+//     ( ) render
+//         ( ) food, other cells, temp liaisons
+//         ( ) they should too interact with env.
+//         ( ) cell activations
+//             small color flashes ?
+//         ( ) a bit of env variations (subtle noisy patterns, dust)
+//         ( ) extra post-processing
+//             microscope lens ? kinda signature yk
+//             chromatic abberation
+//         ( ) handle pixel ratio dependant rendering (shouldn't depend on PR)
+//     ( ) fix bugs
+//         ( ) Unknown promise rejection reason
+//             ooxEXWZrKip6H71hEnxvfnWZkh5G9iudmy3FC9XKxg41HvneufY
+//         ( ) isNaN on position
+//             oohnPj3cAUVfAVUiLvuCXqUG5HbD1RBCLfTkJJD2bPyAYSvqj3e
+// ( ) extra
+//     ( ) other microscopy techniques
+//         ( ) general framework for allowing other techniques
+//             essentially each light absorption layer has support for all
+//             techniques as each technique as specific requirements
+//         ( ) phase-contrast
+//         ( ) fluoresence
+//         ( ) fluoresence with colored bg
+//     ( ) think about whether the UI is included or not
+//         ( ) if so, think about what's missing from the UI
 
 // todo: cell deformations
 // Right now only the liaisons are deformed, which creates some un-orgnanic

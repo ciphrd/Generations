@@ -18,10 +18,16 @@ void main() {
   float cells = texture(u_cells, v_uv).r;
 
   float n1 = snoise(vec3(v_uv * 4.0, u_time * 0.01));
+  float n2 = fbm(
+    vec3(v_uv * 50.0, u_time * 0.3),
+    4, 
+    0.5 + 3.0 * (0.5 * snoise(vec3(v_uv * 10.0, u_time * 0.1)) + 0.5)
+  ) * 0.1;
 
-  substrate = substrate * 0.97
-            + agent * (0.4 + 0.6 * n1) * 2.5
-            - smoothstep(0.0, 0.8, cells) * 0.3;
+  substrate = substrate * 0.99
+            + agent * (0.4 + 0.6 * n1) * 0.4
+            - smoothstep(0.0, 0.8, cells) * 0.004
+            + n2 * 0.01;
 
   outColor0 = vec4(substrate);
 

@@ -6,6 +6,8 @@ export class Color {
     this.g = g
     this.b = b
     this.a = a
+    this.rgb = [r, g, b]
+    this.rgba = [r, g, b, a]
   }
 
   static fromByteRgb332(byte) {
@@ -21,16 +23,12 @@ export class Color {
   }
 
   hex() {
-    return "#" + str.hexbytes(this.rgbarr()).join("")
+    return "#" + str.hexbytes(this.rgb).join("")
   }
 
   css() {
     if (this.a === 1) return this.hex()
     return `rgba(${this.r}, ${this.g}, ${this.b}, ${this.a})`
-  }
-
-  rgbarr() {
-    return [this.r, this.g, this.b]
   }
 
   clone() {

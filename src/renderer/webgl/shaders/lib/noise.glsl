@@ -65,6 +65,19 @@ float snoise(vec3 v){
                                 dot(p2,x2), dot(p3,x3) ) );
 }
 
+float fbm(in vec3 x, in int O, in float H){    
+  float G = exp2(-H);
+  float f = 1.0;
+  float a = 1.0;
+  float t = 0.0;
+  for( int i=0; i<O; i++ ){
+    t += a*snoise(f*x);
+    f *= 2.0;
+    a *= G;
+  }
+  return t;
+}
+
 // Mark Jarzynski and Marc Olano, Hash Functions for GPU Rendering, 
 // Journal of Computer Graphics Techniques (JCGT), vol. 9, no. 3, 21-38, 2020
 // Available online http://jcgt.org/published/0009/03/02/
@@ -91,4 +104,10 @@ vec2 hash22(vec2 p){
   vec3 p3 = fract(vec3(p.xyx) * vec3(.1031, .1030, .0973));
   p3 += dot(p3, p3.yzx+33.33);
   return fract((p3.xx+p3.yz)*p3.zy);
+}
+
+float hash12(vec2 p){
+	vec3 p3  = fract(vec3(p.xyx) * .1031);
+  p3 += dot(p3, p3.yzx + 33.33);
+  return fract((p3.x + p3.y) * p3.z);
 }

@@ -3,6 +3,7 @@ import { Anchor } from "./interactions/anchor"
 import { Eater } from "./interactions/eat"
 import { FoodSeeker } from "./interactions/food-seeker"
 import { Color } from "./utils/color"
+import { rnd } from "./utils/rnd"
 
 export const settings = {
   radius: 0.006,
@@ -62,7 +63,18 @@ export const settings = {
   sediments: {
     nbRoot: 128,
   },
+  microscopy: {
+    light: {
+      backlightColor: new Color(
+        0.2 + tanh(rnd.one() * 4) * 0.7,
+        0.2 + tanh(rnd.one() * 4) * 0.7,
+        0.2 + tanh(rnd.one() * 4) * 0.7
+      ),
+    },
+  },
 }
+
+console.log("" + settings.microscopy.light.backlightColor)
 
 export const permutations = [
   // small triangles, many loops

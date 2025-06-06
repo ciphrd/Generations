@@ -2,6 +2,9 @@ import { arr } from "./array"
 import { lerp } from "./math"
 
 export const rnd = {
+  one() {
+    return $fx.rand()
+  },
   range(min, max) {
     return lerp(min, max, $fx.rand())
   },
