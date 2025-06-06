@@ -3,7 +3,6 @@
 uniform vec4 u_view;
 
 in vec4 a_position;
-in vec4 a_properties;
 in vec4 a_geometry;
 
 out vec2 v_uv;

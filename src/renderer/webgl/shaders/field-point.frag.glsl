@@ -6,9 +6,8 @@ precision highp float;
 
 in vec2 v_uv;
 in float v_id;
-in vec3 v_color;
+
 layout (location = 0) out vec4 outColor0;
-layout (location = 1) out vec4 outColor1;
 
 void main() {
   float id = v_id;
@@ -25,13 +24,6 @@ void main() {
     C = (C + 0.1) / max(lC, 0.1);
   }
 
-  outColor0 = vec4(C * S, S2)
-          //  * (1.0 + snoise(vec3(uv * 1.2, 2982.23)) * 0.5)
-           ;
-  
-  // on 2nd attachment render a noise which can be used to modulate cell
-  // properties when working in world coordinates
-  outColor1 = vec4( membraneNoise(uv, id * 21.234), v_color );
-
+  outColor0 = vec4(C * S, S2);
   gl_FragDepth = L;
 }

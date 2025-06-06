@@ -100,11 +100,11 @@ void main() {
   outColor = C * S * 0.2;
 
   float n1 = snoise(vec3(v_uv * 12.0, cell.id * 12.786)) * 0.5 + 0.5;
-  float n2 = snoise(vec3(v_uv * 6.0, cell.id * 12.786)) * 0.5 + 0.5;
+  float n2 = fbm(vec3(v_uv * 6.0, cell.id * 12.786), 3, 2.0) * 0.5 + 0.5;
 
   float alive = 1.0 - v_scale;
   // I *= smoothstep((0.9 - alive) * 0.5, (1.0 - alive) * 0.5, L);
-  float eaten = smoothstep((0.9 - alive) * 0.5, (1.1 - alive) * 0.5, L);
+  float eaten = smoothstep((0.8 - alive) * 0.5, (1.0 - alive) * 0.5, L);
   float I = pow(max(0.0, 0.5 - L), 0.3)
           * smoothstep(eaten - 0.1, eaten, n1)
           * (0.3 + n2 * 0.2);
