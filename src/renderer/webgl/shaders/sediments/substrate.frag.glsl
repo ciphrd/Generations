@@ -19,7 +19,7 @@ void main() {
 
   float n1 = snoise(vec3(v_uv * 4.0, u_time * 0.01));
   float n2 = fbm(
-    vec3(v_uv * 50.0, u_time * 0.3),
+    vec3(v_uv * 50.0, u_time * 0.15),
     4, 
     0.5 + 3.0 * (0.5 * snoise(vec3(v_uv * 10.0, u_time * 0.1)) + 0.5)
   ) * 0.1;

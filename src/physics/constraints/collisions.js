@@ -22,7 +22,7 @@ export class Collisions {
 
   apply(t, dt, computeCache) {
     const done = {}
-    const part = this.world.partition(this.maxRad)
+    const part = this.world.partition(this.maxRad * 2)
 
     let e, s, imp, id, _
     for (const a of this.world.bodies) {

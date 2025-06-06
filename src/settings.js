@@ -27,6 +27,7 @@ export const settings = {
   food: {
     default: {
       color: new Color(0, 0, 255),
+      radius: 0.02,
     },
   },
   clusters: {
@@ -73,8 +74,6 @@ export const settings = {
     },
   },
 }
-
-console.log("" + settings.microscopy.light.backlightColor)
 
 export const permutations = [
   // small triangles, many loops

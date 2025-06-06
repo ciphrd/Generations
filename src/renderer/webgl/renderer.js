@@ -504,30 +504,8 @@ export class WebGLRenderer extends Renderer {
     )
     glu.draw.quad(gl)
 
-    // this.programs.colorSpread.use()
-    // viewUniform(gl, this.programs.colorSpread)
-    // glu.uniformTex(
-    //   gl,
-    //   this.programs.colorSpread.uniforms.u_color_spread,
-    //   this.colorSpread.output,
-    //   0
-    // )
-    // glu.uniformTex(
-    //   gl,
-    //   this.programs.colorSpread.uniforms.u_cells,
-    //   this.fieldRT2.textures[0],
-    //   1
-    // )
-    // glu.uniformTex(
-    //   gl,
-    //   this.programs.colorSpread.uniforms.u_membrane,
-    //   this.membranePass.output,
-    //   2
-    // )
-    // glu.draw.quad(gl)
-
     // this.bacterias.render()
-    // this.food.render()
+    this.food.render()
     // this.bindLiaisons.render()
 
     //

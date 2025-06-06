@@ -3,7 +3,13 @@ import { Body, BodyFlags } from "../body"
 
 export class Food extends Body {
   constructor(world, pos, onEaten) {
-    super(world, pos, 0.01, 0.08, settings.food.default.color.clone())
+    super(
+      world,
+      pos,
+      settings.food.default.radius,
+      0.08,
+      settings.food.default.color.clone()
+    )
     this.nutrients = 1
     this.onEaten = onEaten
     this.baseRad = this.radius

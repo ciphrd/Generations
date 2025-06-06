@@ -28,11 +28,10 @@ void main() {
   C = max(texture(u_membrane, v_uv).r * 2.0, C);
   C = 1.0 - clamp(C, 0.0, 1.0);
 
-
   float sediments = texture(u_sediments, uv).r;
   sediments = pow(sediments, 0.1);
   float invSediments = 1.0 - sediments;
-  invSediments = smin(invSediments, 0.85, 0.1);
+  // invSediments = smin(invSediments, 0.85, 0.1);
   invSediments = clamp(invSediments, 0.0, 1.0);
 
   outColor0 = vec4(invSediments) * C;
