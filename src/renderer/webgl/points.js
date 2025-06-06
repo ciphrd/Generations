@@ -41,13 +41,13 @@ export class PointsRenderer {
     })
   }
 
-  render() {
+  render(worldSpace = false) {
     const { gl, program } = this
 
     this.geometryBuffer.update()
 
     program.use()
-    viewUniform(gl, program)
+    viewUniform(gl, program, worldSpace)
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.points.length)
   }
 

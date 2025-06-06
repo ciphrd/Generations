@@ -152,13 +152,6 @@ export class WebGLRenderer extends Renderer {
       this.liaisons.col[i * 3 + 2] = liaison.color.b / 255
     }
 
-    const otherBodies = bodies.filter((b) => b.hasFlag(BodyFlags.FOOD))
-    const nbOtherBodies = otherBodies.length
-    this.otherBodies = {
-      entities: otherBodies,
-      geo: new Float32Array(nbOtherBodies * 4),
-    }
-
     this.buffers = {
       cells: {
         geo: glu.dynamicBuffer(gl, this.cells.geo, () => {
@@ -192,19 +185,6 @@ export class WebGLRenderer extends Renderer {
           return this.liaisons.geos
         }),
         col: glu.buffer(gl, this.liaisons.col),
-      },
-      otherBodies: {
-        geo: glu.dynamicBuffer(gl, this.otherBodies.geo, () => {
-          let body
-          for (let i = 0; i < otherBodies.length; i++) {
-            body = otherBodies[i]
-            this.otherBodies.geo[i * 4 + 0] = body.pos.x
-            this.otherBodies.geo[i * 4 + 1] = body.pos.y
-            this.otherBodies.geo[i * 4 + 2] = body.radius
-            this.otherBodies.geo[i * 4 + 3] = body.initial.radius
-          }
-          return this.otherBodies.geo
-        }),
       },
     }
 
@@ -254,20 +234,6 @@ export class WebGLRenderer extends Renderer {
             prg.attributes.a_color,
             this.buffers.liaisons.col,
             3,
-            gl.FLOAT,
-            true
-          )
-        },
-      }),
-      fieldPoints: glu.program(gl, pointsVS, fieldPointFS, {
-        attributes: ["a_position", "a_geometry"],
-        uniforms: ["u_view"],
-        vao: (prg) => (u) => {
-          u.attrib(prg.attributes.a_position, glu.quad(gl), 2, gl.FLOAT)
-          u.attrib(
-            prg.attributes.a_geometry,
-            this.buffers.otherBodies.geo.buffer,
-            4,
             gl.FLOAT,
             true
           )
@@ -356,6 +322,10 @@ export class WebGLRenderer extends Renderer {
       )
     )
 
+    this.otherBodiesPass = new PointsRenderer(gl, fieldPointFS, () =>
+      bodies.filter((b) => b.hasFlag(BodyFlags.FOOD))
+    )
+
     this.absorbRT = glu.renderTarget(gl, tW, tH, gl.RGBA32F, { depth: true })
     this.fieldRT = glu.renderTarget(gl, tW, tH, gl.RGBA32F, { depth: true })
     this.fieldRT2 = glu.renderTargetN(2, gl, tW, tH, gl.RGBA32F, {
@@ -411,7 +381,6 @@ export class WebGLRenderer extends Renderer {
 
     this.buffers.cells.geo.update()
     this.buffers.liaisons.geos.update()
-    this.buffers.otherBodies.geo.update()
 
     //
     // Render field, merging the cells / liaisons in a smooth way
@@ -430,9 +399,7 @@ export class WebGLRenderer extends Renderer {
     viewUniform(gl, programs.fieldLiaison, true)
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, liaisons.length)
 
-    programs.fieldPoints.use()
-    viewUniform(gl, programs.fieldPoints, true)
-    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.otherBodies.entities.length)
+    this.otherBodiesPass.render(true)
 
     //
     glu.bindFB(gl, tW, tH, this.fieldRT2.fb)
