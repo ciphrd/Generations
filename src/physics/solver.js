@@ -31,5 +31,8 @@ export class Solver {
     for (let i = 0; i < this.world.constraints.post.length; i++) {
       this.world.constraints.post[i].apply(t, dt, this.computeCache)
     }
+    for (const body of this.world.bodies) {
+      body.clamp()
+    }
   }
 }

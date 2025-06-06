@@ -184,7 +184,6 @@ export class Body extends Entity {
     }
     this.acc.res()
     this.pos.add(this.vel.x * dt, this.vel.y * dt)
-    this.clamp()
 
     if (this.springs.length === 0) {
       this.forwards.set(1, 0)
@@ -233,6 +232,8 @@ export class Body extends Entity {
       this.pos.y = 0.9999 - mod(this.pos.y, 1)
       this.vel.y *= -1
     }
+
+    this.pos.apply((x) => clamp(x, 0, 0.999))
   }
 }
 

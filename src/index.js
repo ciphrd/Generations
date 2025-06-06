@@ -37,7 +37,6 @@ import { GlobalRepulsion } from "./physics/constraints/repulsion"
 import { nodeTupleId } from "./graph/node"
 import { rnd } from "./utils/rnd"
 import { Collisions } from "./physics/constraints/collisions"
-import { SquareBounds } from "./physics/constraints/bounds"
 import { World } from "./physics/world"
 import { Solver } from "./physics/solver"
 import { settings } from "./settings"
@@ -322,7 +321,6 @@ async function start() {
   world.setBodies(allBodies)
 
   constraints.post.push(new Collisions(world))
-  constraints.post.push(new SquareBounds(world))
 
   world.setConstraints(constraints)
 
