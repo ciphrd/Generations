@@ -316,10 +316,17 @@ export class WebGLRenderer extends Renderer {
 
     this.bacterias = new PointsRenderer(gl, bacteriasFS, () => world.bacterias)
     this.food = new PointsRenderer(gl, foodFS, () => world.food)
-    this.bindLiaisons = new LiaisonsRenderer(gl, world, liaisonTempFS, () =>
-      world.constraints.pre.filter(
-        (cons) => cons instanceof Spring && cons.hasFlag(SpringFlags.BIND)
-      )
+    this.bindLiaisons = new LiaisonsRenderer(
+      gl,
+      world,
+      liaisonTempFS,
+      () =>
+        world.constraints.pre.filter(
+          (cons) => cons instanceof Spring && cons.hasFlag(SpringFlags.BIND)
+        ),
+      {
+        fixedWidth: 0.001,
+      }
     )
 
     this.otherBodiesPass = new PointsRenderer(gl, fieldPointFS, () =>
@@ -515,7 +522,7 @@ export class WebGLRenderer extends Renderer {
 
     // this.bacterias.render()
     this.food.render()
-    // this.bindLiaisons.render()
+    this.bindLiaisons.render()
 
     //
     // FINAL COMP

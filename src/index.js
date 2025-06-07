@@ -128,6 +128,8 @@ document.body.appendChild(stats.dom)
 //             ooxEXWZrKip6H71hEnxvfnWZkh5G9iudmy3FC9XKxg41HvneufY
 //         ( ) isNaN on position
 //             oohnPj3cAUVfAVUiLvuCXqUG5HbD1RBCLfTkJJD2bPyAYSvqj3e
+//         ( ) Temp liaisons are flashing
+//             ooqcMLZVwx9j2TXpVt74ZmRMA1dAbydYrosJUjHHQx8K3cq4UgK
 // ( ) extra
 //     ( ) other microscopy techniques
 //         ( ) general framework for allowing other techniques
@@ -284,7 +286,7 @@ async function start() {
   })
 
   const testBodies = []
-  const NB = 20
+  const NB = 0
   for (let i = 0; i < NB; i++) {
     for (let j = 0; j < NB; j++) {
       const bod = body(

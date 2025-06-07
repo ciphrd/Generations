@@ -10,7 +10,7 @@ export class LiaisonsRenderer {
   /**
    * @param {WebGL2RenderingContext} gl
    */
-  constructor(gl, world, fragment, getLiaisons) {
+  constructor(gl, world, fragment, getLiaisons, { fixedWidth = false } = {}) {
     let loc
 
     this.gl = gl
@@ -32,11 +32,11 @@ export class LiaisonsRenderer {
           bodyB = this.liaisons[i].bodyB
           this.buffers.geos[i * 8 + 0] = bodyA.pos.x
           this.buffers.geos[i * 8 + 1] = bodyA.pos.y
-          this.buffers.geos[i * 8 + 2] = bodyA.radius
+          this.buffers.geos[i * 8 + 2] = fixedWidth || bodyA.radius
           this.buffers.geos[i * 8 + 3] = bodyA.id
           this.buffers.geos[i * 8 + 4] = bodyB.pos.x
           this.buffers.geos[i * 8 + 5] = bodyB.pos.y
-          this.buffers.geos[i * 8 + 6] = bodyB.radius
+          this.buffers.geos[i * 8 + 6] = fixedWidth || bodyB.radius
           this.buffers.geos[i * 8 + 7] = bodyB.id
         }
         return this.buffers.geos
