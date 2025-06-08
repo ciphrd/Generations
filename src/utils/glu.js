@@ -222,6 +222,26 @@ export const glu = {
     }
   },
 
+  fb2fb(
+    gl,
+    sourceFB,
+    destFB,
+    width,
+    height,
+    {
+      mask = gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT,
+      filter = gl.NEAREST,
+    } = {}
+  ) {
+    const w = width,
+      h = height
+    gl.bindFramebuffer(gl.READ_FRAMEBUFFER, sourceFB)
+    gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, destFB)
+    gl.blitFramebuffer(0, 0, w, h, 0, 0, w, h, mask, filter)
+    gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null)
+    gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null)
+  },
+
   blend(gl, fn1, fn2) {
     if (!fn1) {
       gl.disable(gl.BLEND)

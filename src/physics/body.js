@@ -7,6 +7,7 @@ import { ActivationBytecode } from "../bytecode/activation"
 import { Actions } from "./actions"
 import { Entity } from "./entity"
 import { settings } from "../settings"
+import { arr } from "../utils/array"
 
 let c = 0
 const _v2a = vec2(),
@@ -57,6 +58,7 @@ export class Body extends Entity {
     this.friction = friction
     this.receivedSignals = Array(4).fill(0)
     this.signals = Array(4).fill(0)
+    this.emittedSignals = arr.new(4, 0)
     this.operations = []
     this.netCycle = 0
     this.sensors = []
@@ -164,6 +166,13 @@ export class Body extends Entity {
         this.actions[op.name].activate(t, dt, op.chemicalStrength, op.values)
         this.energy -= 0.00001
       }
+    }
+
+    // opti: for fast access of emitted signals data
+    const fireOps = ops.filter((op) => op.name === "fire")
+    for (let i = 0; i < 4; i++) {
+      this.emittedSignals[i] =
+        fireOps.find((op) => op.values[0] === i)?.values[1] || 0
     }
   }
 

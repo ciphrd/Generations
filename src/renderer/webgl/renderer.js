@@ -22,6 +22,7 @@ import fieldPointFS from "./shaders/field-point.frag.glsl"
 import foodFS from "./shaders/food.frag.glsl"
 import membraneFS from "./shaders/membrane.frag.glsl"
 import sedimentsFS from "./shaders/absorption/sediments.frag.glsl"
+import membraneOuterFS from "./shaders/absorption/membrane-outer.frag.glsl"
 import { PointsRenderer } from "./points"
 import { LiaisonsRenderer } from "./liaisons"
 import { Spring, SpringFlags } from "../../physics/constraints/spring"
@@ -33,6 +34,7 @@ import { Sediments } from "./sediments"
 import { viewUniform } from "./view"
 import { CompositionPass } from "./composition"
 import { BodyFlags } from "../../physics/body"
+import { MembraneOuter } from "./membrane-outer"
 
 const W = 800
 const H = 800
@@ -132,6 +134,7 @@ export class WebGLRenderer extends Renderer {
     this.cells = {
       geo: new Float32Array(nb * 6),
       colors: new Float32Array(nb * 3),
+      signals: new Float32Array(nb * 4),
     }
     for (let i = 0; i < nb; i++) {
       this.cells.colors[i * 3 + 0] = organisms[i].color.r / 255
@@ -166,6 +169,15 @@ export class WebGLRenderer extends Renderer {
           return this.cells.geo
         }),
         col: glu.buffer(gl, this.cells.colors),
+        signals: glu.dynamicBuffer(gl, this.cells.signals, () => {
+          for (let i = 0; i < nb; i++) {
+            this.cells.signals[i * 4 + 0] = organisms[i].emittedSignals[0]
+            this.cells.signals[i * 4 + 1] = organisms[i].emittedSignals[1]
+            this.cells.signals[i * 4 + 2] = organisms[i].emittedSignals[2]
+            this.cells.signals[i * 4 + 3] = organisms[i].emittedSignals[3]
+          }
+          return this.cells.signals
+        }),
       },
       liaisons: {
         geos: glu.dynamicBuffer(gl, this.liaisons.geos, () => {
@@ -244,8 +256,8 @@ export class WebGLRenderer extends Renderer {
         uniforms: ["u_membrane", "u_color_field"],
       }),
       cells: glu.program(gl, quadVS, cellFS, {
-        attributes: ["a_position", "a_geometry", "a_color"],
-        uniforms: ["u_view", "u_blurred_membrane", "u_color_field"],
+        attributes: ["a_position", "a_geometry", "a_color", "a_signals"],
+        uniforms: ["u_view", "u_blurred_membrane", "u_color_field", "u_time"],
         variables: {
           CELL_SCALE: settings.rendering.cell.scale,
         },
@@ -263,6 +275,13 @@ export class WebGLRenderer extends Renderer {
             prg.attributes.a_color,
             this.buffers.cells.col,
             3,
+            gl.FLOAT,
+            true
+          )
+          u.attrib(
+            prg.attributes.a_signals,
+            this.buffers.cells.signals.buffer,
+            4,
             gl.FLOAT,
             true
           )
@@ -300,6 +319,13 @@ export class WebGLRenderer extends Renderer {
           u.attrib(prog.attributes.a_position, glu.quad(gl), 2)
         },
       }),
+      membraneOuter: glu.program(gl, fullVS, membraneOuterFS, {
+        attributes: ["a_position"],
+        uniforms: ["u_view", "u_membrane_outer", "u_cells"],
+        vao: (prog) => (u) => {
+          u.attrib(prog.attributes.a_position, glu.quad(gl), 2)
+        },
+      }),
       tex: glu.program(gl, fullVS, textureFS, {
         attributes: ["a_position"],
         uniforms: ["u_texture"],
@@ -333,21 +359,32 @@ export class WebGLRenderer extends Renderer {
       bodies.filter((b) => b.hasFlag(BodyFlags.FOOD))
     )
 
-    this.absorbRT = glu.renderTarget(gl, tW, tH, gl.RGBA32F, { depth: true })
-    this.fieldRT = glu.renderTarget(gl, tW, tH, gl.RGBA32F, { depth: true })
-    this.fieldRT2 = glu.renderTargetN(2, gl, tW, tH, gl.RGBA32F, {
-      depth: true,
-    })
-    this.membraneRT = glu.renderTarget(gl, tW, tH, gl.RGBA32F)
+    this.rts = {
+      absorb: glu.renderTarget(gl, tW, tH, gl.RGBA32F, { depth: true }),
+      cellFieldWorld: glu.renderTarget(gl, tW, tH, gl.RGBA32F, { depth: true }),
+      allFieldWorld: glu.renderTarget(gl, tW, tH, gl.RGBA32F, { depth: true }),
+      cellFieldView: glu.renderTargetN(2, gl, tW, tH, gl.RGBA32F, {
+        depth: true,
+      }),
+    }
 
     this.blurColorFieldPass = new GaussianPass(
       gl,
       vec2(tW, tH).div(2),
-      this.fieldRT2.textures[1],
+      this.rts.cellFieldView.textures[1],
       5
     )
 
-    this.membranePass = new MembranePass(gl, vec2(tW, tH), this.fieldRT2)
+    this.membranePass = new MembranePass(
+      gl,
+      vec2(tW, tH),
+      this.rts.cellFieldView
+    )
+    this.membraneOuter = new MembraneOuter(
+      gl,
+      vec2(tW, tH),
+      this.rts.cellFieldWorld.tex
+    )
 
     this.outerShell = new OuterShell(
       gl,
@@ -363,12 +400,12 @@ export class WebGLRenderer extends Renderer {
     gl.enableVertexAttribArray(loc)
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
 
-    this.sediments = new Sediments(gl, vec2(tW, tH), this.fieldRT.tex)
+    this.sediments = new Sediments(gl, vec2(tW, tH), this.rts.allFieldWorld.tex)
 
     this.compositionPass = new CompositionPass(
       gl,
       vec2(tW, tH),
-      this.absorbRT.tex
+      this.rts.absorb.tex
     )
 
     world.emitter.on("bodies:updated", () => {
@@ -382,17 +419,20 @@ export class WebGLRenderer extends Renderer {
   }
 
   render(t, dt) {
+    let program
+
     const { gl, world, programs } = this
     const { organisms, liaisons } = world
     const nb = organisms.length
 
     this.buffers.cells.geo.update()
+    this.buffers.cells.signals.update()
     this.buffers.liaisons.geos.update()
 
     //
     // Render field, merging the cells / liaisons in a smooth way
     //
-    glu.bindFB(gl, tW, tH, this.fieldRT.fb)
+    glu.bindFB(gl, tW, tH, this.rts.allFieldWorld.fb)
     gl.enable(gl.DEPTH_TEST)
     gl.depthFunc(gl.LESS)
     glu.blend(gl, null)
@@ -406,10 +446,14 @@ export class WebGLRenderer extends Renderer {
     viewUniform(gl, programs.fieldLiaison, true)
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, liaisons.length)
 
+    // before rendering all bodies, copy cells FB
+    glu.fb2fb(gl, this.rts.allFieldWorld.fb, this.rts.cellFieldWorld.fb, tW, tH)
+
+    glu.bindFB(gl, tW, tH, this.rts.allFieldWorld.fb)
     this.otherBodiesPass.render(true)
 
     //
-    glu.bindFB(gl, tW, tH, this.fieldRT2.fb)
+    glu.bindFB(gl, tW, tH, this.rts.cellFieldView.fb)
     gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1])
 
     programs.fieldCell.use()
@@ -429,6 +473,7 @@ export class WebGLRenderer extends Renderer {
     // Compute edges on the field to create the shell of the membrane
     //
     this.membranePass.render()
+    this.membraneOuter.render()
     this.outerShell.render()
 
     //
@@ -445,19 +490,21 @@ export class WebGLRenderer extends Renderer {
     gl.depthFunc(gl.LESS)
     glu.blend(gl, null)
 
-    glu.bindFB(gl, tW, tH, this.absorbRT.fb)
+    glu.bindFB(gl, tW, tH, this.rts.absorb.fb)
 
-    programs.cells.use()
-    viewUniform(gl, programs.cells)
+    program = programs.cells
+    program.use()
+    viewUniform(gl, program)
+    gl.uniform1f(program.uniforms.u_time, t * 0.001)
     glu.uniformTex(
       gl,
-      programs.cells.uniforms.u_blurred_membrane,
+      program.uniforms.u_blurred_membrane,
       this.outerShell.output,
       0
     )
     glu.uniformTex(
       gl,
-      programs.cells.uniforms.u_color_field,
+      program.uniforms.u_color_field,
       this.blurColorFieldPass.output,
       1
     )
@@ -509,7 +556,7 @@ export class WebGLRenderer extends Renderer {
     glu.uniformTex(
       gl,
       programs.sediments.uniforms.u_cells,
-      this.fieldRT2.textures[0],
+      this.rts.cellFieldView.textures[0],
       1
     )
     glu.uniformTex(
@@ -517,6 +564,22 @@ export class WebGLRenderer extends Renderer {
       programs.sediments.uniforms.u_membrane,
       this.membranePass.output,
       2
+    )
+    glu.draw.quad(gl)
+
+    programs.membraneOuter.use()
+    viewUniform(gl, programs.membraneOuter)
+    glu.uniformTex(
+      gl,
+      programs.membraneOuter.uniforms.u_membrane_outer,
+      this.membraneOuter.output,
+      0
+    )
+    glu.uniformTex(
+      gl,
+      programs.membraneOuter.uniforms.u_cells,
+      this.rts.cellFieldView.textures[0],
+      1
     )
     glu.draw.quad(gl)
 
@@ -531,7 +594,11 @@ export class WebGLRenderer extends Renderer {
 
     // gl.useProgram(programs.tex.program)
     // gl.bindVertexArray(this.vaos.tex)
-    // glu.uniformTex(gl, programs.tex.uniforms.u_texture, this.fieldRT.tex)
+    // glu.uniformTex(
+    //   gl,
+    //   programs.tex.uniforms.u_texture,
+    //   this.membraneOuter.output
+    // )
     // glu.draw.quad(gl)
   }
 }

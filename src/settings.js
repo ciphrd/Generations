@@ -67,9 +67,9 @@ export const settings = {
   microscopy: {
     light: {
       backlightColor: new Color(
-        0.2 + tanh(rnd.one() * 4) * 0.7,
-        0.2 + tanh(rnd.one() * 4) * 0.7,
-        0.2 + tanh(rnd.one() * 4) * 0.7
+        0.4 + tanh(rnd.one() * 4) * 0.55,
+        0.4 + tanh(rnd.one() * 4) * 0.55,
+        0.4 + tanh(rnd.one() * 4) * 0.55
       ),
     },
   },

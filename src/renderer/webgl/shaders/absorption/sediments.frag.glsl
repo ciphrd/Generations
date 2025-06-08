@@ -34,6 +34,6 @@ void main() {
   // invSediments = smin(invSediments, 0.85, 0.1);
   invSediments = clamp(invSediments, 0.0, 1.0);
 
-  outColor0 = vec4(invSediments) * C;
+  outColor0 = vec4(invSediments) * C * 0.8;
 
 }

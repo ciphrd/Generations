@@ -114,8 +114,8 @@ document.body.appendChild(stats.dom)
 //     ( ) parametrize the different noises with a seed (as well as the various
 //         color settings such as microscope light, etc)
 //     ( ) render
-//         ( ) food, other cells, temp liaisons
-//         ( ) they should too interact with env.
+//         (x) food, other cells, temp liaisons
+//         (x) they should too interact with env.
 //         ( ) cell activations
 //             small color flashes ?
 //         ( ) a bit of env variations (subtle noisy patterns, dust)

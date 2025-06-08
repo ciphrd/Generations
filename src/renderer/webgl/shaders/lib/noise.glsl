@@ -87,6 +87,12 @@ vec3 hash31(float p){
   return fract((p3.xxy+p3.yzz)*p3.zyx);
 }
 
+vec3 hash32(vec2 p){
+	vec3 p3 = fract(vec3(p.xyx) * vec3(.1031, .1030, .0973));
+  p3 += dot(p3, p3.yxz+33.33);
+  return fract((p3.xxy+p3.yzz)*p3.zyx);
+}
+
 float hash11(float p){
   p = fract(p * .1031);
   p *= p + 33.33;

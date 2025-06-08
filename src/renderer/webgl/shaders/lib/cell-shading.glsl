@@ -2,7 +2,7 @@ float N(in vec2 uv, float scale, float seed) {
   return snoise(vec3(uv * scale, v_id * seed));
 }
 
-vec4 cellColor(in vec2 uv, in vec3 baseColor) {
+vec4 cellColor(in vec2 uv, in vec3 baseColor, in vec4 signals, in float time) {
   float L = length(uv - 0.5);
   float S = smoothstep(0.45, 0.42, L);
 
@@ -45,6 +45,19 @@ vec4 cellColor(in vec2 uv, in vec3 baseColor) {
                      * pow(N(uv, 2.2, 109.323), 2.0)
                      * pow(N(uv, 1.3, 83.323), 1.0);
   C += vec3(1) * redDotsNoise * 0.6;
+
+  // add signals
+  vec3 sigNoise = vec3(
+    snoise(vec3(uv * 12.0, v_id * 629.109 + time * 0.0)),
+    snoise(vec3(uv * 12.0, v_id * 62.083 + time * 0.0)),
+    snoise(vec3(uv * 12.0, v_id * 1023.1 + time * 0.0))
+  );
+  for (int i = 0; i < 3; i++) {
+    C[i] += signals[i] 
+          * clamp(sigNoise[i], 0.0, 1.0) 
+          * max(0.0, 1.0 - L * 3.0)
+          * 1.0;
+  }
 
   // depth "vignette"
   float vignette = texture(u_blurred_membrane, v_guv).r;
