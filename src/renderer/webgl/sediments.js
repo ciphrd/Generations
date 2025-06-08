@@ -4,6 +4,7 @@ import fullVS from "./shaders/full.vert.glsl"
 import pointsVS from "./shaders/sediments/points.vert.glsl"
 import pointsFS from "./shaders/sediments/points.frag.glsl"
 import updateFS from "./shaders/sediments/update.frag.glsl"
+import initSubstrateFS from "./shaders/sediments/init-substrate.frag.glsl"
 import substrateFS from "./shaders/sediments/substrate.frag.glsl"
 import viewFS from "./shaders/view.frag.glsl"
 import { GaussianPass, initGaussianProgram } from "./gaussian"
@@ -63,6 +64,13 @@ export class Sediments {
     })
 
     this.programs = {
+      initSubstrate: glu.program(gl, fullVS, initSubstrateFS, {
+        attributes: ["a_position"],
+        uniforms: [],
+        vao: (prog) => (u) => {
+          u.attrib(prog.attributes.a_position, glu.quad(gl), 2)
+        },
+      }),
       draw: glu.program(gl, pointsVS, pointsFS, {
         attributes: ["a_position", "a_uv"],
         uniforms: ["u_agents"],
@@ -85,12 +93,12 @@ export class Sediments {
       }),
       substrate: glu.program(gl, fullVS, substrateFS, {
         attributes: ["a_position"],
-        uniforms: ["u_substrate", "u_agents", "u_cells", "u_time"],
+        uniforms: ["u_substrate", "u_agents", "u_cells", "u_time", "u_texel"],
         vao: (prog) => (u) => {
           u.attrib(prog.attributes.a_position, glu.quad(gl), 2)
         },
       }),
-      gaussian: initGaussianProgram(gl, 7),
+      gaussian: initGaussianProgram(gl, 5),
       view: glu.program(gl, fullVS, viewFS, {
         attributes: ["a_position"],
         uniforms: ["u_tex", "u_view"],
@@ -108,22 +116,23 @@ export class Sediments {
     )
 
     this.fullSedsRt = glu.renderTarget(gl, res.x, res.y, gl.R32F)
-    this.substratePP = glu.pingpong(gl, res.x, res.y, gl.R32F)
+    this.substratePP = glu.pingpong(gl, res.x, res.y, gl.RGBA32F)
 
-    this.viewRt = glu.renderTarget(gl, res.x, res.y, gl.R32F)
+    this.viewRt = glu.renderTarget(gl, res.x, res.y)
 
-    this.edgePass1 = new EdgePass(gl, res, null, { format: gl.R32F })
-    this.edgePass2 = new EdgePass(gl, res, this.edgePass1.output, {
-      format: gl.R32F,
-    })
-    this.gaussianPass = new GaussianPass(gl, res, this.edgePass2.output, 11, {
-      format: gl.R32F,
-    })
-    this.sharpenPass = new SharpenPass(gl, res, this.gaussianPass.output, {
-      format: gl.R32F,
-    })
+    this.edgePass1 = new EdgePass(gl, res, null)
+    this.edgePass2 = new EdgePass(gl, res, this.edgePass1.output)
+    this.gaussianPass = new GaussianPass(gl, res, this.edgePass2.output, 11)
+    this.sharpenPass = new SharpenPass(gl, res, this.gaussianPass.output)
 
-    this.output = this.sharpenPass.output
+    this.programs.initSubstrate.use()
+    glu.bindFB(gl, res.x, res.y, this.substratePP.back().fb)
+    glu.draw.quad(gl)
+
+    this.outputs = {
+      pre: this.substratePP.back().tex,
+      post: this.sharpenPass.output,
+    }
   }
 
   render(time) {
@@ -158,29 +167,32 @@ export class Sediments {
     gl.drawArrays(gl.POINTS, 0, this.nb)
     glu.blend(gl, null)
 
-    substratePP.swap()
-    glu.bindFB(gl, res.x, res.y, substratePP.back().fb)
-    programs.substrate.use()
-    glu.uniformTex(
-      gl,
-      programs.substrate.uniforms.u_substrate,
-      substratePP.front().tex,
-      0
-    )
-    glu.uniformTex(
-      gl,
-      programs.substrate.uniforms.u_agents,
-      this.fullSedsRt.tex,
-      1
-    )
-    glu.uniformTex(
-      gl,
-      programs.substrate.uniforms.u_cells,
-      this.blurFieldPass.output,
-      2
-    )
-    gl.uniform1f(programs.substrate.uniforms.u_time, time * 0.001)
-    gl.drawArrays(gl.TRIANGLES, 0, 6)
+    for (let i = 0; i < 1; i++) {
+      substratePP.swap()
+      glu.bindFB(gl, res.x, res.y, substratePP.back().fb)
+      programs.substrate.use()
+      glu.uniformTex(
+        gl,
+        programs.substrate.uniforms.u_substrate,
+        substratePP.front().tex,
+        0
+      )
+      glu.uniformTex(
+        gl,
+        programs.substrate.uniforms.u_agents,
+        this.fullSedsRt.tex,
+        1
+      )
+      glu.uniformTex(
+        gl,
+        programs.substrate.uniforms.u_cells,
+        this.blurFieldPass.output,
+        2
+      )
+      gl.uniform1f(programs.substrate.uniforms.u_time, time * 0.001)
+      gl.uniform2f(programs.substrate.uniforms.u_texel, texel.x, texel.y)
+      glu.draw.quad(gl)
+    }
 
     // blur substrate horizontally
     substratePP.swap()
@@ -221,5 +233,7 @@ export class Sediments {
     this.edgePass2.render()
     this.gaussianPass.render()
     this.sharpenPass.render()
+
+    this.outputs.pre = substratePP.back().tex
   }
 }

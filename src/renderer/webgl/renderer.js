@@ -4,6 +4,7 @@ import { Renderer } from "../renderer"
 import mathGL from "./shaders/lib/math.glsl"
 import colorGL from "./shaders/lib/color.glsl"
 import noiseGL from "./shaders/lib/noise.glsl"
+import convolveGL from "./shaders/lib/convolve.glsl"
 import cellGL from "./shaders/lib/cell.glsl"
 import cellShadingGL from "./shaders/lib/cell-shading.glsl"
 import viewGL from "./shaders/lib/view.glsl"
@@ -111,6 +112,7 @@ export class WebGLRenderer extends Renderer {
       color: colorGL,
       math: mathGL,
       noise: noiseGL,
+      convolve: convolveGL,
       cell: cellGL,
       "cell-shading": cellShadingGL,
       view: viewGL,
@@ -314,7 +316,7 @@ export class WebGLRenderer extends Renderer {
       }),
       sediments: glu.program(gl, fullVS, sedimentsFS, {
         attributes: ["a_position"],
-        uniforms: ["u_view", "u_sediments", "u_cells", "u_membrane"],
+        uniforms: ["u_view", "u_sediments", "u_rd", "u_cells", "u_membrane"],
         vao: (prog) => (u) => {
           u.attrib(prog.attributes.a_position, glu.quad(gl), 2)
         },
@@ -449,7 +451,7 @@ export class WebGLRenderer extends Renderer {
     // before rendering all bodies, copy cells FB
     glu.fb2fb(gl, this.rts.allFieldWorld.fb, this.rts.cellFieldWorld.fb, tW, tH)
 
-    glu.bindFB(gl, tW, tH, this.rts.allFieldWorld.fb)
+    glu.bindFB(gl, tW, tH, this.rts.allFieldWorld.fb, { clear: false })
     this.otherBodiesPass.render(true)
 
     //
@@ -550,20 +552,26 @@ export class WebGLRenderer extends Renderer {
     glu.uniformTex(
       gl,
       programs.sediments.uniforms.u_sediments,
-      this.sediments.output,
+      this.sediments.outputs.post,
       0
+    )
+    glu.uniformTex(
+      gl,
+      programs.sediments.uniforms.u_rd,
+      this.sediments.outputs.pre,
+      1
     )
     glu.uniformTex(
       gl,
       programs.sediments.uniforms.u_cells,
       this.rts.cellFieldView.textures[0],
-      1
+      2
     )
     glu.uniformTex(
       gl,
       programs.sediments.uniforms.u_membrane,
       this.membranePass.output,
-      2
+      3
     )
     glu.draw.quad(gl)
 
@@ -594,11 +602,7 @@ export class WebGLRenderer extends Renderer {
 
     // gl.useProgram(programs.tex.program)
     // gl.bindVertexArray(this.vaos.tex)
-    // glu.uniformTex(
-    //   gl,
-    //   programs.tex.uniforms.u_texture,
-    //   this.membraneOuter.output
-    // )
+    // glu.uniformTex(gl, programs.tex.uniforms.u_texture, this.sediments.output)
     // glu.draw.quad(gl)
   }
 }

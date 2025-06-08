@@ -2,6 +2,7 @@
 precision mediump float;
 
 uniform sampler2D u_sediments;
+uniform sampler2D u_rd;
 uniform sampler2D u_cells;
 uniform sampler2D u_membrane;
 uniform vec4 u_view;
@@ -11,6 +12,7 @@ in vec2 v_uv;
 out vec4 outColor0;
 
 #include <view.glsl>
+#include <color.glsl>
 
 float smin( float a, float b, float k ){
   k *= 1.0;
@@ -29,11 +31,24 @@ void main() {
   C = 1.0 - clamp(C, 0.0, 1.0);
 
   float sediments = texture(u_sediments, uv).r;
-  sediments = pow(sediments, 0.1);
+  sediments = pow(sediments, 0.2);
   float invSediments = 1.0 - sediments;
   // invSediments = smin(invSediments, 0.85, 0.1);
   invSediments = clamp(invSediments, 0.0, 1.0);
 
-  outColor0 = vec4(invSediments) * C * 0.8;
+  float I = invSediments;
+  I = pow(I, 3.0) * 2.0;
+
+  vec3 col = vec3(1.0) - hsv2rgb(vec3(
+    0.0,
+    1.0,
+    1.0 - I
+  ));
+
+  float rd = texture(u_rd, guv).b;
+
+  outColor0 = vec4(col * I, I) * C;
+
+  // outColor0.gb += pow(rd, 1.0) * 10.0;
 
 }

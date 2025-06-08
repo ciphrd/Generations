@@ -7,12 +7,7 @@ export class SharpenPass {
   /**
    * @param {WebGL2RenderingContext} gl
    */
-  constructor(
-    gl,
-    res,
-    texture,
-    { format = gl.RGBA32F } = { format: gl.RGBA32F }
-  ) {
+  constructor(gl, res, texture, { format = gl.RGBA32F } = {}) {
     this.gl = gl
     this.res = res
     this.texture = texture

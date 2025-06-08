@@ -40,7 +40,7 @@ importers:
         version: 0.17.0
     devDependencies:
       fxhash:
-        specifier: latest
+        specifier: 0.0.10
         version: 0.0.10(@fortawesome/fontawesome-svg-core@6.7.2)(graphql@16.10.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
 
 packages:
@@ -1827,8 +1827,8 @@ packages:
   requires-port@1.0.0:
     resolution: {integrity: sha512-KigOCHcocU3XODJxsu8i/j8T9tzT4adHiecwORRQ0ZZFcp7ahwXuRU1m+yuO90C5ZUyGeGfocHDI14M3L3yDAQ==}
 
-  response-iterator@0.2.20:
-    resolution: {integrity: sha512-RfNi9saiJ9VKznrRZEGZtlfeiQI7NWMUlXvmkvO60xaHfW1y+36EOibZkV59LuKNak8VIqL6IyxYxhMOGTurIQ==}
+  response-iterator@0.2.22:
+    resolution: {integrity: sha512-+Hjn4hO56dKyEthXS5mIFQPIpAi7zL5+ScuSlPTU+hp1EXj0GbiWxdEXl3comWlpOiaysAFG45TzH2qj5AZ44g==}
     engines: {node: '>=0.8'}
 
   retry@0.13.1:
@@ -2330,7 +2330,7 @@ snapshots:
       hoist-non-react-statics: 3.3.2
       optimism: 0.16.2
       prop-types: 15.8.1
-      response-iterator: 0.2.20
+      response-iterator: 0.2.22
       symbol-observable: 4.0.0
       ts-invariant: 0.10.3
       tslib: 2.8.1
@@ -4265,7 +4265,7 @@ snapshots:
 
   requires-port@1.0.0: {}
 
-  response-iterator@0.2.20: {}
+  response-iterator@0.2.22: {}
 
   retry@0.13.1: {}
 

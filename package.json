@@ -20,7 +20,7 @@
     "watch:make:nodes": "npm-watch make:nodes"
   },
   "devDependencies": {
-    "fxhash": "latest"
+    "fxhash": "0.0.10"
   },
   "dependencies": {
     "@babel/core": "^7.26.10",
