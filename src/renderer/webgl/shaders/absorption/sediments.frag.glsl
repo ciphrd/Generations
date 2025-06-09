@@ -32,7 +32,7 @@ void main() {
   float C = (cells.r + cells.g + cells.b) * 0.333;
   C = smoothstep(0.0, 0.01, C);
   C = max(texture(u_membrane, v_uv).r * 2.0, C);
-  C = 1.0 - clamp(C, 0.0, 1.0);
+  C = 1.0 - clamp(C, 0.0, 1.0) * 0.6;
 
   float sediments = texture(u_sediments, uv).r;
   sediments = pow(sediments, 0.15);
@@ -51,7 +51,7 @@ void main() {
   vec3 col = vec3(1.0) - hsv2rgb(vec3(
     u_hues.x,
     1.0,
-    1.0 - I * 0.2
+    1.0 - I * 0.3
   ));
   outColor0 = vec4(col * I, 1) * C;
 
@@ -67,5 +67,5 @@ void main() {
   outColor0.rgb += col * rd * (0.1 + 0.9 * pow(I, 0.5));
   // outColor0.rgb += col;
 
-  outColor0.rgb = pow(outColor0.rgb, vec3(0.9)) * 1.2;
+  outColor0.rgb = pow(outColor0.rgb, vec3(0.9)) * 1.4;
 }
