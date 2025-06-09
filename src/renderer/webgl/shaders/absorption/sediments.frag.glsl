@@ -5,6 +5,7 @@ uniform sampler2D u_sediments;
 uniform sampler2D u_rd;
 uniform sampler2D u_cells;
 uniform sampler2D u_membrane;
+uniform sampler2D u_cell_colors;
 uniform vec4 u_view;
 uniform vec2 u_hues;
 
@@ -32,7 +33,7 @@ void main() {
   float C = (cells.r + cells.g + cells.b) * 0.333;
   C = smoothstep(0.0, 0.01, C);
   C = max(texture(u_membrane, v_uv).r * 2.0, C);
-  C = 1.0 - clamp(C, 0.0, 1.0) * 0.6;
+  C = clamp(C, 0.0, 1.0);
 
   float sediments = texture(u_sediments, uv).r;
   sediments = pow(sediments, 0.15);
@@ -53,19 +54,27 @@ void main() {
     1.0,
     1.0 - I * 0.3
   ));
-  outColor0 = vec4(col * I, 1) * C;
+  outColor0 = vec4(col * I, 1);
+
+  vec3 cell_color = texture(u_cell_colors, v_uv).gba;
+  // todo: here it should be alpha field
+  C = (cell_color.r + cell_color.g + cell_color.b) * 0.333;
 
   rd = pow(rd, 0.5) * 1.0;
   // todo: add time to noises
   float n2 = fbm(vec3(guv * 20.0, 0.0), 4, 0.5);
-  col = vec3(1.0) - hsv2rgb(vec3(
+  col = hsv2rgb(vec3(
     u_hues.y + n2 * 0.02,
     1.0,
     1.0
   ));
+  col = mix(col, cell_color, C * rd);
+  col = vec3(1) - col;
 
   outColor0.rgb += col * rd * (0.1 + 0.9 * pow(I, 0.5));
   // outColor0.rgb += col;
 
   outColor0.rgb = pow(outColor0.rgb, vec3(0.9)) * 1.4;
+
+  // outColor0 = mix(vec4(1,0,0,1), vec4(0,1,1,1), C);
 }

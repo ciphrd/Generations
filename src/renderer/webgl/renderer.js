@@ -322,6 +322,7 @@ export class WebGLRenderer extends Renderer {
           "u_rd",
           "u_cells",
           "u_membrane",
+          "u_cell_colors",
           "u_hues",
         ],
         vao: (prog) => (u) => {
@@ -381,7 +382,7 @@ export class WebGLRenderer extends Renderer {
       gl,
       vec2(tW, tH).div(2),
       this.rts.cellFieldView.textures[1],
-      5
+      11
     )
 
     this.membranePass = new MembranePass(
@@ -506,39 +507,39 @@ export class WebGLRenderer extends Renderer {
 
     glu.bindFB(gl, tW, tH, this.rts.absorb.fb)
 
-    program = programs.cells
-    program.use()
-    viewUniform(gl, program)
-    gl.uniform1f(program.uniforms.u_time, t * 0.001)
-    glu.uniformTex(
-      gl,
-      program.uniforms.u_blurred_membrane,
-      this.outerShell.output,
-      0
-    )
-    glu.uniformTex(
-      gl,
-      program.uniforms.u_color_field,
-      this.blurColorFieldPass.output,
-      1
-    )
-    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, nb)
+    // program = programs.cells
+    // program.use()
+    // viewUniform(gl, program)
+    // gl.uniform1f(program.uniforms.u_time, t * 0.001)
+    // glu.uniformTex(
+    //   gl,
+    //   program.uniforms.u_blurred_membrane,
+    //   this.outerShell.output,
+    //   0
+    // )
+    // glu.uniformTex(
+    //   gl,
+    //   program.uniforms.u_color_field,
+    //   this.blurColorFieldPass.output,
+    //   1
+    // )
+    // gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, nb)
 
-    programs.liaisons.use()
-    viewUniform(gl, programs.liaisons)
-    glu.uniformTex(
-      gl,
-      programs.liaisons.uniforms.u_blurred_membrane,
-      this.outerShell.output,
-      0
-    )
-    glu.uniformTex(
-      gl,
-      programs.liaisons.uniforms.u_color_field,
-      this.blurColorFieldPass.output,
-      1
-    )
-    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, liaisons.length)
+    // programs.liaisons.use()
+    // viewUniform(gl, programs.liaisons)
+    // glu.uniformTex(
+    //   gl,
+    //   programs.liaisons.uniforms.u_blurred_membrane,
+    //   this.outerShell.output,
+    //   0
+    // )
+    // glu.uniformTex(
+    //   gl,
+    //   programs.liaisons.uniforms.u_color_field,
+    //   this.blurColorFieldPass.output,
+    //   1
+    // )
+    // gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, liaisons.length)
 
     gl.disable(gl.DEPTH_TEST)
 
@@ -585,6 +586,12 @@ export class WebGLRenderer extends Renderer {
       this.membranePass.output,
       3
     )
+    glu.uniformTex(
+      gl,
+      programs.sediments.uniforms.u_cell_colors,
+      this.blurColorFieldPass.output,
+      4
+    )
     gl.uniform2f(
       programs.sediments.uniforms.u_hues,
       settings.sediments.hues.substrate,
@@ -592,21 +599,21 @@ export class WebGLRenderer extends Renderer {
     )
     glu.draw.quad(gl)
 
-    programs.membraneOuter.use()
-    viewUniform(gl, programs.membraneOuter)
-    glu.uniformTex(
-      gl,
-      programs.membraneOuter.uniforms.u_membrane_outer,
-      this.membraneOuter.output,
-      0
-    )
-    glu.uniformTex(
-      gl,
-      programs.membraneOuter.uniforms.u_cells,
-      this.rts.cellFieldView.textures[0],
-      1
-    )
-    glu.draw.quad(gl)
+    // programs.membraneOuter.use()
+    // viewUniform(gl, programs.membraneOuter)
+    // glu.uniformTex(
+    //   gl,
+    //   programs.membraneOuter.uniforms.u_membrane_outer,
+    //   this.membraneOuter.output,
+    //   0
+    // )
+    // glu.uniformTex(
+    //   gl,
+    //   programs.membraneOuter.uniforms.u_cells,
+    //   this.rts.cellFieldView.textures[0],
+    //   1
+    // )
+    // glu.draw.quad(gl)
 
     // this.bacterias.render()
     this.food.render()

@@ -130,7 +130,7 @@ export class Sediments {
 
     this.edgePass1 = new EdgePass(gl, res, null)
     this.edgePass2 = new EdgePass(gl, res, this.edgePass1.output)
-    this.gaussianPass = new GaussianPass(gl, res, this.edgePass2.output, 11)
+    this.gaussianPass = new GaussianPass(gl, res, this.edgePass2.output, 19)
     this.sharpenPass = new SharpenPass(gl, res, this.gaussianPass.output)
 
     this.programs.initSubstrate.use()
@@ -175,7 +175,7 @@ export class Sediments {
     gl.drawArrays(gl.POINTS, 0, this.nb)
     glu.blend(gl, null)
 
-    for (let i = 0; i < 1; i++) {
+    for (let i = 0; i < 8; i++) {
       substratePP.swap()
       glu.bindFB(gl, res.x, res.y, substratePP.back().fb)
       programs.substrate.use()
@@ -206,30 +206,30 @@ export class Sediments {
       gl.uniform1f(programs.substrate.uniforms.u_time, time * 0.001)
       gl.uniform2f(programs.substrate.uniforms.u_texel, texel.x, texel.y)
       glu.draw.quad(gl)
+
+      // blur substrate horizontally
+      substratePP.swap()
+      glu.bindFB(gl, res.x, res.y, substratePP.back().fb)
+      programs.gaussian.use()
+      glu.uniformTex(
+        gl,
+        programs.gaussian.uniforms.u_texture,
+        substratePP.front().tex
+      )
+      gl.uniform2f(programs.gaussian.uniforms.u_dir, this.texel.x, 0)
+      gl.drawArrays(gl.TRIANGLES, 0, 6)
+
+      // blur substrate vertically
+      substratePP.swap()
+      glu.bindFB(gl, res.x, res.y, substratePP.back().fb)
+      glu.uniformTex(
+        gl,
+        programs.gaussian.uniforms.u_texture,
+        substratePP.front().tex
+      )
+      gl.uniform2f(programs.gaussian.uniforms.u_dir, 0, this.texel.y)
+      gl.drawArrays(gl.TRIANGLES, 0, 6)
     }
-
-    // blur substrate horizontally
-    substratePP.swap()
-    glu.bindFB(gl, res.x, res.y, substratePP.back().fb)
-    programs.gaussian.use()
-    glu.uniformTex(
-      gl,
-      programs.gaussian.uniforms.u_texture,
-      substratePP.front().tex
-    )
-    gl.uniform2f(programs.gaussian.uniforms.u_dir, this.texel.x, 0)
-    gl.drawArrays(gl.TRIANGLES, 0, 6)
-
-    // blur substrate vertically
-    substratePP.swap()
-    glu.bindFB(gl, res.x, res.y, substratePP.back().fb)
-    glu.uniformTex(
-      gl,
-      programs.gaussian.uniforms.u_texture,
-      substratePP.front().tex
-    )
-    gl.uniform2f(programs.gaussian.uniforms.u_dir, 0, this.texel.y)
-    gl.drawArrays(gl.TRIANGLES, 0, 6)
 
     //
     // Render on view, post-processing for cool-looking effect

@@ -25,7 +25,7 @@ vec4 cellColor(in vec2 uv, in vec3 baseColor, in vec4 signals, in float time) {
   //               + max(0., N(uv, 1.2 * 18.0, 23.3440));
   // C += base * (0.05 + bgNoise * 0.1);
 
-  // // add small dotty-noise
+  // add small dotty-noise
   // float dottyNoise = N(uv, 8.0, 0.0)
   //                  * N(uv, 10.0, 7.2983)
   //                  * N(uv, 9.0, 3.344);
@@ -60,20 +60,20 @@ vec4 cellColor(in vec2 uv, in vec3 baseColor, in vec4 signals, in float time) {
   // }
 
   // depth "vignette"
-  // float vignette = texture(u_blurred_membrane, v_guv).r;
-  // C += darker * S * max(0.0, pow(vignette, 0.4)) * 0.5;
+  float vignette = texture(u_blurred_membrane, v_guv).r;
+  C += darker * S * max(0.0, pow(vignette, 0.4)) * 0.9;
 
-  // // some holes 
-  // float holesNoise = N(uv, 11.3, 87.3812)
-  //                    * pow(N(uv, 2.2, 19.1223), 2.0)
-  //                    * pow(N(uv, 1.3, 3.0392), 1.0);
-  // C -= vec3(1) * holesNoise * 1.0;
-  // C = clamp(vec3(0), vec3(1), C);
+  // some holes 
+  float holesNoise = N(uv, 11.3, 87.3812)
+                     * pow(N(uv, 2.2, 19.1223), 2.0)
+                     * pow(N(uv, 1.3, 3.0392), 1.0);
+  C -= vec3(1) * holesNoise * 1.0;
+  C = clamp(vec3(0), vec3(1), C);
 
-  // float hole2N = N(uv, 2.3, 834.1332);
-  // C -= vec3(1) * hole2N * 0.1;
-  // C = clamp(vec3(0), vec3(1), C);
+  float hole2N = N(uv, 2.3, 834.1332);
+  C -= vec3(1) * hole2N * 0.1;
+  C = clamp(vec3(0), vec3(1), C);
 
   vec4 col = vec4(C, 1) * S * 0.6;
-  return col;
+  return col * 0.0;
 }

@@ -39,9 +39,10 @@ void main() {
 
   substrate = substrate * 0.995
             + agent * (0.4 + 0.6 * n1) * 0.03
-            - mem_outer * 0.004
+            // - mem_outer * 0.004
             - smoothstep(0.5, 0.7, cells) * 0.002
-            + n2 * 0.001;
+            - smoothstep(0.5, 0.7, cells) * 0.01
+            + n2 * 0.001 * (1.0 - cells);
 
   // 
   // reaction-diffusion
@@ -52,7 +53,7 @@ void main() {
   float diffA = 1.0;
   float diffB = 0.8;
   float f = mix(.03, .06, n3);
-  float k = mix(.055, .06, n3);
+  float k = mix(.055, .07, n3);
 
   vec4 laplacian = convolve(u_substrate, v_uv, laplacian_kernel, u_texel);
 
@@ -64,8 +65,8 @@ void main() {
 
   Bp += agent * 0.8;
   Bp += abs(substrate) * 0.1 * step(substrate, 0.0);
-  Bp -= smoothstep(0.0, 0.8, cells) * 0.2;
-  Bp -= mem_outer;
+  Bp += smoothstep(0.0, 0.8, cells) * 0.1;
+  Bp -= mem_outer * 0.05;
 
   Ap = clamp(Ap, 0.0, 1.0);
   Bp = clamp(Bp, 0.0, 1.0);

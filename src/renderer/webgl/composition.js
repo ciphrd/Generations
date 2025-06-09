@@ -1,6 +1,7 @@
 import { glu } from "../../utils/glu"
 import fullVS from "./shaders/full.vert.glsl"
 import compFS from "./shaders/composition/composition.frag.glsl"
+import chromaFS from "./shaders/composition/chroma.frag.glsl"
 import convolveFS from "./shaders/convolve.frag.glsl"
 import { settings } from "../../settings"
 
@@ -36,30 +37,50 @@ export class CompositionPass {
           u.quad(prg)
         },
       }),
+      chroma: glu.program(gl, fullVS, chromaFS, {
+        attributes: ["a_position"],
+        uniforms: ["u_tex"],
+        vao: (prg) => (u) => {
+          u.quad(prg)
+        },
+      }),
     }
 
-    this.embossRt = glu.renderTarget(gl, this.res2.x, this.res2.y, gl.R32F)
+    this.rts = {
+      emboss: glu.renderTarget(gl, this.res2.x, this.res2.y, gl.R32F),
+      comp: glu.renderTarget(gl, res.x, res.y),
+    }
   }
 
   render() {
-    const { gl, res, res2, texel, embossRt, programs, absorpTex } = this
+    const { gl, res, res2, texel, rts, programs, absorpTex } = this
 
     glu.blend(gl, null)
 
-    glu.bindFB(gl, res2.x, res2.y, embossRt.fb)
+    glu.bindFB(gl, res2.x, res2.y, rts.emboss.fb)
     programs.emboss.use()
     glu.uniformTex(gl, programs.emboss.uniforms.u_tex, absorpTex)
     gl.uniform2f(programs.emboss.uniforms.u_texel_size, texel.x, texel.y)
     glu.draw.quad(gl)
 
-    glu.bindFB(gl, res.x, res.y, null)
+    glu.bindFB(gl, res.x, res.y, rts.comp.fb)
     programs.composition.use()
     glu.uniformTex(gl, programs.composition.uniforms.u_absorption, absorpTex, 0)
-    glu.uniformTex(gl, programs.composition.uniforms.u_emboss, embossRt.tex, 1)
+    glu.uniformTex(
+      gl,
+      programs.composition.uniforms.u_emboss,
+      rts.emboss.tex,
+      1
+    )
     gl.uniform3fv(
       programs.composition.uniforms.u_backlight_color,
       settings.microscopy.light.backlightColor.rgb
     )
+    glu.draw.quad(gl)
+
+    glu.bindFB(gl, res.x, res.y, null)
+    programs.chroma.use()
+    glu.uniformTex(gl, programs.composition.uniforms.u_tex, rts.comp.tex)
     glu.draw.quad(gl)
   }
 }

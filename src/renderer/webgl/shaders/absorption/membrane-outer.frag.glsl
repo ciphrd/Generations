@@ -15,9 +15,9 @@ void main() {
   vec2 uv = invViewTx(v_uv);
 
   vec4 cells = texture(u_cells, v_uv);
-  float C = smoothstep(0.0, 0.01, (cells.r + cells.g + cells.b) * 0.333);
+  float C = smoothstep(0.0, 0.5, (cells.r + cells.g + cells.b) * 0.333);
 
   float I = max(0.0, texture(u_membrane_outer, uv).r - C);
 
-  outColor0 = vec4(I * 0.2);
+  outColor0 = vec4(I * 0.2) * 0.0;
 }

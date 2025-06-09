@@ -17,5 +17,5 @@ void main() {
   C.y = 0.3;
   C.z = 0.5;
   C = hsv2rgb(C);
-  outColor = vec4(C, 1) * edge * 0.5;
+  outColor = vec4(C, 1) * edge * 0.0;
 }

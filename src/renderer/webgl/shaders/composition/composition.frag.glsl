@@ -15,7 +15,7 @@ float czm_luminance(vec3 rgb){
 }
 
 void main() {
-  float emboss = texture(u_emboss, v_uv).r;
+  float emboss = texture(u_emboss, v_uv).r * 0.7;
 
   // brightfield
   vec4 T = texture(u_absorption, v_uv);
@@ -27,4 +27,8 @@ void main() {
   // float lum = czm_luminance(T.rgb * T.a) * 10.0;
   // vec3 C = mix(u_backlight_color, (vec3(1) - T.rgb), clamp(lum, 0.0, 1.0));
   // outColor = vec4(C + vec3(emboss), 1.0);
+
+  // lens
+  float lens = smoothstep(0.48, 0.487, length(v_uv - 0.5));
+  outColor.rgb *= 1.0 - lens;
 }
