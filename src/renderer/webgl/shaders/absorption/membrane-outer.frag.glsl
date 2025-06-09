@@ -19,5 +19,5 @@ void main() {
 
   float I = max(0.0, texture(u_membrane_outer, uv).r - C);
 
-  outColor0 = vec4(I * 0.3);
+  outColor0 = vec4(I * 0.2);
 }

@@ -26,11 +26,12 @@ export class Sediments {
   /**
    * @param {WebGL2RenderingContext} gl
    */
-  constructor(gl, res, distanceField) {
+  constructor(gl, res, distanceField, membraneOuter) {
     this.gl = gl
     this.res = res
     this.texel = res.clone().inv()
     this.distanceField = distanceField
+    this.membraneOuter = membraneOuter
 
     const { nbRoot } = settings.sediments
     this.nbRoot = nbRoot
@@ -93,7 +94,14 @@ export class Sediments {
       }),
       substrate: glu.program(gl, fullVS, substrateFS, {
         attributes: ["a_position"],
-        uniforms: ["u_substrate", "u_agents", "u_cells", "u_time", "u_texel"],
+        uniforms: [
+          "u_substrate",
+          "u_agents",
+          "u_membrane_outer",
+          "u_cells",
+          "u_time",
+          "u_texel",
+        ],
         vao: (prog) => (u) => {
           u.attrib(prog.attributes.a_position, glu.quad(gl), 2)
         },
@@ -112,7 +120,7 @@ export class Sediments {
       gl,
       res.clone().div(4),
       this.distanceField,
-      9
+      1
     )
 
     this.fullSedsRt = glu.renderTarget(gl, res.x, res.y, gl.R32F)
@@ -185,9 +193,15 @@ export class Sediments {
       )
       glu.uniformTex(
         gl,
+        programs.substrate.uniforms.u_membrane_outer,
+        this.membraneOuter,
+        2
+      )
+      glu.uniformTex(
+        gl,
         programs.substrate.uniforms.u_cells,
         this.blurFieldPass.output,
-        2
+        3
       )
       gl.uniform1f(programs.substrate.uniforms.u_time, time * 0.001)
       gl.uniform2f(programs.substrate.uniforms.u_texel, texel.x, texel.y)

@@ -62,14 +62,22 @@ export const settings = {
     ],
   },
   sediments: {
-    nbRoot: 128,
+    // todo: 16, 32, 64
+    nbRoot: 32,
+    hues: {
+      substrate: rnd.one(),
+      rd: rnd.one(),
+    },
   },
   microscopy: {
     light: {
       backlightColor: new Color(
-        0.4 + tanh(rnd.one() * 4) * 0.55,
-        0.4 + tanh(rnd.one() * 4) * 0.55,
-        0.4 + tanh(rnd.one() * 4) * 0.55
+        1,
+        1,
+        1
+        // 0.4 + tanh(rnd.one() * 4) * 0.55,
+        // 0.4 + tanh(rnd.one() * 4) * 0.55,
+        // 0.4 + tanh(rnd.one() * 4) * 0.55
       ),
     },
   },

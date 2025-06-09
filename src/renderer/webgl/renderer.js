@@ -316,7 +316,14 @@ export class WebGLRenderer extends Renderer {
       }),
       sediments: glu.program(gl, fullVS, sedimentsFS, {
         attributes: ["a_position"],
-        uniforms: ["u_view", "u_sediments", "u_rd", "u_cells", "u_membrane"],
+        uniforms: [
+          "u_view",
+          "u_sediments",
+          "u_rd",
+          "u_cells",
+          "u_membrane",
+          "u_hues",
+        ],
         vao: (prog) => (u) => {
           u.attrib(prog.attributes.a_position, glu.quad(gl), 2)
         },
@@ -402,7 +409,12 @@ export class WebGLRenderer extends Renderer {
     gl.enableVertexAttribArray(loc)
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
 
-    this.sediments = new Sediments(gl, vec2(tW, tH), this.rts.allFieldWorld.tex)
+    this.sediments = new Sediments(
+      gl,
+      vec2(tW, tH),
+      this.rts.allFieldWorld.tex,
+      this.membraneOuter.output
+    )
 
     this.compositionPass = new CompositionPass(
       gl,
@@ -573,6 +585,11 @@ export class WebGLRenderer extends Renderer {
       this.membranePass.output,
       3
     )
+    gl.uniform2f(
+      programs.sediments.uniforms.u_hues,
+      settings.sediments.hues.substrate,
+      settings.sediments.hues.rd
+    )
     glu.draw.quad(gl)
 
     programs.membraneOuter.use()
@@ -602,7 +619,11 @@ export class WebGLRenderer extends Renderer {
 
     // gl.useProgram(programs.tex.program)
     // gl.bindVertexArray(this.vaos.tex)
-    // glu.uniformTex(gl, programs.tex.uniforms.u_texture, this.sediments.output)
+    // glu.uniformTex(
+    //   gl,
+    //   programs.tex.uniforms.u_texture,
+    //   this.rts.allFieldWorld.tex
+    // )
     // glu.draw.quad(gl)
   }
 }
