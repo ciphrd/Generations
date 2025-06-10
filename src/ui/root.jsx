@@ -3,6 +3,7 @@ import { Cell } from "./Cell.jsx"
 import { Tabs } from "./components/Tabs.jsx"
 import { General } from "./General.jsx"
 import { Viewer } from "./Viewer.jsx"
+import { Simulation } from "./Simulation.jsx"
 
 export const Sim = createContext({})
 
@@ -77,23 +78,29 @@ export function Root({ engine }) {
 
   return (
     <Sim.Provider value={state}>
-      <Viewer />
-      <aside>
-        {state.selected ? (
-          <>
-            <Tabs tabs={["General", "Cell"]} defaultTab={1}>
+      {$fx.context === "capture" ? (
+        <Simulation />
+      ) : (
+        <>
+          <Viewer />
+          <aside>
+            {state.selected ? (
               <>
-                <General />
+                <Tabs tabs={["General", "Cell"]} defaultTab={1}>
+                  <>
+                    <General />
+                  </>
+                  <>
+                    <Cell />
+                  </>
+                </Tabs>
               </>
-              <>
-                <Cell />
-              </>
-            </Tabs>
-          </>
-        ) : (
-          <div>no selection</div>
-        )}
-      </aside>
+            ) : (
+              <div>no selection</div>
+            )}
+          </aside>
+        </>
+      )}
     </Sim.Provider>
   )
 }

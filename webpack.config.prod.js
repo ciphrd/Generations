@@ -1,2 +1,2 @@
-const withFxhashCli = require("@fxhash/cli/webpack").default;
-module.exports = withFxhashCli({ mode: "prd" }, {});
+import withFxhashCli from "@fxhash/cli/webpack"
+export default withFxhashCli({ mode: "prd" }, {})

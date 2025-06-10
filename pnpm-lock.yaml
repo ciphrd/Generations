@@ -39,11 +39,22 @@ importers:
         specifier: ^0.17.0
         version: 0.17.0
     devDependencies:
+      '@fxhash/cli':
+        specifier: 0.0.20
+        version: 0.0.20(graphql@16.10.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       fxhash:
-        specifier: 0.0.10
-        version: 0.0.10(@fortawesome/fontawesome-svg-core@6.7.2)(graphql@16.10.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        specifier: 0.0.14
+        version: 0.0.14(graphql@16.10.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
 
 packages:
+
+  '@0no-co/graphql.web@1.1.2':
+    resolution: {integrity: sha512-N2NGsU5FLBhT8NZ+3l2YrzZSHITjNXNuDhC4iDiikv0IujaJ0Xc6xIxQZ/Ek3Cb+rgPjnLHYyJm11tInuJn+cw==}
+    peerDependencies:
+      graphql: ^14.0.0 || ^15.0.0 || ^16.0.0
+    peerDependenciesMeta:
+      graphql:
+        optional: true
 
   '@ampproject/remapping@2.3.0':
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
@@ -177,50 +188,36 @@ packages:
   '@emnapi/runtime@1.3.1':
     resolution: {integrity: sha512-kEBmG8KyqtxJZv+ygbEim+KCGtIq1fC22Ms3S4ziXmYKm8uyoLX0MHONVKwp+9opg390VaKRNt4a7A9NwmpNhw==}
 
-  '@fortawesome/fontawesome-common-types@6.4.0':
-    resolution: {integrity: sha512-HNii132xfomg5QVZw0HwXXpN22s7VBHQBv9CeOu9tfJnhsWQNd2lmTNi8CSrnw5B+5YOmzu1UoPAyxaXsJ6RgQ==}
-    engines: {node: '>=6'}
-
-  '@fortawesome/fontawesome-common-types@6.7.2':
-    resolution: {integrity: sha512-Zs+YeHUC5fkt7Mg1l6XTniei3k4bwG/yo3iFUtZWd/pMx9g3fdvkSK9E0FOC+++phXOka78uJcYb8JaFkW52Xg==}
-    engines: {node: '>=6'}
-
-  '@fortawesome/fontawesome-svg-core@6.7.2':
-    resolution: {integrity: sha512-yxtOBWDrdi5DD5o1pmVdq3WMCvnobT0LU6R8RyyVXPvFRd2o79/0NCuQoCjNTeZz9EzA9xS3JxNWfv54RIHFEA==}
-    engines: {node: '>=6'}
-
-  '@fortawesome/free-solid-svg-icons@6.4.0':
-    resolution: {integrity: sha512-kutPeRGWm8V5dltFP1zGjQOEAzaLZj4StdQhWVZnfGFCvAPVvHh8qk5bRrU4KXnRRRNni5tKQI9PBAdI6MP8nQ==}
-    engines: {node: '>=6'}
-
-  '@fortawesome/react-fontawesome@0.2.0':
-    resolution: {integrity: sha512-uHg75Rb/XORTtVt7OS9WoK8uM276Ufi7gCzshVWkUJbHhh3svsUUeqXerrM96Wm7fRiDzfKRwSoahhMIkGAYHw==}
-    peerDependencies:
-      '@fortawesome/fontawesome-svg-core': ~1 || ~6
-      react: '>=16.3'
-
-  '@fxhash/cli@0.0.16':
-    resolution: {integrity: sha512-5LOpXKIHTJMxLzEJvp3xyYQdRmtMlXL4sa/VOODgV1DCmqKZ8scKbsYY8w35VYtvf1VG3Z5iNn5U5lR3a99yOA==}
+  '@fxhash/cli@0.0.20':
+    resolution: {integrity: sha512-OJT1dXE8tNNkGQ3JrMzaRFmGdvN0KrHJOGBZPKkESosdGs7qlbJDQ7Cacgx9fuyMDFYmYGnUr7Ftu0uMcKic7Q==}
     engines: {node: '>=18.0.0', npm: '>=9.0.0'}
     hasBin: true
 
-  '@fxhash/config@0.0.9':
-    resolution: {integrity: sha512-sKBVOH1O2F4Fybtfcxwx7v1zS9ozwP8KnU+k6kmobtmMHBR1d+LHr3mtF9vRi4QAjtXy/D4DXcLrgwEgTBXs5g==}
+  '@fxhash/config@0.0.11':
+    resolution: {integrity: sha512-C14uxDgF9Xi77tPtd8NKq6TERc1YjhjEcp1ikxYZo3bEFuNPQosnxxDhyqllpWwQUSsvvMPKN36MHK1VsuLz7Q==}
 
-  '@fxhash/fxhash-snippet@0.0.8':
-    resolution: {integrity: sha512-8tY/AWu9Agx7tTaEOv5xIhYzG6ObcOSTW/6A4LqZ4do+iPaxfDpoFeK/DrIgAwjIJDoHZIHFN8NKsX1Vv65P8Q==}
+  '@fxhash/errors@0.0.11':
+    resolution: {integrity: sha512-QK66CTihzsrV76DeZNdYaEOPJaGHGiFPY7qdSvU8s7WwEo68Nqg9zqgz8KMDhnaCrRb64SfHAg2ms1ucS73oZw==}
 
-  '@fxhash/params@0.0.10':
-    resolution: {integrity: sha512-nw7Okwa1hjWG9FqjTpyEF+Z6aSZEudfnAkQcNWG/zjldCsm036Jsr4SBjegK5aozIT3R6cVNxvKlEAfLhS9Avw==}
+  '@fxhash/gql-client@0.0.2':
+    resolution: {integrity: sha512-emXSZb+ibL1ko/ZSvPLOhVdtgFC02nwA6jAIfMZooV9g/mNvZLAMFiA6MgIl93XAabJrv3jfybP6M+8z33OFbQ==}
+
+  '@fxhash/gql@0.0.11':
+    resolution: {integrity: sha512-/XKF/wr8aaCh/GC8NE/22UWdpRuWehwY1blaDFWUx+ocUB2pnaTWelrs/aP7D7l6PnB/GOv7lKqswgVrF88lKA==}
     peerDependencies:
-      react: ^18.0.0
-      react-dom: ^18.0.0
+      graphql: 16.10.0
 
-  '@fxhash/project-sdk@0.0.13':
-    resolution: {integrity: sha512-Z2zwvTBW09EsqquzZ0p9wKRGf35uYbg9oCfjaubi/H7UC+MucdI7M1u81XylT76Xf+FxE0Fu9IuqwsaroV0+vg==}
+  '@fxhash/params@0.0.12':
+    resolution: {integrity: sha512-6Ssw4yS0XhR745L1LKqg1iehoULfLcshdp4jajCmdqDGecYzvO9sJv1Rr5oAyd/koWO3cNZ2S2HATYLsWuOcHw==}
 
-  '@fxhash/utils@0.0.2':
-    resolution: {integrity: sha512-oYWVw/o/IsCqRe5LAOrbfB/WtubvzRCsVAQgPy0iEMjpLchaWaBOp89g8BjhBz8NKwhE5fod0OSlLgTBao6lUw==}
+  '@fxhash/project-sdk@0.0.15':
+    resolution: {integrity: sha512-cMwKgqy0QZZEgLcZtRgjD4fMJOS6pzM97O7LMjqKia0q0SnADk6KH95YZTe3ulJbm/etpqb9TFDEcqIu3ZkpnQ==}
+
+  '@fxhash/snippet@0.0.10':
+    resolution: {integrity: sha512-su6SXT1D9rRl5a/oV4SA23vj+YAfKNZA9Kk8tgE8nPiXJ5rx6D9C9vTYOF9cqIRRaGmHB2H38q6WASgbsOOoaw==}
+
+  '@fxhash/utils@0.0.4':
+    resolution: {integrity: sha512-9fRAIOLT7fCcuRFDKWCftNst7RufXbdXJ/PyhS3g8KWmDf20aLaM/sQGOgzC9um0NaJQzj7JkYX4ltYJY/FsmA==}
 
   '@graphql-typed-document-node/core@3.2.0':
     resolution: {integrity: sha512-mB9oAsNCm9aM3/SOv4YtBMqZbYj10R7dkq8byBqxGY/ncFwhf2oQzMV+LCRlWoDSEBJ3COiR1yeDvMtsoOsuFQ==}
@@ -359,6 +356,10 @@ packages:
 
   '@leichtgewicht/ip-codec@2.0.5':
     resolution: {integrity: sha512-Vo+PSpZG2/fmgmiNzYK9qWRh8h/CHrwD0mo1h1DzL4yzHNSfWYujGTYsWGreD000gcgmZ7K4Ys6Tx9TxtsKdDw==}
+
+  '@noble/hashes@1.8.0':
+    resolution: {integrity: sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==}
+    engines: {node: ^14.21.3 || >=16}
 
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -552,6 +553,9 @@ packages:
   '@types/ws@8.5.14':
     resolution: {integrity: sha512-bd/YFLW+URhBzMXurx7lWByOu+xzU9+kb3RboOteXYDfW+tr+JZa99OyNmPINEGB/ahzKrEuc8rcv4gnpJmxTw==}
 
+  '@urql/core@4.1.4':
+    resolution: {integrity: sha512-wFm67yljv4uFAWNtPwcS1NMhF/n+p/68i+kZU6R1dPxhfq2nBW0142p4szeZsBDrtO7pBdOhp7YeSZROFFlXZg==}
+
   '@webassemblyjs/ast@1.14.1':
     resolution: {integrity: sha512-nuBEDgQfm1ccRp/8bCQrx1frohyufl4JlbMMZ4P1wpeOfDhF6FQkxZJ1b/e+PLwr6X1Nhw6OLme5usuBWYBvuQ==}
 
@@ -720,6 +724,9 @@ packages:
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
 
+  base-x@5.0.1:
+    resolution: {integrity: sha512-M7uio8Zt++eg3jPj+rHMfCC+IuygQHHCOU+IYsVtik6FWjuYpVt/+MRKcgsAMHh8mMFAwnB+Bs+mTrFiXjMzKg==}
+
   batch@0.6.1:
     resolution: {integrity: sha512-x+VAiMRL6UPkx+kudNvxTl6hB2XNNCG2r+7wixVfIYwu/2HKRXimwQyaumLjMveWvT2Hkd/cAJw+QBMfJ/EKVw==}
 
@@ -761,6 +768,12 @@ packages:
     resolution: {integrity: sha512-KDi1Ny1gSePi1vm0q4oxSF8b4DR44GF4BbmS2YdhPLOEqd8pDviZOGH/GsmRwoWJ2+5Lr085X7naowMwKHDG1A==}
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
+
+  bs58@6.0.0:
+    resolution: {integrity: sha512-PD0wEnEYg6ijszw/u8s+iI3H17cTymlrwkKhDhPZq+Sokl3AU4htyBFTjAeNAlCCmg0f53g6ih3jATyCKftTfw==}
+
+  bs58check@4.0.0:
+    resolution: {integrity: sha512-FsGDOnFg9aVI9erdriULkd/JjEWONV/lQE5aYziB5PoBsXRind56lh8doIZIc9X4HoxT5x4bLjMWN1/NB8Zp5g==}
 
   buffer-from@1.1.2:
     resolution: {integrity: sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==}
@@ -806,9 +819,6 @@ packages:
   chrome-trace-event@1.0.4:
     resolution: {integrity: sha512-rNjApaLzuwaOTjCiT8lSDdGN1APCiqkChLMJxJPWLunPAt5fy8xgU9/jNOchV84wfIxrA0lRQB7oCT8jrn/wrQ==}
     engines: {node: '>=6.0'}
-
-  classnames@2.3.2:
-    resolution: {integrity: sha512-CSbhY4cFEJRe6/GQzIk5qXZ4Jeg5pcsP7b5peFSDpffpe1cqjASH/n9UTjBwOp6XpMSTwQ8Za2K5V02ueA7Tmw==}
 
   classnames@2.5.1:
     resolution: {integrity: sha512-saHYOzhIQs6wy2sVxTM6bUDsQO4F50V9RQ22qBpEdCW+I+/Wmke2HOl6lS6dTpdxVhb88/I6+Hs+438c3lfUow==}
@@ -928,6 +938,10 @@ packages:
 
   decimal.js@10.5.0:
     resolution: {integrity: sha512-8vDa8Qxvr/+d94hSh5P3IJwI5t8/c0KsMp+g8bNw9cY2icONa5aPfvKeieW1WlG0WQYwwhJ7mjui2xtiePQSXw==}
+
+  deepmerge@4.3.1:
+    resolution: {integrity: sha512-3sUqbMEc77XqpdNO7FRyRog+eW3ph+GYCbj+rK+uYyRMuwsVy0rMiVtPn+QJlKFvWP/1PYpapqYn0Me2knFn+A==}
+    engines: {node: '>=0.10.0'}
 
   default-gateway@6.0.3:
     resolution: {integrity: sha512-fwSOJsbbNzZ/CUFpqFBqYfYNLj1NbMPm8MMCIzHjC83iSJRBEGmDUxU+WP661BaBQImeC2yHwXtz+P/O9o+XEg==}
@@ -1168,8 +1182,8 @@ packages:
   function-bind@1.1.2:
     resolution: {integrity: sha512-7XHNxH7qX9xG5mIwxkhumTox/MIRNcOgDrxWsMt2pAr23WHp6MrRlN7FBSFpCpr+oVO0F744iUgR82nJMfG2SA==}
 
-  fxhash@0.0.10:
-    resolution: {integrity: sha512-Kf5z9UM8P+lGMJvJHOMj0HlkpA7CVhHF517zO6UDRcx140oSLRmLMBvP4UjeLeozCNxl/6Y3DpsAUJ93fqZR4w==}
+  fxhash@0.0.14:
+    resolution: {integrity: sha512-hNsDulsgCI9Z80Behb8fTBVYVi52j5eHI6/d09eWe5EyTmuoS0mkYJ+BcYUfLyb/EOoMG9QtbokIMgMeAxRskQ==}
     engines: {node: '>=18.0.0', npm: '>=9.0.0'}
     hasBin: true
 
@@ -1472,11 +1486,8 @@ packages:
     resolution: {integrity: sha512-iPZK6eYjbxRu3uB4/WZ3EsEIMJFMqAoopl3R+zuq0UjcAm/MO6KCweDgPfP3elTztoKP3KtnVHxTn2NHBSDVUw==}
     engines: {node: '>=10'}
 
-  lodash.debounce@4.0.8:
-    resolution: {integrity: sha512-FT1yDzDYEoYWhnSGnpE/4Kj1fLZkDFyqRb7fNt6FdYOSxlUWAtp42Eh6Wb0rGIv/m9Bgo7x4GhQbm5Ys4SG5ow==}
-
-  lodash@4.17.21:
-    resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
+  lodash.merge@4.6.2:
+    resolution: {integrity: sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==}
 
   loose-envify@1.4.0:
     resolution: {integrity: sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==}
@@ -1615,9 +1626,6 @@ packages:
     resolution: {integrity: sha512-dPEtOeMvF9VMcYV/1Wb8CPoVAXtp6MKMlcbAt4ddqmGqUJ6fQZFXkNZNkNlfevtNkGtaSoXf/vNNNSvgrdXwtA==}
     engines: {node: '>= 6.13.0'}
 
-  node-html-parser@6.1.5:
-    resolution: {integrity: sha512-fAaM511feX++/Chnhe475a0NHD8M7AxDInsqQpz6x63GRF7xYNdS8Vo5dKsIVPgsOvG7eioRRTZQnWBrhDHBSg==}
-
   node-html-parser@6.1.9:
     resolution: {integrity: sha512-nQ+MRf0PmRTLcMalVqMsWvceSaBydBCBlnQSL78HVk/E8e0Aazyao4SI9aB67XAAgOgHMsw7q5dJBUPPt9XE3g==}
 
@@ -1729,9 +1737,9 @@ packages:
     resolution: {integrity: sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==}
     engines: {node: '>=8.6'}
 
-  prettier@2.8.8:
-    resolution: {integrity: sha512-tdN8qQGvNjw4CHbY+XXk0JgCXn9QiF21a55rBe5LJAU+kDyC4WQn4+awm2Xfk2lQMk5fKup9XgzTZtGkjBdP9Q==}
-    engines: {node: '>=10.13.0'}
+  prettier@3.5.3:
+    resolution: {integrity: sha512-QQtaxnoDJeAkDvDKWCLiwIXkTgRhwYDEQCghU9Z6q03iyek/rxRh/2lC3HB7P8sWT2xC/y5JDctPLBIGzHKbhw==}
+    engines: {node: '>=14'}
     hasBin: true
 
   process-nextick-args@2.0.1:
@@ -1783,12 +1791,6 @@ packages:
     engines: {node: '>= 10.13.0'}
     peerDependencies:
       webpack: ^4.0.0 || ^5.0.0
-
-  react-colorful@5.6.1:
-    resolution: {integrity: sha512-1exovf0uGTGyq5mXQT0zgQ80uvj2PCwvF8zY1RN9/vbJVSjSo3fsB/4L3ObbF7u70NduSiK4xu4Y6q1MHoUGEw==}
-    peerDependencies:
-      react: '>=16.8.0'
-      react-dom: '>=16.8.0'
 
   react-dom@19.1.0:
     resolution: {integrity: sha512-Xs1hdnE+DyKgeHJeJznQmYMIBG3TKIHJJT95Q58nHLSrElKlGQqDTR2HQ9fx5CN/Gk6Vh/kupBTDLU11/nDk/g==}
@@ -1885,8 +1887,8 @@ packages:
     resolution: {integrity: sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==}
     hasBin: true
 
-  semver@7.5.4:
-    resolution: {integrity: sha512-1bCSESV6Pv+i21Hvpxp3Dx+pSD8lIPt8uVjRrxAUt/nbswYc+tK6Y2btiULjd4+fnq15PX+nqQDC7Oft7WkwcA==}
+  semver@7.6.0:
+    resolution: {integrity: sha512-EnwXhrlwXMk9gKu5/flx5sv/an57AkRplG3hTK68W7FRDN+k+OWBj65M7719OkA82XLBxrcX0KSHj+X5COhOVg==}
     engines: {node: '>=10'}
     hasBin: true
 
@@ -2110,6 +2112,9 @@ packages:
     resolution: {integrity: sha512-uivwYcQaxAucv1CzRp2n/QdYPo4ILf9VXgH19zEIjFx2EJufV16P0JtJVpYHy89DItG6Kwj2oIUjrcK5au+4tQ==}
     engines: {node: '>=8'}
 
+  tslib@2.6.2:
+    resolution: {integrity: sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==}
+
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
@@ -2248,6 +2253,9 @@ packages:
     resolution: {integrity: sha512-o0cyEG0e8GPzT4iGHphIOh0cJOV8fivsXxddQasHPHfoZf1ZexrfeA21w2NaEN1RHE+fXlfISmOE8R9N3u3Qig==}
     engines: {node: '>=12'}
 
+  wonka@6.3.5:
+    resolution: {integrity: sha512-SSil+ecw6B4/Dm7Pf2sAshKQ5hWFvfyGlfPbEd6A14dOH6VDjrmbY86u6nZvy9omGwwIPFR8V41+of1EezgoUw==}
+
   wrap-ansi@7.0.0:
     resolution: {integrity: sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==}
     engines: {node: '>=10'}
@@ -2296,9 +2304,6 @@ packages:
     resolution: {integrity: sha512-7dSzzRQ++CKnNI/krKnYRV7JKKPUXMEh61soaHKg9mrWEhzFWhFnxPxGl+69cD1Ou63C13NUPCnmIcrvqCuM6w==}
     engines: {node: '>=12'}
 
-  yesno@0.4.0:
-    resolution: {integrity: sha512-tdBxmHvbXPBKYIg81bMCB7bVeDmHkRzk5rVJyYYXurwKkHq/MCd8rz4HSJUP7hW0H2NlXiq8IFiWvYKEHhlotA==}
-
   yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
@@ -2309,10 +2314,14 @@ packages:
   zen-observable@0.8.15:
     resolution: {integrity: sha512-PQ2PC7R9rslx84ndNBZB/Dkv8V8fZEpk83RLgXtYd0fwUgEjseMn1Dgajh2x6S8QbZAFa9p2qVCEuYZNgve0dQ==}
 
-  zod@3.21.4:
-    resolution: {integrity: sha512-m46AKbrzKVzOzs/DZgVnG5H55N1sv1M8qZU3A8RIKbs3mrACDNeIOeilDymVb2HdmP8uwshOCF4uJ8uM9rCqJw==}
+  zod@3.24.3:
+    resolution: {integrity: sha512-HhY1oqzWCQWuUqvBFnsyrtZRhyPeR7SUGv+C4+MsisMuVfSPx8HpwWqH8tRahSlt6M3PiFAcoeFhZAqIXTxoSg==}
 
 snapshots:
+
+  '@0no-co/graphql.web@1.1.2(graphql@16.10.0)':
+    optionalDependencies:
+      graphql: 16.10.0
 
   '@ampproject/remapping@2.3.0':
     dependencies:
@@ -2494,30 +2503,14 @@ snapshots:
       tslib: 2.8.1
     optional: true
 
-  '@fortawesome/fontawesome-common-types@6.4.0': {}
-
-  '@fortawesome/fontawesome-common-types@6.7.2': {}
-
-  '@fortawesome/fontawesome-svg-core@6.7.2':
-    dependencies:
-      '@fortawesome/fontawesome-common-types': 6.7.2
-
-  '@fortawesome/free-solid-svg-icons@6.4.0':
-    dependencies:
-      '@fortawesome/fontawesome-common-types': 6.4.0
-
-  '@fortawesome/react-fontawesome@0.2.0(@fortawesome/fontawesome-svg-core@6.7.2)(react@19.1.0)':
-    dependencies:
-      '@fortawesome/fontawesome-svg-core': 6.7.2
-      prop-types: 15.8.1
-      react: 19.1.0
-
-  '@fxhash/cli@0.0.16(@fortawesome/fontawesome-svg-core@6.7.2)(graphql@16.10.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
+  '@fxhash/cli@0.0.20(graphql@16.10.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
       '@apollo/client': 3.7.17(graphql@16.10.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      '@fxhash/config': 0.0.9
-      '@fxhash/fxhash-snippet': 0.0.8
-      '@fxhash/project-sdk': 0.0.13(@fortawesome/fontawesome-svg-core@6.7.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@fxhash/config': 0.0.11(graphql@16.10.0)
+      '@fxhash/gql': 0.0.11(graphql@16.10.0)
+      '@fxhash/gql-client': 0.0.2
+      '@fxhash/project-sdk': 0.0.15
+      '@fxhash/snippet': 0.0.10
       '@octokit/rest': 20.0.1
       adm-zip: 0.5.10
       axios: 1.5.0
@@ -2532,13 +2525,13 @@ snapshots:
       jsdom: 22.1.0
       keypress: 0.2.1
       keyv: 4.5.3
-      lodash: 4.17.21
+      lodash.merge: 4.6.2
       minimatch: 9.0.3
       node-html-parser: 6.1.9
       open: 8.4.2
-      prettier: 2.8.8
+      prettier: 3.5.3
       readline: 1.3.0
-      semver: 7.5.4
+      semver: 7.6.0
       sha1: 1.1.1
       style-loader: 3.3.3(webpack@5.88.1)
       tar: 6.2.0
@@ -2546,9 +2539,7 @@ snapshots:
       webpack: 5.88.1
       webpack-dev-server: 4.15.1(webpack@5.88.1)
       yargs: 17.7.2
-      yesno: 0.4.0
     transitivePeerDependencies:
-      - '@fortawesome/fontawesome-svg-core'
       - '@swc/core'
       - bufferutil
       - canvas
@@ -2565,37 +2556,49 @@ snapshots:
       - utf-8-validate
       - webpack-cli
 
-  '@fxhash/config@0.0.9': {}
-
-  '@fxhash/fxhash-snippet@0.0.8':
+  '@fxhash/config@0.0.11(graphql@16.10.0)':
     dependencies:
-      node-html-parser: 6.1.5
+      '@fxhash/errors': 0.0.11(graphql@16.10.0)
+      '@fxhash/utils': 0.0.4
+    transitivePeerDependencies:
+      - graphql
 
-  '@fxhash/params@0.0.10(@fortawesome/fontawesome-svg-core@6.7.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
+  '@fxhash/errors@0.0.11(graphql@16.10.0)':
     dependencies:
-      '@fortawesome/free-solid-svg-icons': 6.4.0
-      '@fortawesome/react-fontawesome': 0.2.0(@fortawesome/fontawesome-svg-core@6.7.2)(react@19.1.0)
-      classnames: 2.3.2
-      lodash.debounce: 4.0.8
-      react: 19.1.0
-      react-colorful: 5.6.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      react-dom: 19.1.0(react@19.1.0)
+      '@fxhash/utils': 0.0.4
+      '@urql/core': 4.1.4(graphql@16.10.0)
+    transitivePeerDependencies:
+      - graphql
+
+  '@fxhash/gql-client@0.0.2':
+    dependencies:
+      '@fxhash/config': 0.0.11(graphql@16.10.0)
+      '@urql/core': 4.1.4(graphql@16.10.0)
+      deepmerge: 4.3.1
+      graphql: 16.10.0
+
+  '@fxhash/gql@0.0.11(graphql@16.10.0)':
+    dependencies:
+      graphql: 16.10.0
+      tslib: 2.6.2
+
+  '@fxhash/params@0.0.12':
+    dependencies:
       sha1: 1.1.1
-      zod: 3.21.4
-    transitivePeerDependencies:
-      - '@fortawesome/fontawesome-svg-core'
+      zod: 3.24.3
 
-  '@fxhash/project-sdk@0.0.13(@fortawesome/fontawesome-svg-core@6.7.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
+  '@fxhash/project-sdk@0.0.15':
     dependencies:
-      '@fxhash/params': 0.0.10(@fortawesome/fontawesome-svg-core@6.7.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      '@fxhash/utils': 0.0.2
-      node-html-parser: 6.1.5
-    transitivePeerDependencies:
-      - '@fortawesome/fontawesome-svg-core'
-      - react
-      - react-dom
+      '@fxhash/params': 0.0.12
+      '@fxhash/utils': 0.0.4
 
-  '@fxhash/utils@0.0.2': {}
+  '@fxhash/snippet@0.0.10':
+    dependencies:
+      node-html-parser: 6.1.9
+
+  '@fxhash/utils@0.0.4':
+    dependencies:
+      bs58check: 4.0.0
 
   '@graphql-typed-document-node/core@3.2.0(graphql@16.10.0)':
     dependencies:
@@ -2708,6 +2711,8 @@ snapshots:
       '@jridgewell/sourcemap-codec': 1.5.0
 
   '@leichtgewicht/ip-codec@2.0.5': {}
+
+  '@noble/hashes@1.8.0': {}
 
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
@@ -2970,6 +2975,13 @@ snapshots:
     dependencies:
       '@types/node': 22.12.0
 
+  '@urql/core@4.1.4(graphql@16.10.0)':
+    dependencies:
+      '@0no-co/graphql.web': 1.1.2(graphql@16.10.0)
+      wonka: 6.3.5
+    transitivePeerDependencies:
+      - graphql
+
   '@webassemblyjs/ast@1.14.1':
     dependencies:
       '@webassemblyjs/helper-numbers': 1.13.2
@@ -3157,6 +3169,8 @@ snapshots:
 
   balanced-match@1.0.2: {}
 
+  base-x@5.0.1: {}
+
   batch@0.6.1: {}
 
   before-after-hook@2.2.3: {}
@@ -3220,6 +3234,15 @@ snapshots:
       node-releases: 2.0.19
       update-browserslist-db: 1.1.2(browserslist@4.24.4)
 
+  bs58@6.0.0:
+    dependencies:
+      base-x: 5.0.1
+
+  bs58check@4.0.0:
+    dependencies:
+      '@noble/hashes': 1.8.0
+      bs58: 6.0.0
+
   buffer-from@1.1.2: {}
 
   bytes@3.1.2: {}
@@ -3262,8 +3285,6 @@ snapshots:
   chownr@2.0.0: {}
 
   chrome-trace-event@1.0.4: {}
-
-  classnames@2.3.2: {}
 
   classnames@2.5.1: {}
 
@@ -3382,6 +3403,8 @@ snapshots:
       supports-color: 5.5.0
 
   decimal.js@10.5.0: {}
+
+  deepmerge@4.3.1: {}
 
   default-gateway@6.0.3:
     dependencies:
@@ -3624,11 +3647,10 @@ snapshots:
 
   function-bind@1.1.2: {}
 
-  fxhash@0.0.10(@fortawesome/fontawesome-svg-core@6.7.2)(graphql@16.10.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+  fxhash@0.0.14(graphql@16.10.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
     dependencies:
-      '@fxhash/cli': 0.0.16(@fortawesome/fontawesome-svg-core@6.7.2)(graphql@16.10.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@fxhash/cli': 0.0.20(graphql@16.10.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
     transitivePeerDependencies:
-      - '@fortawesome/fontawesome-svg-core'
       - '@swc/core'
       - bufferutil
       - canvas
@@ -3957,9 +3979,7 @@ snapshots:
     dependencies:
       p-locate: 5.0.0
 
-  lodash.debounce@4.0.8: {}
-
-  lodash@4.17.21: {}
+  lodash.merge@4.6.2: {}
 
   loose-envify@1.4.0:
     dependencies:
@@ -4059,11 +4079,6 @@ snapshots:
       whatwg-url: 5.0.0
 
   node-forge@1.3.1: {}
-
-  node-html-parser@6.1.5:
-    dependencies:
-      css-select: 5.1.0
-      he: 1.2.0
 
   node-html-parser@6.1.9:
     dependencies:
@@ -4171,7 +4186,7 @@ snapshots:
 
   picomatch@2.3.1: {}
 
-  prettier@2.8.8: {}
+  prettier@3.5.3: {}
 
   process-nextick-args@2.0.1: {}
 
@@ -4222,11 +4237,6 @@ snapshots:
       loader-utils: 2.0.4
       schema-utils: 3.3.0
       webpack: 5.88.1
-
-  react-colorful@5.6.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
-    dependencies:
-      react: 19.1.0
-      react-dom: 19.1.0(react@19.1.0)
 
   react-dom@19.1.0(react@19.1.0):
     dependencies:
@@ -4315,7 +4325,7 @@ snapshots:
 
   semver@6.3.1: {}
 
-  semver@7.5.4:
+  semver@7.6.0:
     dependencies:
       lru-cache: 6.0.0
 
@@ -4597,6 +4607,8 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
+  tslib@2.6.2: {}
+
   tslib@2.8.1: {}
 
   type-fest@2.19.0: {}
@@ -4770,6 +4782,8 @@ snapshots:
     dependencies:
       string-width: 5.1.2
 
+  wonka@6.3.5: {}
+
   wrap-ansi@7.0.0:
     dependencies:
       ansi-styles: 4.3.0
@@ -4808,8 +4822,6 @@ snapshots:
       y18n: 5.0.8
       yargs-parser: 21.1.1
 
-  yesno@0.4.0: {}
-
   yocto-queue@0.1.0: {}
 
   zen-observable-ts@1.2.5:
@@ -4818,4 +4830,4 @@ snapshots:
 
   zen-observable@0.8.15: {}
 
-  zod@3.21.4: {}
+  zod@3.24.3: {}
