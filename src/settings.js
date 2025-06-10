@@ -63,7 +63,7 @@ export const settings = {
   },
   sediments: {
     // todo: 16, 32, 64
-    nbRoot: 64,
+    nbRoot: 32,
     hues: {
       substrate: rnd.one(),
       rd: rnd.one(),

@@ -42,8 +42,8 @@ void main() {
   substrate = substrate * 0.995
             + agent * (0.4 + 0.6 * n1) * 0.03
             // - mem_outer * 0.004
-            - smoothstep(0.5, 0.7, cells) * 0.01
-            + other_cells * 0.001
+            - smoothstep(0.5, 0.7, cells) * 0.015
+            - other_cells * 0.003
             + n2 * 0.001 * (1.0 - cells);
 
   // 
@@ -66,7 +66,7 @@ void main() {
   float Bp = B + (diffB * laplacian.y + A*B*B - (k + f) * B);
 
   Bp += agent * 0.8;
-  Bp += abs(substrate) * 0.1 * step(substrate, 0.0);
+  Bp += abs(substrate) * 0.5 * step(substrate, 0.0);
   Bp += smoothstep(0.0, 0.8, cells) * 0.1;
   Bp += other_cells * 0.02;
   Bp -= mem_outer * 0.05;

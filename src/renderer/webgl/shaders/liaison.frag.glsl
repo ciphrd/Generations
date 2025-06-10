@@ -2,7 +2,6 @@
 precision highp float;
 
 uniform vec4 u_view;
-uniform sampler2D u_blurred_membrane;
 uniform sampler2D u_color_field;
 
 in vec2 v_uv;

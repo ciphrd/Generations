@@ -59,10 +59,6 @@ vec4 cellColor(in vec2 uv, in vec3 baseColor, in vec4 signals, in float time) {
   //         * 1.0;
   // }
 
-  // depth "vignette"
-  float vignette = texture(u_blurred_membrane, v_guv).r;
-  C += darker * S * max(0.0, pow(vignette, 0.4)) * 0.9;
-
   // some holes 
   float holesNoise = N(uv, 11.3, 87.3812)
                      * pow(N(uv, 2.2, 19.1223), 2.0)

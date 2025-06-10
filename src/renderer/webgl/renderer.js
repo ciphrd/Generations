@@ -21,16 +21,12 @@ import fieldLiaisonFS from "./shaders/field-liaison.frag.glsl"
 import fieldCellFS from "./shaders/field-cell.frag.glsl"
 import fieldPointFS from "./shaders/field-point.frag.glsl"
 import foodFS from "./shaders/food.frag.glsl"
-import membraneFS from "./shaders/membrane.frag.glsl"
 import sedimentsFS from "./shaders/absorption/sediments.frag.glsl"
-import membraneOuterFS from "./shaders/absorption/membrane-outer.frag.glsl"
 import { PointsRenderer } from "./points"
 import { LiaisonsRenderer } from "./liaisons"
 import { Spring, SpringFlags } from "../../physics/constraints/spring"
 import { settings } from "../../settings"
 import { GaussianPass } from "./gaussian"
-import { MembranePass } from "./membrane"
-import { OuterShell } from "./outer-shell"
 import { Sediments } from "./sediments"
 import { viewUniform } from "./view"
 import { CompositionPass } from "./composition"
@@ -253,10 +249,6 @@ export class WebGLRenderer extends Renderer {
           )
         },
       }),
-      membrane: glu.program(gl, fullVS, membraneFS, {
-        attributes: ["a_position"],
-        uniforms: ["u_membrane", "u_color_field"],
-      }),
       cells: glu.program(gl, quadVS, cellFS, {
         attributes: ["a_position", "a_geometry", "a_color", "a_signals"],
         uniforms: ["u_view", "u_blurred_membrane", "u_color_field", "u_time"],
@@ -321,17 +313,9 @@ export class WebGLRenderer extends Renderer {
           "u_sediments",
           "u_rd",
           "u_cells",
-          "u_membrane",
           "u_cell_colors",
           "u_hues",
         ],
-        vao: (prog) => (u) => {
-          u.attrib(prog.attributes.a_position, glu.quad(gl), 2)
-        },
-      }),
-      membraneOuter: glu.program(gl, fullVS, membraneOuterFS, {
-        attributes: ["a_position"],
-        uniforms: ["u_view", "u_membrane_outer", "u_cells"],
         vao: (prog) => (u) => {
           u.attrib(prog.attributes.a_position, glu.quad(gl), 2)
         },
@@ -343,12 +327,6 @@ export class WebGLRenderer extends Renderer {
     }
 
     const quadBuffer = glu.quadBuffer(gl)
-
-    this.vaos.membrane = gl.createVertexArray()
-    loc = this.programs.membrane.attributes.a_position
-    gl.bindVertexArray(this.vaos.membrane)
-    gl.enableVertexAttribArray(loc)
-    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
 
     this.bacterias = new PointsRenderer(gl, bacteriasFS, () => world.bacterias)
     this.food = new PointsRenderer(gl, foodFS, () => world.food)
@@ -385,22 +363,10 @@ export class WebGLRenderer extends Renderer {
       11
     )
 
-    this.membranePass = new MembranePass(
-      gl,
-      vec2(tW, tH),
-      this.rts.cellFieldView
-    )
     this.membraneOuter = new MembraneOuter(
       gl,
       vec2(tW, tH),
       this.rts.cellFieldWorld.tex
-    )
-
-    this.outerShell = new OuterShell(
-      gl,
-      vec2(W, H),
-      this.membranePass.rt.tex,
-      this.membranePass.blurFieldPass.output
     )
 
     this.vaos.tex = gl.createVertexArray()
@@ -486,9 +452,7 @@ export class WebGLRenderer extends Renderer {
     //
     // Compute edges on the field to create the shell of the membrane
     //
-    this.membranePass.render()
     this.membraneOuter.render()
-    this.outerShell.render()
 
     //
     // Sediments
@@ -541,23 +505,7 @@ export class WebGLRenderer extends Renderer {
     // gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, liaisons.length)
 
     gl.disable(gl.DEPTH_TEST)
-
     glu.blend(gl, gl.ONE, gl.ONE)
-    gl.useProgram(programs.membrane.program)
-    gl.bindVertexArray(this.vaos.membrane)
-    glu.uniformTex(
-      gl,
-      programs.membrane.uniforms.u_membrane,
-      this.membranePass.output,
-      0
-    )
-    glu.uniformTex(
-      gl,
-      programs.membrane.uniforms.u_color_field,
-      this.blurColorFieldPass.output,
-      1
-    )
-    glu.draw.quad(gl)
 
     programs.sediments.use()
     viewUniform(gl, programs.sediments)
@@ -581,15 +529,9 @@ export class WebGLRenderer extends Renderer {
     )
     glu.uniformTex(
       gl,
-      programs.sediments.uniforms.u_membrane,
-      this.membranePass.output,
-      3
-    )
-    glu.uniformTex(
-      gl,
       programs.sediments.uniforms.u_cell_colors,
       this.blurColorFieldPass.output,
-      4
+      3
     )
     gl.uniform2f(
       programs.sediments.uniforms.u_hues,
@@ -597,22 +539,6 @@ export class WebGLRenderer extends Renderer {
       settings.sediments.hues.rd
     )
     glu.draw.quad(gl)
-
-    // programs.membraneOuter.use()
-    // viewUniform(gl, programs.membraneOuter)
-    // glu.uniformTex(
-    //   gl,
-    //   programs.membraneOuter.uniforms.u_membrane_outer,
-    //   this.membraneOuter.output,
-    //   0
-    // )
-    // glu.uniformTex(
-    //   gl,
-    //   programs.membraneOuter.uniforms.u_cells,
-    //   this.rts.cellFieldView.textures[0],
-    //   1
-    // )
-    // glu.draw.quad(gl)
 
     // this.bacterias.render()
     this.food.render()

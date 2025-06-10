@@ -4,7 +4,6 @@ precision mediump float;
 uniform sampler2D u_sediments;
 uniform sampler2D u_rd;
 uniform sampler2D u_cells;
-uniform sampler2D u_membrane;
 uniform sampler2D u_cell_colors;
 uniform vec4 u_view;
 uniform vec2 u_hues;
@@ -32,7 +31,6 @@ void main() {
   vec4 cells = texture(u_cells, v_uv);
   float C = (cells.r + cells.g + cells.b) * 0.333;
   C = smoothstep(0.0, 0.01, C);
-  C = max(texture(u_membrane, v_uv).r * 2.0, C);
   C = clamp(C, 0.0, 1.0);
 
   float sediments = texture(u_sediments, uv).r;
@@ -89,12 +87,6 @@ void main() {
   // mixing based
   outColor0.rgb = mix(nColA, nColB, C2);
 
-  
-  if (v_uv.x < 0.5) {
-    outColor0.rgb = pow(outColor0.rgb, vec3(0.9)) * 1.4;
-  } else {
-    outColor0.rgb = pow(outColor0.rgb, vec3(0.9)) * 1.1;
-  }
-
-  // outColor0 = mix(vec4(1,0,0,1), vec4(0,1,1,1), C);
+  // final color correction
+  outColor0.rgb = pow(outColor0.rgb, vec3(0.9)) * 1.25;
 }

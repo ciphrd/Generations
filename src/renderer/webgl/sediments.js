@@ -132,7 +132,7 @@ export class Sediments {
 
     this.edgePass1 = new EdgePass(gl, res, null)
     this.edgePass2 = new EdgePass(gl, res, this.edgePass1.output)
-    this.gaussianPass = new GaussianPass(gl, res, this.edgePass2.output, 19)
+    this.gaussianPass = new GaussianPass(gl, res, this.edgePass2.output, 11)
     this.sharpenPass = new SharpenPass(gl, res, this.gaussianPass.output)
 
     this.programs.initSubstrate.use()
@@ -168,7 +168,7 @@ export class Sediments {
     )
     gl.uniform1f(programs.update.uniforms.u_time, time * 0.001)
     gl.uniform2f(programs.update.uniforms.u_texel, texel.x, texel.y)
-    gl.drawArrays(gl.TRIANGLES, 0, 6)
+    glu.draw.quad(gl)
 
     glu.bindFB(gl, res.x, res.y, this.fullSedsRt.fb)
     glu.blend(gl, gl.ONE, gl.ONE)
@@ -225,7 +225,7 @@ export class Sediments {
         substratePP.front().tex
       )
       gl.uniform2f(programs.gaussian.uniforms.u_dir, this.texel.x, 0)
-      gl.drawArrays(gl.TRIANGLES, 0, 6)
+      glu.draw.quad(gl)
 
       // blur substrate vertically
       substratePP.swap()
@@ -236,7 +236,7 @@ export class Sediments {
         substratePP.front().tex
       )
       gl.uniform2f(programs.gaussian.uniforms.u_dir, 0, this.texel.y)
-      gl.drawArrays(gl.TRIANGLES, 0, 6)
+      glu.draw.quad(gl)
     }
 
     //
