@@ -44,7 +44,7 @@ void main() {
   float rd = texture(u_rd, guv).b;
 
   float I = invSediments;
-  I = pow(I, 3.0 /*- n1*1.6*/) * 3.5;
+  I = pow(I, 2.5 /*- n1*1.6*/) * 3.5;
 
   vec3 col = vec3(1.0) - hsv2rgb(vec3(
     u_hues.x,

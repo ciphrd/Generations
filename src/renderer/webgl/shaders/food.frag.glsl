@@ -42,5 +42,5 @@ void main() {
           * smoothstep(eaten - 0.1, eaten, n1)
           * (0.3 + n2 * 0.2);
 
-  outColor = vec4(0.9, 0.3, 0.9, 1.0) * I;
+  outColor = vec4(vec3(0.3), 1.0) * I;
 }

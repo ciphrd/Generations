@@ -29,6 +29,7 @@ export class Sediments {
   constructor(gl, res, distanceField, otherField, membraneOuter) {
     this.gl = gl
     this.res = res
+    let res2 = (this.res2 = res.clone().div(2))
     this.texel = res.clone().inv()
     this.distanceField = distanceField
     this.otherField = otherField
@@ -177,7 +178,7 @@ export class Sediments {
     gl.drawArrays(gl.POINTS, 0, this.nb)
     glu.blend(gl, null)
 
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 6; i++) {
       substratePP.swap()
       glu.bindFB(gl, res.x, res.y, substratePP.back().fb)
       programs.substrate.use()
