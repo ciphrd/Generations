@@ -372,7 +372,7 @@ export class WebGLRenderer extends Renderer {
     this.rts = {
       absorb: glu.renderTarget(gl, tW, tH, gl.RGBA32F, { depth: true }),
       cellFieldWorld: glu.renderTarget(gl, tW, tH, gl.RGBA32F, { depth: true }),
-      allFieldWorld: glu.renderTarget(gl, tW, tH, gl.RGBA32F, { depth: true }),
+      otherFieldWorld: glu.renderTarget(gl, tW, tH, gl.RGBA32F),
       cellFieldView: glu.renderTargetN(2, gl, tW, tH, gl.RGBA32F, {
         depth: true,
       }),
@@ -413,7 +413,8 @@ export class WebGLRenderer extends Renderer {
     this.sediments = new Sediments(
       gl,
       vec2(tW, tH),
-      this.rts.allFieldWorld.tex,
+      this.rts.cellFieldWorld.tex,
+      this.rts.otherFieldWorld.tex,
       this.membraneOuter.output
     )
 
@@ -447,7 +448,7 @@ export class WebGLRenderer extends Renderer {
     //
     // Render field, merging the cells / liaisons in a smooth way
     //
-    glu.bindFB(gl, tW, tH, this.rts.allFieldWorld.fb)
+    glu.bindFB(gl, tW, tH, this.rts.cellFieldWorld.fb)
     gl.enable(gl.DEPTH_TEST)
     gl.depthFunc(gl.LESS)
     glu.blend(gl, null)
@@ -460,12 +461,6 @@ export class WebGLRenderer extends Renderer {
     programs.fieldLiaison.use()
     viewUniform(gl, programs.fieldLiaison, true)
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, liaisons.length)
-
-    // before rendering all bodies, copy cells FB
-    glu.fb2fb(gl, this.rts.allFieldWorld.fb, this.rts.cellFieldWorld.fb, tW, tH)
-
-    glu.bindFB(gl, tW, tH, this.rts.allFieldWorld.fb, { clear: false })
-    this.otherBodiesPass.render(true)
 
     //
     glu.bindFB(gl, tW, tH, this.rts.cellFieldView.fb)
@@ -480,6 +475,10 @@ export class WebGLRenderer extends Renderer {
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, liaisons.length)
 
     gl.disable(gl.DEPTH_TEST)
+
+    glu.blend(gl, gl.ONE, gl.ONE)
+    glu.bindFB(gl, tW, tH, this.rts.otherFieldWorld.fb)
+    this.otherBodiesPass.render(true)
     //
 
     this.blurColorFieldPass.render()
@@ -629,7 +628,7 @@ export class WebGLRenderer extends Renderer {
     // glu.uniformTex(
     //   gl,
     //   programs.tex.uniforms.u_texture,
-    //   this.rts.allFieldWorld.tex
+    //   this.sediments.outputs.pre
     // )
     // glu.draw.quad(gl)
   }

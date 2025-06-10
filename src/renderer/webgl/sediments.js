@@ -26,11 +26,12 @@ export class Sediments {
   /**
    * @param {WebGL2RenderingContext} gl
    */
-  constructor(gl, res, distanceField, membraneOuter) {
+  constructor(gl, res, distanceField, otherField, membraneOuter) {
     this.gl = gl
     this.res = res
     this.texel = res.clone().inv()
     this.distanceField = distanceField
+    this.otherField = otherField
     this.membraneOuter = membraneOuter
 
     const { nbRoot } = settings.sediments
@@ -99,6 +100,7 @@ export class Sediments {
           "u_agents",
           "u_membrane_outer",
           "u_cells",
+          "u_other_cells",
           "u_time",
           "u_texel",
         ],
@@ -202,6 +204,12 @@ export class Sediments {
         programs.substrate.uniforms.u_cells,
         this.blurFieldPass.output,
         3
+      )
+      glu.uniformTex(
+        gl,
+        programs.substrate.uniforms.u_other_cells,
+        this.otherField,
+        4
       )
       gl.uniform1f(programs.substrate.uniforms.u_time, time * 0.001)
       gl.uniform2f(programs.substrate.uniforms.u_texel, texel.x, texel.y)

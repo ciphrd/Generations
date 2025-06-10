@@ -5,6 +5,7 @@ uniform sampler2D u_substrate;
 uniform sampler2D u_agents;
 uniform sampler2D u_membrane_outer;
 uniform sampler2D u_cells;
+uniform sampler2D u_other_cells;
 uniform vec2 u_texel;
 uniform float u_time;
 
@@ -27,6 +28,7 @@ void main() {
   float mem_outer = texture(u_membrane_outer, v_uv).r;
   vec4 cells_tex = texture(u_cells, v_uv);
   float cells = cells_tex.a * (0.8 + 0.2 * cells_tex.r);
+  float other_cells = texture(u_other_cells, v_uv).a;
 
   float substrate = tex.r;
 
@@ -40,8 +42,8 @@ void main() {
   substrate = substrate * 0.995
             + agent * (0.4 + 0.6 * n1) * 0.03
             // - mem_outer * 0.004
-            - smoothstep(0.5, 0.7, cells) * 0.002
             - smoothstep(0.5, 0.7, cells) * 0.01
+            + other_cells * 0.001
             + n2 * 0.001 * (1.0 - cells);
 
   // 
@@ -66,6 +68,7 @@ void main() {
   Bp += agent * 0.8;
   Bp += abs(substrate) * 0.1 * step(substrate, 0.0);
   Bp += smoothstep(0.0, 0.8, cells) * 0.1;
+  Bp += other_cells * 0.02;
   Bp -= mem_outer * 0.05;
 
   Ap = clamp(Ap, 0.0, 1.0);

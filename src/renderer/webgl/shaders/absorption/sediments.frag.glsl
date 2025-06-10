@@ -46,8 +46,7 @@ void main() {
   float rd = texture(u_rd, guv).b;
 
   float I = invSediments;
-  I = pow(I, 3.0 /*- n1*1.6*/) * 3.0;
-
+  I = pow(I, 3.0 /*- n1*1.6*/) * 3.5;
 
   vec3 col = vec3(1.0) - hsv2rgb(vec3(
     u_hues.x,
@@ -58,23 +57,44 @@ void main() {
 
   vec3 cell_color = texture(u_cell_colors, v_uv).gba;
   // todo: here it should be alpha field
-  C = (cell_color.r + cell_color.g + cell_color.b) * 0.333;
+  C = (cell_color.r + cell_color.g + cell_color.b) * 0.333
+    * smoothstep(0.2, 0.4, cells.a);
+  float C2 = smoothstep(0.1, 0.4, cells.a);
 
   rd = pow(rd, 0.5) * 1.0;
+  rd = clamp(rd, 0.0, 1.0);
   // todo: add time to noises
   float n2 = fbm(vec3(guv * 20.0, 0.0), 4, 0.5);
   col = hsv2rgb(vec3(
-    u_hues.y + n2 * 0.02,
+    u_hues.y + n2 * 0.00,
     1.0,
     1.0
   ));
-  col = mix(col, cell_color, C * rd);
+  vec3 rdCol = col;
+
+  // rd-substrate coloring
+  col = vec3(1) - rdCol;
+  vec3 nColA = mix(
+    outColor0.rgb,
+    col,
+    rd * (1.0 - C)
+  );
+
+  // cell coloring
+  vec3 nColB = outColor0.rgb;
+  col = mix(rdCol, cell_color, min(1.0, C * rd * 4.0));
   col = vec3(1) - col;
+  nColB += col * rd * (0.1 + 0.9 * pow(I, 0.5));
 
-  outColor0.rgb += col * rd * (0.1 + 0.9 * pow(I, 0.5));
-  // outColor0.rgb += col;
+  // mixing based
+  outColor0.rgb = mix(nColA, nColB, C2);
 
-  outColor0.rgb = pow(outColor0.rgb, vec3(0.9)) * 1.4;
+  
+  if (v_uv.x < 0.5) {
+    outColor0.rgb = pow(outColor0.rgb, vec3(0.9)) * 1.4;
+  } else {
+    outColor0.rgb = pow(outColor0.rgb, vec3(0.9)) * 1.1;
+  }
 
   // outColor0 = mix(vec4(1,0,0,1), vec4(0,1,1,1), C);
 }
