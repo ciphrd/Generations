@@ -24,6 +24,8 @@
  */
 
 import "./inject.js"
+// import { parametricSpace } from "./parametric-space.js"
+
 import Stats from "stats.js"
 import { BodyFlags, body } from "./physics/body"
 import { Spring } from "./physics/constraints/spring"
@@ -35,7 +37,7 @@ import { fract } from "./utils/math"
 import { Mouse } from "./interactions/mouse"
 import { GlobalRepulsion } from "./physics/constraints/repulsion"
 import { nodeTupleId } from "./graph/node"
-import { rnd } from "./utils/rnd"
+import { rnd, rnd0 } from "./utils/rnd"
 import { Collisions } from "./physics/constraints/collisions"
 import { World } from "./physics/world"
 import { Solver } from "./physics/solver"
@@ -123,6 +125,8 @@ document.body.appendChild(stats.dom)
 //             microscope lens ? kinda signature yk
 //             chromatic abberation
 //         ( ) handle pixel ratio dependant rendering (shouldn't depend on PR)
+//         ( ) perform gaussian blur on color field in a different color space
+//             get more natural blended colors
 //     ( ) fix bugs
 //         ( ) Unknown promise rejection reason
 //             ooxEXWZrKip6H71hEnxvfnWZkh5G9iudmy3FC9XKxg41HvneufY
@@ -174,9 +178,6 @@ async function start() {
   const seeds = await getSeeds()
   const dnas = generateDNAs(seeds)
   console.log({ seeds, dnas })
-
-  // todo: use seed0 to pick color
-  settings.cells.default.color = Color.fromByteRgb332(rnd.byte())
 
   const world = new World()
 
@@ -256,21 +257,21 @@ async function start() {
   for (let i = 0; i < clusterRules.length; i++) {
     clusterRules[i] = {
       attr: larf(
-        rnd.range(
+        rnd0.range(
           settings.clusters.attr.range.min,
           settings.clusters.attr.range.max
         ),
-        rnd.range(
+        rnd0.range(
           settings.clusters.attr.strength.min,
           settings.clusters.attr.strength.max
         )
       ),
       rep: larf(
-        rnd.range(
+        rnd0.range(
           settings.clusters.rep.range.min,
           settings.clusters.rep.range.max
         ) * (fract(sqrt(i)) === 0 ? 0.02 : 1),
-        rnd.range(
+        rnd0.range(
           settings.clusters.rep.strength.min,
           settings.clusters.rep.strength.max
         )

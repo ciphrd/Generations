@@ -7,6 +7,8 @@ uniform sampler2D u_cells;
 uniform sampler2D u_cell_colors;
 uniform vec4 u_view;
 uniform vec2 u_hues;
+uniform float u_sharpness;
+uniform vec2 u_thickness;
 
 in vec2 v_uv;
 
@@ -44,12 +46,12 @@ void main() {
   float rd = texture(u_rd, guv).b;
 
   float I = invSediments;
-  I = pow(I, 2.5 /*- n1*1.6*/) * 3.5;
+  I = pow(I, 2.5 /*- n1*1.6*/) * u_thickness.x;
 
   vec3 col = vec3(1.0) - hsv2rgb(vec3(
     u_hues.x,
     1.0,
-    1.0 - I * 0.3
+    1.0 - I * u_sharpness
   ));
   outColor0 = vec4(col * I, 1);
 
@@ -75,7 +77,7 @@ void main() {
   vec3 nColA = mix(
     outColor0.rgb,
     col,
-    rd * (1.0 - C)
+    rd * (1.0 - C) * u_thickness.y
   );
 
   // cell coloring

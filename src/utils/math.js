@@ -7,6 +7,14 @@ export function clamp(x, _min, _max) {
   return min(_max, max(_min, x))
 }
 
+export function remap(x, xMin, xMax, oMin, oMax) {
+  return ((x - xMin) * (oMax - oMin)) / (xMax - xMin) + oMin
+}
+
+export function remap01(x, oMin, oMax) {
+  return remap(x, 0, 1, oMin, oMax)
+}
+
 export function clamp01(x) {
   return clamp(x, 0, 0.9999)
 }

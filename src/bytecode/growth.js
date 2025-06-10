@@ -36,7 +36,7 @@ import { Node } from "../graph/node"
 import { SensorKeys } from "../sensors"
 import { Color } from "../utils/color"
 import { clamp01, mod } from "../utils/math"
-import { rnd } from "../utils/rnd"
+import { rnd, rnd0 } from "../utils/rnd"
 
 const set = [
   "nop",
@@ -116,7 +116,8 @@ export const GrowthBytecode = {
         function matchEdge(a, b) {
           let match = null
           if (!edges[a.id]) edges[a.id] = []
-          const bias = rnd.int(0, a.edges.length)
+          // todo: warning: randomization shouldn't be in here
+          const bias = rnd0.int(0, a.edges.length)
           for (let i = 0; i < a.edges.length; i++) {
             const di = (i + bias) % a.edges.length
             if (edges[a.id].includes(di)) continue
@@ -153,8 +154,9 @@ export const GrowthBytecode = {
             node.pos
               .clone()
               .add(
-                rnd.range(0.0001, 0.01) * rnd.sign(),
-                rnd.range(0.0001, 0.01) * rnd.sign()
+                // todo: remove randomization from here
+                rnd0.range(0.0001, 0.01) * rnd0.sign(),
+                rnd0.range(0.0001, 0.01) * rnd0.sign()
               )
               .apply(clamp01),
             node.dna
@@ -184,7 +186,8 @@ export const GrowthBytecode = {
       }
       // rnd
       case 0x3:
-        stack.push(rnd.int(0, 16) & 0xf)
+        // todo: cannot have randomization in here
+        stack.push(rnd0.int(0, 16) & 0xf)
         break
       // pop
       case 0x4:

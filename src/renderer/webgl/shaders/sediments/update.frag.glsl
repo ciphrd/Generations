@@ -1,6 +1,9 @@
 #version 300 es
 precision highp float;
 
+#define RND_MOVE_STRENGTH $RND_MOVE_STRENGTH
+#define MOVE_SPEED $MOVE_SPEED
+
 uniform sampler2D u_agents;
 uniform sampler2D u_substrate;
 uniform sampler2D u_distance_field;
@@ -41,7 +44,7 @@ void main() {
 
   // compute the substrate gradient
   vec2 dir = substrateGrad(pos, 2.0);
-  dir += (hash22(v_uv * 110.23 + vec2(u_time)) - 0.5) * 0.3;
+  dir += (hash22(v_uv * 110.23 + vec2(u_time)) - 0.5) * RND_MOVE_STRENGTH;
 
   float n1 = snoise(vec3(agent.xy * 4.0, u_time * 0.1));
 
@@ -49,13 +52,13 @@ void main() {
     dir *= -1.0;
   }
 
-  agent.xy += dir * 0.001;
-  agent.xy = clamp(agent.xy, vec2(0), vec2(1));
+  agent.xy += dir * MOVE_SPEED;
 
   dir = dfGrad(agent.xy, 1.0);
   agent.xy -= dir * 0.1 * texture(u_distance_field, pos).a;
 
-  agent.a = 1.0; // clamp(1.0 - texture(u_distance_field, pos).a * 10., 0., 1.);
+  agent.xy = clamp(agent.xy, vec2(0), vec2(1));
+  agent.a = 1.0;
   
   outColor0 = agent;
 }

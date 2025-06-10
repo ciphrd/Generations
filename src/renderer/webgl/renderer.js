@@ -315,6 +315,8 @@ export class WebGLRenderer extends Renderer {
           "u_cells",
           "u_cell_colors",
           "u_hues",
+          "u_sharpness",
+          "u_thickness",
         ],
         vao: (prog) => (u) => {
           u.attrib(prog.attributes.a_position, glu.quad(gl), 2)
@@ -537,6 +539,15 @@ export class WebGLRenderer extends Renderer {
       programs.sediments.uniforms.u_hues,
       settings.sediments.hues.substrate,
       settings.sediments.hues.rd
+    )
+    gl.uniform1f(
+      programs.sediments.uniforms.u_sharpness,
+      settings.sediments.sharpness
+    )
+    gl.uniform2f(
+      programs.sediments.uniforms.u_thickness,
+      settings.sediments.thickness.bg,
+      settings.sediments.thickness.fg
     )
     glu.draw.quad(gl)
 

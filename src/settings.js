@@ -2,8 +2,9 @@ import { Actuator } from "./interactions/actuator"
 import { Anchor } from "./interactions/anchor"
 import { Eater } from "./interactions/eat"
 import { FoodSeeker } from "./interactions/food-seeker"
+import { Params } from "./parametric-space"
 import { Color } from "./utils/color"
-import { rnd } from "./utils/rnd"
+import { rnd, rnd0 } from "./utils/rnd"
 
 export const settings = {
   radius: 0.006,
@@ -20,8 +21,7 @@ export const settings = {
   },
   cells: {
     default: {
-      // will be set during initialization
-      color: new Color(),
+      color: Params.cellsDefaultColor,
     },
   },
   food: {
@@ -62,23 +62,24 @@ export const settings = {
     ],
   },
   sediments: {
-    // todo: 16, 32, 64
-    nbRoot: 32,
+    nbRoot: Params.sedimentNbAgents,
+    cellsSeparation: Params.cellsBgSeparation,
     hues: {
-      substrate: rnd.one(),
-      rd: rnd.one(),
+      substrate: Params.sedimentHues[0],
+      rd: Params.sedimentHues[1],
+    },
+    sharpness: Params.sedimentSharpness,
+    thickness: {
+      bg: Params.sedimentBgThickness,
+      fg: Params.sedimentFgThickness,
+    },
+    rd: {
+      diffRateB: Params.rdDiffRateB,
     },
   },
   microscopy: {
     light: {
-      backlightColor: new Color(
-        1,
-        1,
-        1
-        // 0.4 + tanh(rnd.one() * 4) * 0.55,
-        // 0.4 + tanh(rnd.one() * 4) * 0.55,
-        // 0.4 + tanh(rnd.one() * 4) * 0.55
-      ),
+      backlightColor: new Color(1, 1, 1),
     },
   },
 }

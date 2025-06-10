@@ -1,7 +1,7 @@
 import { vec2 } from "../utils/vec"
 import { angleForLerp, clamp, lerp, mod } from "../utils/math"
 import { Token } from "../network/token"
-import { rnd } from "../utils/rnd"
+import { rnd, rnd0 } from "../utils/rnd"
 import { CPU, mergeOperations } from "../bytecode/cpu"
 import { ActivationBytecode } from "../bytecode/activation"
 import { Actions } from "./actions"
@@ -44,7 +44,7 @@ export class Body extends Entity {
     this.pos = pos
     this.vel = vec2()
     this.acc = vec2()
-    this.forwards = vec2().fromAngle(rnd.range(0, TAU))
+    this.forwards = vec2().fromAngle(this.id)
     this.data = {
       clusterGroup: -1,
       organism: -1,

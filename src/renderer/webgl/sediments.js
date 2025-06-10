@@ -12,6 +12,7 @@ import { EdgePass } from "./edge"
 import { SharpenPass } from "./sharpen"
 import { viewUniform } from "./view"
 import { TrailPass } from "./trail"
+import { Params } from "../../parametric-space"
 
 /**
  * The Sediments are tiny particles with very small interactions with the
@@ -90,6 +91,10 @@ export class Sediments {
           "u_texel",
           "u_distance_field",
         ],
+        variables: {
+          RND_MOVE_STRENGTH: Params.substrateAgentsRndMove,
+          MOVE_SPEED: Params.substrateAgentsMoveSpeed,
+        },
         vao: (prog) => (u) => {
           u.attrib(prog.attributes.a_position, glu.quad(gl), 2)
         },
@@ -105,11 +110,15 @@ export class Sediments {
           "u_time",
           "u_texel",
         ],
+        variables: {
+          RD_DIFF_RATE_B: settings.sediments.rd.diffRateB,
+          CELLS_SEPARATION: settings.sediments.cellsSeparation,
+        },
         vao: (prog) => (u) => {
           u.attrib(prog.attributes.a_position, glu.quad(gl), 2)
         },
       }),
-      gaussian: initGaussianProgram(gl, 5),
+      gaussian: initGaussianProgram(gl, Params.rdGaussianFilterSize),
       view: glu.program(gl, fullVS, viewFS, {
         attributes: ["a_position"],
         uniforms: ["u_tex", "u_view"],

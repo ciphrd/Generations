@@ -1,6 +1,9 @@
 #version 300 es
 precision highp float;
 
+#define RD_DIFF_RATE_B $RD_DIFF_RATE_B
+#define CELLS_SEPARATION $CELLS_SEPARATION
+
 uniform sampler2D u_substrate;
 uniform sampler2D u_agents;
 uniform sampler2D u_membrane_outer;
@@ -53,7 +56,7 @@ void main() {
   float n3 = snoise(vec3(v_uv * 4.0, 1223.22 + u_time * 0.02));
 
   float diffA = 1.0;
-  float diffB = 0.8;
+  float diffB = RD_DIFF_RATE_B;
   float f = mix(.03, .06, n3);
   float k = mix(.055, .07, n3);
 
@@ -69,7 +72,7 @@ void main() {
   Bp += abs(substrate) * 0.5 * step(substrate, 0.0);
   Bp += smoothstep(0.0, 0.8, cells) * 0.1;
   Bp += other_cells * 0.02;
-  Bp -= mem_outer * 0.05;
+  Bp -= mem_outer * CELLS_SEPARATION;
 
   Ap = clamp(Ap, 0.0, 1.0);
   Bp = clamp(Bp, 0.0, 1.0);
