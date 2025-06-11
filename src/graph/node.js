@@ -1,6 +1,6 @@
 import { CPU } from "../bytecode/cpu"
 import { GrowthBytecode } from "../bytecode/growth"
-import { settings } from "../settings"
+import { Params } from "../parametric-space"
 
 let globalIndex = 0
 export class Node {
@@ -14,7 +14,7 @@ export class Node {
       organism: -1,
     }
     this.sensors = {}
-    this.color = settings.cells.default.color.clone()
+    this.color = Params.cellsDefaultColor.clone()
   }
 
   setDNA(dna) {

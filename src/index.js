@@ -37,12 +37,11 @@ import { fract } from "./utils/math"
 import { Mouse } from "./interactions/mouse"
 import { GlobalRepulsion } from "./physics/constraints/repulsion"
 import { nodeTupleId } from "./graph/node"
-import { rnd, rnd0 } from "./utils/rnd"
+import { rnd0 } from "./utils/rnd"
 import { Collisions } from "./physics/constraints/collisions"
 import { World } from "./physics/world"
 import { Solver } from "./physics/solver"
 import { settings } from "./settings"
-import { generateDNAs } from "./growth/dna"
 import { grow } from "./growth/growth"
 import { getSeeds } from "./opti/seeds"
 import { Sensors } from "./sensors"
@@ -52,8 +51,9 @@ import { ui } from "./ui/index.jsx"
 import { Ticker } from "./engine/ticker"
 import { Engine } from "./engine/engine"
 import { WebGLRenderer } from "./renderer/webgl/renderer"
-import { Color } from "./utils/color"
 import { Controls } from "./controls"
+import { Params, generateParameters } from "./parametric-space.js"
+import { generateDNAs } from "./growth/dna.js"
 
 const stats = new Stats()
 stats.showPanel(1)
@@ -144,6 +144,7 @@ document.body.appendChild(stats.dom)
 //         ( ) fluoresence with colored bg
 //     ( ) think about whether the UI is included or not
 //         ( ) if so, think about what's missing from the UI
+//     ( ) rename rnd to rng
 
 // todo: cell deformations
 // Right now only the liaisons are deformed, which creates some un-orgnanic
@@ -176,12 +177,11 @@ document.body.appendChild(stats.dom)
 
 async function start() {
   const seeds = await getSeeds()
-  const dnas = generateDNAs(seeds)
-  console.log({ seeds, dnas })
+  generateParameters(seeds)
 
   const world = new World()
 
-  const nodes = grow(vec2(0.501, 0.502), dnas, 100)
+  const nodes = grow(vec2(0.501, 0.502), Params.dnas, 100)
   console.log({ nodes })
   const dnahexes = {}
   nodes.forEach((node) => {
@@ -226,10 +226,17 @@ async function start() {
   const food = []
   for (let i = 0; i < 100; i++) {
     food.push(
-      new Food(world, vec2($fx.rand() * 0.99, $fx.rand() * 0.99), (fd) => {
-        console.log("eaten !!!")
-        world.removeBody(fd)
-      })
+      new Food(
+        world,
+        vec2(
+          Params.poolRngSequence.one() * 0.99,
+          Params.poolRngSequence.one() * 0.99
+        ),
+        (fd) => {
+          console.log("eaten !!!")
+          world.removeBody(fd)
+        }
+      )
     )
   }
 
@@ -253,31 +260,31 @@ async function start() {
     }
   }
 
-  const clusterRules = Array(settings.clusters.nb ** 2)
-  for (let i = 0; i < clusterRules.length; i++) {
-    clusterRules[i] = {
-      attr: larf(
-        rnd0.range(
-          settings.clusters.attr.range.min,
-          settings.clusters.attr.range.max
-        ),
-        rnd0.range(
-          settings.clusters.attr.strength.min,
-          settings.clusters.attr.strength.max
-        )
-      ),
-      rep: larf(
-        rnd0.range(
-          settings.clusters.rep.range.min,
-          settings.clusters.rep.range.max
-        ) * (fract(sqrt(i)) === 0 ? 0.02 : 1),
-        rnd0.range(
-          settings.clusters.rep.strength.min,
-          settings.clusters.rep.strength.max
-        )
-      ),
-    }
-  }
+  // const clusterRules = Array(settings.clusters.nb ** 2)
+  // for (let i = 0; i < clusterRules.length; i++) {
+  //   clusterRules[i] = {
+  //     attr: larf(
+  //       rnd0.range(
+  //         settings.clusters.attr.range.min,
+  //         settings.clusters.attr.range.max
+  //       ),
+  //       rnd0.range(
+  //         settings.clusters.attr.strength.min,
+  //         settings.clusters.attr.strength.max
+  //       )
+  //     ),
+  //     rep: larf(
+  //       rnd0.range(
+  //         settings.clusters.rep.range.min,
+  //         settings.clusters.rep.range.max
+  //       ) * (fract(sqrt(i)) === 0 ? 0.02 : 1),
+  //       rnd0.range(
+  //         settings.clusters.rep.strength.min,
+  //         settings.clusters.rep.strength.max
+  //       )
+  //     ),
+  //   }
+  // }
 
   // todo: clusters, maybe just remove ?
   // console.log({ clusterRules })

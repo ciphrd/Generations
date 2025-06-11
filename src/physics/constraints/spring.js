@@ -1,4 +1,4 @@
-import { settings } from "../../settings"
+import { Params } from "../../parametric-space"
 import { arr } from "../../utils/array"
 import { vec2 } from "../../utils/vec"
 import { Entity } from "../entity"
@@ -23,7 +23,7 @@ export class Spring extends Entity {
     restLength,
     stiffness,
     damping,
-    color = settings.cells.default.color.clone(),
+    color = Params.cellsDefaultColor.clone(),
     flags = 0
   ) {
     super()

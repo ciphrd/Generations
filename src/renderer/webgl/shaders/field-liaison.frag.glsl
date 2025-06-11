@@ -18,7 +18,6 @@ void main() {
 
   float L = length(uv - 0.5);
   float S = smoothstep(0.42, 0.4199, L);
-  L += snoise(vec3(uv * 4.2, 2982.23)) * 0.02 * S;
   float S2 = max(0.0, 1.0 - L * 2.0);
 
   vec3 C = hash31(id);

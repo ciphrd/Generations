@@ -68,8 +68,8 @@ export function getSeeds() {
         }
       }
       R({
-        activations: arr.shuffle(decodeActivations(acti)),
-        permutations: arr.shuffle(decodePermutations(perm)),
+        activations: decodeActivations(acti),
+        permutations: decodePermutations(perm),
       })
     }
     im.src = "./seed.png"

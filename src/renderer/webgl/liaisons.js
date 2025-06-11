@@ -57,7 +57,7 @@ export class LiaisonsRenderer {
       attributes: ["a_position", "a_geometries", "a_color"],
       uniforms: ["u_view"],
       variables: {
-        CELL_SCALE: settings.rendering.cell.scale,
+        CELL_SCALE: settings.rendering.cell.scale.toFixed(4),
       },
       vao: (prg) => (u) => {
         u.attrib(prg.attributes.a_position, glu.quad(gl), 2, gl.FLOAT)

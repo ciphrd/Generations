@@ -3,10 +3,17 @@
  * randomness manipulation for primary-properties.
  */
 
+import { generateDNA, mutateDNA } from "./growth/dna"
 import { arr } from "./utils/array"
 import { Color } from "./utils/color"
 import { clamp, clamp01, fract } from "./utils/math"
-import { rnd, rnd0 } from "./utils/rnd"
+import { rnd, rnd0, rngSequence } from "./utils/rnd"
+
+/**
+ * will be populated by parametricSpace()
+ * @type {ReturnType<typeof parametricSpace>}
+ */
+export const Params = {}
 
 // rand({
 //   // here goes the initial value
@@ -33,8 +40,58 @@ function randMutate({ initial, mutate, output }) {
   return output(value)
 }
 
-export function parametricSpace() {
-  // todo: first compute the most important randomness-dependant settings
+// todo: we could add a "mutation strength" which drives how much mutation there
+//       is. Then each mutation is factor of this strength.
+
+function parametricSpace(seeds) {
+  /**
+   * @note It's important here to generate the most significant features first,
+   * in case a new version would be pushed on-chain. This would allow keeping
+   * these features even if more parameters are added in the param space.
+   *
+   * @note Because the generation process requires an arbitrary number of
+   * random number generations (the number varies based on a random number
+   * generated), a sequence of fixed length is pre-generated. This sequence is
+   * designed to be 2x bigger than the theoretical maximum required, to ensure
+   * future versions have some margin.
+   */
+
+  console.log("generate dnas...")
+  const dnas = randMutate({
+    initial: () => {
+      // todo: figure out the exact number here
+      const seq = arr.new(10_000, () => rnd0.one())
+      console.log([...seq])
+      const rng = rngSequence(seq)
+      const out = arr.new(16, () => generateDNA(seeds, rng))
+      console.log([...out])
+      return out
+    },
+    mutate: (prev, rngAtDepth) => {
+      // todo: same as above
+      const rng = rngSequence(arr.new(10_000, () => rngAtDepth.one()))
+      for (let i = 0; i < 16; i++) {
+        // prev[i] = mutateDNA(prev[i], rng /* todo: strength ? */)
+      }
+      console.log([...prev])
+      return prev
+    },
+  })
+
+  const growthRngSequence = randMutate({
+    initial: (rng) => rngSequence(arr.new(10_000, rng.one)),
+    mutate: (prev, rng) => rngSequence(arr.new(10_000, rng.one)),
+  })
+  const poolRngSequence = randMutate({
+    initial: (rng) => rngSequence(arr.new(10_000, rng.one)),
+    mutate: (prev, rng) => rngSequence(arr.new(10_000, rng.one)),
+  })
+
+  /**
+   * From now on, these parameters are less significant. They are computed
+   * from most to least important for the sake safety in case of version update
+   * (though it shouldn't matter).
+   */
 
   // coloring
   const cellsDefaultColor = randMutate({
@@ -104,6 +161,9 @@ export function parametricSpace() {
   })
 
   return {
+    dnas,
+    growthRngSequence,
+    poolRngSequence,
     cellsDefaultColor,
     sedimentHues,
     sedimentSharpness,
@@ -118,4 +178,7 @@ export function parametricSpace() {
   }
 }
 
-export const Params = parametricSpace()
+export function generateParameters(seeds) {
+  const generated = parametricSpace(seeds)
+  Object.assign(Params, generated)
+}

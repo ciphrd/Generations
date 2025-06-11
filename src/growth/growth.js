@@ -1,4 +1,5 @@
 import { Node } from "../graph/node"
+import { Params } from "../parametric-space"
 import { arr } from "../utils/array"
 import { rnd, rnd0 } from "../utils/rnd"
 
@@ -10,8 +11,7 @@ export function grow(center, dnas, maxNodes) {
   nodes[0].edges.push(nodes[0])
   for (const node of nodes) {
     node.data.clusterGroup = 0
-    // todo: remove randomization from here
-    node.setDNA(rnd0.el(dnas))
+    node.setDNA(Params.growthRngSequence.el(dnas))
   }
 
   let node
@@ -21,8 +21,7 @@ export function grow(center, dnas, maxNodes) {
       j >= 0 && nodes.length < maxNodes;
       j--
     ) {
-      // todo remove rand
-      node = rnd0.el(nodes)
+      node = Params.growthRngSequence.el(nodes)
       node.cpu.prepare()
       node.cpu.run({
         node,

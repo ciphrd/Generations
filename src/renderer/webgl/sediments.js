@@ -36,7 +36,7 @@ export class Sediments {
     this.otherField = otherField
     this.membraneOuter = membraneOuter
 
-    const { nbRoot } = settings.sediments
+    const nbRoot = Params.sedimentNbAgents
     this.nbRoot = nbRoot
     this.nb = nbRoot ** 2
 
@@ -92,8 +92,8 @@ export class Sediments {
           "u_distance_field",
         ],
         variables: {
-          RND_MOVE_STRENGTH: Params.substrateAgentsRndMove,
-          MOVE_SPEED: Params.substrateAgentsMoveSpeed,
+          RND_MOVE_STRENGTH: Params.substrateAgentsRndMove.toFixed(8),
+          MOVE_SPEED: Params.substrateAgentsMoveSpeed.toFixed(8),
         },
         vao: (prog) => (u) => {
           u.attrib(prog.attributes.a_position, glu.quad(gl), 2)
@@ -111,8 +111,8 @@ export class Sediments {
           "u_texel",
         ],
         variables: {
-          RD_DIFF_RATE_B: settings.sediments.rd.diffRateB,
-          CELLS_SEPARATION: settings.sediments.cellsSeparation,
+          RD_DIFF_RATE_B: Params.rdDiffRateB.toFixed(4),
+          CELLS_SEPARATION: Params.cellsBgSeparation.toFixed(4),
         },
         vao: (prog) => (u) => {
           u.attrib(prog.attributes.a_position, glu.quad(gl), 2)

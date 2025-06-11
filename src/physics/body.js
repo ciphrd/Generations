@@ -1,13 +1,11 @@
 import { vec2 } from "../utils/vec"
-import { angleForLerp, clamp, lerp, mod } from "../utils/math"
-import { Token } from "../network/token"
-import { rnd, rnd0 } from "../utils/rnd"
+import { clamp, lerp, mod } from "../utils/math"
 import { CPU, mergeOperations } from "../bytecode/cpu"
 import { ActivationBytecode } from "../bytecode/activation"
 import { Actions } from "./actions"
 import { Entity } from "./entity"
-import { settings } from "../settings"
 import { arr } from "../utils/array"
+import { Params } from "../parametric-space"
 
 let c = 0
 const _v2a = vec2(),
@@ -33,7 +31,7 @@ export class Body extends Entity {
     pos,
     radius,
     friction = 0,
-    color = settings.cells.default.color.clone()
+    color = Params.cellsDefaultColor.clone()
   ) {
     super()
     this.world = world

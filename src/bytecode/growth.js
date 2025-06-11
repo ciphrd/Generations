@@ -33,10 +33,10 @@
  */
 
 import { Node } from "../graph/node"
+import { Params } from "../parametric-space"
 import { SensorKeys } from "../sensors"
 import { Color } from "../utils/color"
 import { clamp01, mod } from "../utils/math"
-import { rnd, rnd0 } from "../utils/rnd"
 
 const set = [
   "nop",
@@ -54,6 +54,7 @@ const set = [
   "push",
   "dnal",
   "sens",
+  "color",
 ]
 
 const sortedLetters = "xyzwstuv"
@@ -72,6 +73,7 @@ export const GrowthBytecode = {
     return instructions
   },
   exec: (instructions, pointer, stack, context) => {
+    const rng = Params.growthRngSequence
     const { nodes, node, nodemap, dnas } = context
     const operations = []
     const instruction = instructions[pointer]
@@ -97,6 +99,9 @@ export const GrowthBytecode = {
         pointer++
         while (pointer < instructions.length) {
           if (instructions[pointer] & 8) c++
+          // todo: check if this instruction is correct based on the design
+          //       this is a quick hack to get mutations working
+          if (c < 0) break
           if (c >= 2) break
           rule[c].push([
             sortedLetters[instructions[pointer++] & 7],
@@ -116,8 +121,7 @@ export const GrowthBytecode = {
         function matchEdge(a, b) {
           let match = null
           if (!edges[a.id]) edges[a.id] = []
-          // todo: warning: randomization shouldn't be in here
-          const bias = rnd0.int(0, a.edges.length)
+          const bias = rng.int(0, a.edges.length)
           for (let i = 0; i < a.edges.length; i++) {
             const di = (i + bias) % a.edges.length
             if (edges[a.id].includes(di)) continue
@@ -154,9 +158,8 @@ export const GrowthBytecode = {
             node.pos
               .clone()
               .add(
-                // todo: remove randomization from here
-                rnd0.range(0.0001, 0.01) * rnd0.sign(),
-                rnd0.range(0.0001, 0.01) * rnd0.sign()
+                rng.range(0.0001, 0.01) * rng.sign(),
+                rng.range(0.0001, 0.01) * rng.sign()
               )
               .apply(clamp01),
             node.dna
@@ -186,8 +189,7 @@ export const GrowthBytecode = {
       }
       // rnd
       case 0x3:
-        // todo: cannot have randomization in here
-        stack.push(rnd0.int(0, 16) & 0xf)
+        stack.push(rng.int(0, 16) & 0xf)
         break
       // pop
       case 0x4:

@@ -13,16 +13,8 @@ export const settings = {
       scale: 2.2,
     },
   },
-  dnas: {
-    nb: 10,
-  },
   signals: {
     loss: 0.99,
-  },
-  cells: {
-    default: {
-      color: Params.cellsDefaultColor,
-    },
   },
   food: {
     default: {
@@ -60,22 +52,6 @@ export const settings = {
       "purple",
       "white",
     ],
-  },
-  sediments: {
-    nbRoot: Params.sedimentNbAgents,
-    cellsSeparation: Params.cellsBgSeparation,
-    hues: {
-      substrate: Params.sedimentHues[0],
-      rd: Params.sedimentHues[1],
-    },
-    sharpness: Params.sedimentSharpness,
-    thickness: {
-      bg: Params.sedimentBgThickness,
-      fg: Params.sedimentFgThickness,
-    },
-    rd: {
-      diffRateB: Params.rdDiffRateB,
-    },
   },
   microscopy: {
     light: {

@@ -35,11 +35,20 @@ export const arr = {
       console.log(get(el))
     }
   },
-  shuffle(A) {
-    for (let i = A.length - 1; i > 0; i--) {
-      const j = floor($fx.rand() * (i + 1))
-      ;[A[i], A[j]] = [A[j], A[i]]
-    }
-    return A
+}
+
+export const u8arr = {
+  splice: (A, start, deleteCount, ...itemsToAdd) => {
+    const before = A.subarray(0, start)
+    const after = A.subarray(start + deleteCount)
+
+    const newLength = before.length + itemsToAdd.length + after.length
+    const result = new Uint8Array(newLength)
+
+    result.set(before, 0)
+    result.set(itemsToAdd, before.length)
+    result.set(after, before.length + itemsToAdd.length)
+
+    return result
   },
 }

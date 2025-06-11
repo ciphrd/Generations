@@ -1,9 +1,7 @@
 import { arr } from "./array"
 import { lerp } from "./math"
 
-const randomizer = (depth) => {
-  const rand = () => $fx.randAt(depth)
-
+export const randomizer = (rand) => {
   return {
     one: () => rand(),
     range(min, max) {
@@ -38,8 +36,19 @@ const randomizer = (depth) => {
   }
 }
 
-const randomizers = arr.new($fx.depth + 1, (i) => randomizer(i))
+const randomizers = arr.new($fx.depth + 1, (i) =>
+  randomizer(() => $fx.randAt(i))
+)
 
 export const rnd0 = randomizers[0]
-console.log({ rnd0 })
 export const rnd = (depth) => randomizers[depth]
+
+// creates a rng using a sequence of pre-generated numbers
+export const rngSequence = (sequence) => {
+  let cursor = 0
+  return randomizer(() => {
+    const n = sequence[cursor]
+    cursor = (cursor + 1) % sequence.length
+    return n
+  })
+}

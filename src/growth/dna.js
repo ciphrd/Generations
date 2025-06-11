@@ -1,9 +1,10 @@
-import { rnd, rnd0 } from "../utils/rnd"
+import { arr, u8arr } from "../utils/array"
+import { randomizer, rnd, rnd0 } from "../utils/rnd"
 
-function generateActivation(seeds) {
+function generateActivation(seeds, rng) {
   const out = []
-  for (let i = 0, n = rnd0.int(1, 4); i < n; i++) {
-    out.push(...rnd0.el(seeds.activations))
+  for (let i = 0, n = rng.int(1, 4); i < n; i++) {
+    out.push(...rng.el(seeds.activations))
   }
 
   // todo: improve ofc
@@ -20,34 +21,34 @@ function generateActivation(seeds) {
   return out
 }
 
-function generateDNA(seeds) {
-  console.log({ seeds })
+export function generateDNA(seeds, rng) {
+  console.log({ seeds: { ...seeds } })
   const growth = []
 
   // all dns start with a permutation rule
   growth.push(0x1)
-  growth.push(...rnd0.el(seeds.permutations))
+  growth.push(...rng.el(seeds.permutations))
   // marks the end of permutation
   growth.push(128)
 
-  for (let i = 0, m = rnd0.int(5, 20); i < m; i++) {
-    growth.push(rnd0.int(0, 256) & 0xff)
+  for (let i = 0, m = rng.int(5, 20); i < m; i++) {
+    growth.push(rng.int(0, 256) & 0xff)
     // if ($fx.rand() < 0.1) {
-    //   growth.push(((0xc << 4) + rnd0.int(0, 16)) & 0xf)
+    //   growth.push(((0xc << 4) + rng.int(0, 16)) & 0xf)
     // }
   }
 
   // add random coloration rules
-  for (let i = 0, m = rnd0.int(4, 10); i < m; i++) {
-    // 4bits for color sequence code, 4bites for a random letter
-    growth.push(0xf0 + (rnd0.int(0, 16) & 0xf))
+  for (let i = 0, m = rng.int(4, 10); i < m; i++) {
+    // 4bits for color sequence code, 4bits for a random letter
+    growth.push(0xf0 + (rng.int(0, 16) & 0xf))
     // 8bits for a random rgb332 color
-    growth.push(rnd0.int(0, 256) & 0xff)
+    growth.push(rng.int(0, 256) & 0xff)
   }
 
   const activations = Array(4)
     .fill(0)
-    .map(() => generateActivation(seeds))
+    .map(() => generateActivation(seeds, rng))
 
   // improve this mapping for a more robust sol
   return [
@@ -57,5 +58,64 @@ function generateDNA(seeds) {
 }
 
 export function generateDNAs(seeds) {
-  return [...Array(16)].map(() => generateDNA(seeds))
+  return [...Array(16)].map(() => generateDNA(seeds, randomizer(random)))
+}
+
+const bitManRng = (rng) => ({
+  flipBit: (u8array) => {
+    const nbBits = u8array.length * 8
+    const flipIdx = rng.int(0, nbBits)
+    const byteIdx = floor(flipIdx / 8)
+    const inByteIdx = flipIdx % 8
+    u8array[byteIdx] ^= 1 << inByteIdx
+    return u8array
+  },
+  addByte: (u8array, byte) => {
+    const pos = rng.int(0, u8array.length)
+    u8arr.splice(u8array, pos, 0, byte)
+    return u8array
+  },
+  delByte: (u8array) => {
+    const pos = rng.int(0, u8array.length - 1)
+    u8arr.splice(u8array, pos, 1)
+    return u8array
+  },
+})
+
+function mutatePermutationDNA(dna, rng, strength) {
+  // need to keep the first and last bytes
+  let mutated = dna.subarray(1, dna.length - 1)
+  const bitman = bitManRng(rng)
+
+  for (let i = 0, m = 32; i < m; i++) {
+    bitman.flipBit(mutated)
+  }
+
+  for (let i = 0; i < 4; i++) {
+    mutated = bitman.delByte(mutated)
+  }
+
+  for (let i = 0; i < 4; i++) {
+    mutated = bitman.addByte(mutated, rng.byte())
+  }
+
+  const out = new Uint8Array(mutated.length + 2)
+  out.at[out.length - 1] = dna[dna.length - 1]
+  out[0] = dna[0]
+  for (let i = 0; i < mutated.length; i++) {
+    out[i + 1] = mutated[i]
+  }
+
+  return out
+}
+
+function mutateActivationDNA(dna, rng, strength) {
+  return dna
+}
+
+export function mutateDNA(dna, rng, strength) {
+  return [
+    mutatePermutationDNA(dna[0], rng),
+    ...arr.new(4, (i) => mutateActivationDNA(dna[i + 1], rng, strength)),
+  ]
 }

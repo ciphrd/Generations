@@ -32,6 +32,7 @@ import { viewUniform } from "./view"
 import { CompositionPass } from "./composition"
 import { BodyFlags } from "../../physics/body"
 import { MembraneOuter } from "./membrane-outer"
+import { Params } from "../../parametric-space"
 
 const W = 800
 const H = 800
@@ -203,7 +204,7 @@ export class WebGLRenderer extends Renderer {
         attributes: ["a_position", "a_geometry", "a_color"],
         uniforms: ["u_view"],
         variables: {
-          CELL_SCALE: settings.rendering.cell.scale,
+          CELL_SCALE: settings.rendering.cell.scale.toFixed(4),
         },
         vao: (prg) => (u) => {
           u.attrib(prg.attributes.a_position, glu.quad(gl), 2, gl.FLOAT)
@@ -228,7 +229,7 @@ export class WebGLRenderer extends Renderer {
         attributes: ["a_position", "a_endpoints", "a_geometries", "a_color"],
         uniforms: ["u_view"],
         variables: {
-          CELL_SCALE: settings.rendering.cell.scale,
+          CELL_SCALE: settings.rendering.cell.scale.toFixed(4),
         },
         vao: (prg) => (u) => {
           u.attrib(prg.attributes.a_position, glu.quad(gl), 2, gl.FLOAT)
@@ -253,7 +254,7 @@ export class WebGLRenderer extends Renderer {
         attributes: ["a_position", "a_geometry", "a_color", "a_signals"],
         uniforms: ["u_view", "u_blurred_membrane", "u_color_field", "u_time"],
         variables: {
-          CELL_SCALE: settings.rendering.cell.scale,
+          CELL_SCALE: settings.rendering.cell.scale.toFixed(4),
         },
         vao: (prg) => (u) => {
           u.attrib(prg.attributes.a_position, glu.quad(gl), 2, gl.FLOAT)
@@ -285,7 +286,7 @@ export class WebGLRenderer extends Renderer {
         attributes: ["a_position", "a_endpoints", "a_geometries", "a_color"],
         uniforms: ["u_view", "u_points", "u_blurred_membrane", "u_color_field"],
         variables: {
-          CELL_SCALE: settings.rendering.cell.scale,
+          CELL_SCALE: settings.rendering.cell.scale.toFixed(4),
         },
         vao: (prg) => (u) => {
           u.attrib(prg.attributes.a_position, glu.quad(gl), 2, gl.FLOAT)
@@ -537,17 +538,17 @@ export class WebGLRenderer extends Renderer {
     )
     gl.uniform2f(
       programs.sediments.uniforms.u_hues,
-      settings.sediments.hues.substrate,
-      settings.sediments.hues.rd
+      Params.sedimentHues[0],
+      Params.sedimentHues[1]
     )
     gl.uniform1f(
       programs.sediments.uniforms.u_sharpness,
-      settings.sediments.sharpness
+      Params.sedimentSharpness
     )
     gl.uniform2f(
       programs.sediments.uniforms.u_thickness,
-      settings.sediments.thickness.bg,
-      settings.sediments.thickness.fg
+      Params.sedimentBgThickness,
+      Params.sedimentFgThickness
     )
     glu.draw.quad(gl)
 
