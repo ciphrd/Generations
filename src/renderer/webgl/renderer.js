@@ -114,6 +114,10 @@ export class WebGLRenderer extends Renderer {
       view: viewGL,
     })
 
+    glu.vars({
+      NOISE_SEED: Params.snoiseSeed,
+    })
+
     this.vaos = {}
     this.prepare()
   }

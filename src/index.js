@@ -113,8 +113,9 @@ document.body.appendChild(stats.dom)
 //     ( ) work on evolutions extensively and make sure it's interesting to
 //         evolve certain organisms (low but existing variance)
 //     ( ) more seed DNAs for a bit more variety
-//     ( ) parametrize the different noises with a seed (as well as the various
-//         color settings such as microscope light, etc)
+//     (x) parametrize the different noises
+//     ( ) rework the signals to a much simpler state (with Clock, etc...)
+//         it was less open-ended but maybe that's for the best
 //     ( ) render
 //         (x) food, other cells, temp liaisons
 //         (x) they should too interact with env.
@@ -124,6 +125,7 @@ document.body.appendChild(stats.dom)
 //         ( ) extra post-processing
 //             microscope lens ? kinda signature yk
 //             chromatic abberation
+//         ( ) responsive output (no microscope lens)
 //         ( ) handle pixel ratio dependant rendering (shouldn't depend on PR)
 //         ( ) perform gaussian blur on color field in a different color space
 //             get more natural blended colors

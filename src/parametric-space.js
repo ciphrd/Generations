@@ -171,6 +171,12 @@ function parametricSpace(seeds) {
     output: (v) => remap01(v, 0, 0.1),
   })
 
+  const snoiseSeed = randMutate({
+    initial: (rng) => rng.one(),
+    mutate: (prev, rng) => rng.one(),
+    output: (v) => v * 1000,
+  })
+
   return {
     dnas,
     nbCells,
@@ -189,6 +195,7 @@ function parametricSpace(seeds) {
     substrateAgentsMoveSpeed,
     cellsColorSpread,
     rdEggsEffect,
+    snoiseSeed,
   }
 }
 

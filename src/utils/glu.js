@@ -1,6 +1,7 @@
 import { strHash } from "./string"
 
 let libs = {}
+let vars = {}
 let quadBuffer = null
 
 const includeRgx = /^#include <([a-zA-Z\-]+)\.glsl>$/
@@ -10,6 +11,9 @@ const programMap = {}
 export const glu = {
   libs(dict) {
     libs = dict
+  },
+  vars(dict) {
+    vars = dict
   },
   quadBuffer(gl) {
     if (quadBuffer) return quadBuffer
@@ -316,6 +320,7 @@ export const glu = {
       vao = null,
     } = {}
   ) {
+    variables = { ...vars, ...variables }
     vertex = this.replaceVariables(vertex, variables)
     fragment = this.replaceVariables(fragment, variables)
 
