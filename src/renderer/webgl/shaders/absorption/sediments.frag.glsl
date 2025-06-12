@@ -58,10 +58,7 @@ void main() {
   outColor0 = vec4(col * I, 1);
 
   vec3 cell_color = texture(u_cell_colors, v_uv).gba;
-  // todo: here it should be alpha field
-  C = (cell_color.r + cell_color.g + cell_color.b) * 0.333
-    * smoothstep(CELL_COLOR_SPREAD, 0.6, cells.a);
-  float C2 = smoothstep(0.1, 0.4, cells.a);
+  C = smoothstep(CELL_COLOR_SPREAD, 1.5, cells.a);
 
   rd = pow(rd, 0.5) * 1.0;
   rd = clamp(rd, 0.0, 1.0);
@@ -89,6 +86,7 @@ void main() {
   nColB += col * rd * (0.1 + 0.9 * pow(I, 0.5));
 
   // mixing based
+  float C2 = smoothstep(0.1, 0.4, cells.a);
   outColor0.rgb = mix(nColA, nColB, C2);
 
   // final color correction

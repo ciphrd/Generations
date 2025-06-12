@@ -15,7 +15,6 @@ import cellFS from "./shaders/cell.frag.glsl"
 import liaisonVS from "./shaders/liaison.vert.glsl"
 import liaisonFS from "./shaders/liaison.frag.glsl"
 import liaisonTempFS from "./shaders/liaison-temp.frag.glsl"
-import pointsVS from "./shaders/points.vert.glsl"
 import bacteriasFS from "./shaders/bacterias.frag.glsl"
 import fieldLiaisonFS from "./shaders/field-liaison.frag.glsl"
 import fieldCellFS from "./shaders/field-cell.frag.glsl"
@@ -566,11 +565,7 @@ export class WebGLRenderer extends Renderer {
 
     // gl.useProgram(programs.tex.program)
     // gl.bindVertexArray(this.vaos.tex)
-    // glu.uniformTex(
-    //   gl,
-    //   programs.tex.uniforms.u_texture,
-    //   this.sediments.outputs.pre
-    // )
+    // glu.uniformTex(gl, programs.tex.uniforms.u_texture, this.rts.colorConv.tex)
     // glu.draw.quad(gl)
   }
 }

@@ -15,7 +15,7 @@ float czm_luminance(vec3 rgb){
 }
 
 void main() {
-  float emboss = texture(u_emboss, v_uv).r * 1.0;
+  float emboss = texture(u_emboss, v_uv).r * 0.7;
 
   // brightfield
   vec4 T = texture(u_absorption, v_uv);
