@@ -1,6 +1,8 @@
 #version 300 es
 precision mediump float;
 
+#define CELL_COLOR_SPREAD $CELL_COLOR_SPREAD
+
 uniform sampler2D u_sediments;
 uniform sampler2D u_rd;
 uniform sampler2D u_cells;
@@ -58,7 +60,7 @@ void main() {
   vec3 cell_color = texture(u_cell_colors, v_uv).gba;
   // todo: here it should be alpha field
   C = (cell_color.r + cell_color.g + cell_color.b) * 0.333
-    * smoothstep(0.4, 0.6, cells.a);
+    * smoothstep(CELL_COLOR_SPREAD, 0.6, cells.a);
   float C2 = smoothstep(0.1, 0.4, cells.a);
 
   rd = pow(rd, 0.5) * 1.0;

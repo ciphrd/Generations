@@ -181,7 +181,7 @@ async function start() {
 
   const world = new World()
 
-  const nodes = grow(vec2(0.501, 0.502), Params.dnas, 100)
+  const nodes = grow(vec2(0.501, 0.502), Params.dnas, Params.nbCells)
   console.log({ nodes })
   const dnahexes = {}
   nodes.forEach((node) => {

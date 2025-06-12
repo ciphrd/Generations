@@ -6,7 +6,7 @@
 import { generateDNA, mutateDNA } from "./growth/dna"
 import { arr } from "./utils/array"
 import { Color } from "./utils/color"
-import { clamp, clamp01, fract } from "./utils/math"
+import { clamp, clamp01, fract, remap01 } from "./utils/math"
 import { rnd, rnd0, rngSequence } from "./utils/rnd"
 
 /**
@@ -56,31 +56,25 @@ function parametricSpace(seeds) {
    * future versions have some margin.
    */
 
-  console.log("generate dnas...")
   const dnas = randMutate({
     initial: () => {
       // todo: figure out the exact number here
-      const seq = arr.new(10_000, () => rnd0.one())
-      console.log([...seq])
-      const rng = rngSequence(seq)
-      const out = arr.new(16, () => generateDNA(seeds, rng))
-      console.log([...out])
-      return out
+      const rng = rngSequence(arr.new(10_000, () => rnd0.one()))
+      return arr.new(16, () => generateDNA(seeds, rng))
     },
     mutate: (prev, rngAtDepth) => {
       // todo: same as above
       const rng = rngSequence(arr.new(10_000, () => rngAtDepth.one()))
       for (let i = 0; i < 16; i++) {
-        // prev[i] = mutateDNA(prev[i], rng /* todo: strength ? */)
+        prev[i] = mutateDNA(prev[i], rng /* todo: strength ? */)
       }
-      console.log([...prev])
       return prev
     },
   })
 
   const growthRngSequence = randMutate({
     initial: (rng) => rngSequence(arr.new(10_000, rng.one)),
-    mutate: (prev, rng) => rngSequence(arr.new(10_000, rng.one)),
+    mutate: (prev, rng) => prev,
   })
   const poolRngSequence = randMutate({
     initial: (rng) => rngSequence(arr.new(10_000, rng.one)),
@@ -92,6 +86,11 @@ function parametricSpace(seeds) {
    * from most to least important for the sake safety in case of version update
    * (though it shouldn't matter).
    */
+
+  const nbCells = randMutate({
+    initial: (rng) => rng.range(70, 120),
+    mutate: (prev, rng) => clamp(prev + rng.range(-10, 20), 10, 800),
+  })
 
   // coloring
   const cellsDefaultColor = randMutate({
@@ -160,8 +159,21 @@ function parametricSpace(seeds) {
     output: (v) => clamp(v, 0.001, 0.03),
   })
 
+  const cellsColorSpread = randMutate({
+    initial: (rng) => rng.one(),
+    mutate: (prev, rng) => clamp01(prev + rng.range(-0.13, 0.13)),
+    output: (v) => remap01(v, 0.1, 0.4),
+  })
+
+  const rdEggsEffect = randMutate({
+    initial: (rng) => pow(rng.one(), 2.0) * 0.5,
+    mutate: (prev, rng) => clamp01(prev + rng.range(-0.1, 0.1)),
+    output: (v) => remap01(v, 0, 0.1),
+  })
+
   return {
     dnas,
+    nbCells,
     growthRngSequence,
     poolRngSequence,
     cellsDefaultColor,
@@ -175,6 +187,8 @@ function parametricSpace(seeds) {
     rdGaussianFilterSize,
     substrateAgentsRndMove,
     substrateAgentsMoveSpeed,
+    cellsColorSpread,
+    rdEggsEffect,
   }
 }
 

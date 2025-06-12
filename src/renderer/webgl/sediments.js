@@ -113,6 +113,7 @@ export class Sediments {
         variables: {
           RD_DIFF_RATE_B: Params.rdDiffRateB.toFixed(4),
           CELLS_SEPARATION: Params.cellsBgSeparation.toFixed(4),
+          RD_EGGS: Params.rdEggsEffect.toFixed(4),
         },
         vao: (prog) => (u) => {
           u.attrib(prog.attributes.a_position, glu.quad(gl), 2)
@@ -187,7 +188,7 @@ export class Sediments {
     gl.drawArrays(gl.POINTS, 0, this.nb)
     glu.blend(gl, null)
 
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 8; i++) {
       substratePP.swap()
       glu.bindFB(gl, res.x, res.y, substratePP.back().fb)
       programs.substrate.use()

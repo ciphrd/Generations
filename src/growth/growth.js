@@ -5,10 +5,7 @@ import { rnd, rnd0 } from "../utils/rnd"
 
 export function grow(center, dnas, maxNodes) {
   const nodes = [new Node(center)]
-  nodes[0].edges.push(nodes[0])
-  nodes[0].edges.push(nodes[0])
-  nodes[0].edges.push(nodes[0])
-  nodes[0].edges.push(nodes[0])
+  for (let i = 0; i < 8; i++) nodes[0].edges.push(nodes[0])
   for (const node of nodes) {
     node.data.clusterGroup = 0
     node.setDNA(Params.growthRngSequence.el(dnas))

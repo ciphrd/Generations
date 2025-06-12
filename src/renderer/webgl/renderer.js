@@ -319,6 +319,9 @@ export class WebGLRenderer extends Renderer {
           "u_sharpness",
           "u_thickness",
         ],
+        variables: {
+          CELL_COLOR_SPREAD: Params.cellsColorSpread,
+        },
         vao: (prog) => (u) => {
           u.attrib(prog.attributes.a_position, glu.quad(gl), 2)
         },

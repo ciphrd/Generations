@@ -158,8 +158,8 @@ export const GrowthBytecode = {
             node.pos
               .clone()
               .add(
-                rng.range(0.0001, 0.01) * rng.sign(),
-                rng.range(0.0001, 0.01) * rng.sign()
+                rng.range(0.0005, 0.05) * rng.sign(),
+                rng.range(0.0005, 0.05) * rng.sign()
               )
               .apply(clamp01),
             node.dna

@@ -3,6 +3,7 @@ precision highp float;
 
 #define RD_DIFF_RATE_B $RD_DIFF_RATE_B
 #define CELLS_SEPARATION $CELLS_SEPARATION
+#define RD_EGGS $RD_EGGS
 
 uniform sampler2D u_substrate;
 uniform sampler2D u_agents;
@@ -59,6 +60,9 @@ void main() {
   float diffB = RD_DIFF_RATE_B;
   float f = mix(.03, .06, n3);
   float k = mix(.055, .07, n3);
+
+  // "eggs" effect
+  k -= smoothstep(.6, .1, .5+.5*snoise(vec3(v_uv * 4., u_time*.04))) * RD_EGGS;
 
   vec4 laplacian = convolve(u_substrate, v_uv, laplacian_kernel, u_texel);
 

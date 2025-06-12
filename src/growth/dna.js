@@ -87,17 +87,19 @@ function mutatePermutationDNA(dna, rng, strength) {
   let mutated = dna.subarray(1, dna.length - 1)
   const bitman = bitManRng(rng)
 
-  for (let i = 0, m = 32; i < m; i++) {
+  // todo: here work on the randomness
+
+  for (let i = 0, m = 8; i < m; i++) {
     bitman.flipBit(mutated)
   }
 
-  for (let i = 0; i < 4; i++) {
-    mutated = bitman.delByte(mutated)
-  }
+  // if (rng.one() < 0.3) {
+  //   mutated = bitman.delByte(mutated)
+  // }
 
-  for (let i = 0; i < 4; i++) {
-    mutated = bitman.addByte(mutated, rng.byte())
-  }
+  // if (rng.one() < 0.3) {
+  //   mutated = bitman.addByte(mutated, rng.byte())
+  // }
 
   const out = new Uint8Array(mutated.length + 2)
   out.at[out.length - 1] = dna[dna.length - 1]
