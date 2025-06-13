@@ -197,7 +197,6 @@ export const glu = {
     }
 
     if (depth) {
-      console.log("depth !!!")
       const depthBuffer = gl.createRenderbuffer()
       gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer)
       gl.renderbufferStorage(
@@ -379,5 +378,35 @@ export const glu = {
     quad(gl) {
       gl.drawArrays(gl.TRIANGLES, 0, 6)
     },
+    instanced(gl, nb, size = 6) {
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, size, nb)
+    },
+  },
+
+  /**
+   * @param {WebGL2RenderingContext} gl
+   */
+  free(gl, ...any) {
+    for (const o of any) {
+      if (!o) continue
+      // glu render targets
+      if (o.tex && o.fb) {
+        gl.deleteTexture(o.tex)
+        gl.deleteFramebuffer(o.fb)
+      }
+      // glu multiple render targets
+      else if (o.fb && o.textures) {
+        gl.deleteFramebuffer(o.fb)
+        for (const tex of o.textures) gl.deleteTexture(tex)
+      }
+      // ping-pong render target
+      else if (o.front && o.back) {
+        this.free(gl, o.front(), o.back())
+      }
+      // if an object is passed, free all of its properties
+      else if (typeof o === "object") {
+        this.free(gl, ...Object.values(o))
+      }
+    }
   },
 }

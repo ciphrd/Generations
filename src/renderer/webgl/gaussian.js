@@ -48,30 +48,52 @@ export class GaussianPass {
    */
   constructor(
     gl,
-    res,
-    texture,
+    getInputs,
     width,
-    { format = gl.RGBA32F, wrap = gl.CLAMP_TO_EDGE } = {
-      format: gl.RGBA32F,
-      wrap: gl.CLAMP_TO_EDGE,
-    }
+    { format = gl.RGBA32F, wrap = gl.CLAMP_TO_EDGE } = {}
   ) {
     this.gl = gl
-    this.res = res
-    this.texture = texture
-    this.rt1 = glu.renderTarget(gl, res.x, res.y, format, { wrap })
-    this.rt2 = glu.renderTarget(gl, res.x, res.y, format, { wrap })
-    this.texel = this.res.clone().inv()
-
+    this.getInputs = getInputs
     this.program = initProgram(gl, width)
+    this.options = { format, wrap }
+    this.#allocate()
+  }
 
+  #allocate() {
+    const { gl, options, getInputs } = this
+
+    // free resources if any
+    glu.free(gl, this.rt1, this.rt2)
+
+    const inputs = getInputs()
+    this.res = inputs.res
+    this.texture = inputs.tex
+    this.rt1 = glu.renderTarget(
+      gl,
+      this.res.x,
+      this.res.y,
+      options.format,
+      options
+    )
+    this.rt2 = glu.renderTarget(
+      gl,
+      this.res.x,
+      this.res.y,
+      options.format,
+      options
+    )
+    this.texel = this.res.clone().inv()
     this.output = this.rt2.texture
+  }
+
+  onResize() {
+    this.#allocate()
   }
 
   render(tex = null) {
     if (tex) this.texture = tex
 
-    const { gl, res, rt1, rt2, program, texture, vao } = this
+    const { gl, res, texel, rt1, rt2, program, texture, vao } = this
 
     glu.bindFB(gl, res.x, res.y, rt1.fb)
     glu.blend(gl, null)
@@ -79,12 +101,12 @@ export class GaussianPass {
     gl.useProgram(program.program)
     gl.bindVertexArray(program.vao)
     glu.uniformTex(gl, program.uniforms.u_texture, texture)
-    gl.uniform2f(program.uniforms.u_dir, this.texel.x, 0)
-    gl.drawArrays(gl.TRIANGLES, 0, 6)
+    gl.uniform2f(program.uniforms.u_dir, texel.x, 0)
+    glu.draw.quad(gl)
 
     glu.bindFB(gl, res.x, res.y, rt2.fb)
     glu.uniformTex(gl, program.uniforms.u_texture, rt1.texture)
-    gl.uniform2f(program.uniforms.u_dir, 0, this.texel.y)
-    gl.drawArrays(gl.TRIANGLES, 0, 6)
+    gl.uniform2f(program.uniforms.u_dir, 0, texel.y)
+    glu.draw.quad(gl)
   }
 }

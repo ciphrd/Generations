@@ -8,19 +8,9 @@ export class MembraneOuter {
   /**
    * @param {WebGL2RenderingContext} gl
    */
-  constructor(gl, res, fieldRT) {
-    const res2 = res.clone().div(2)
-    const res4 = res2.clone().div(2)
-
+  constructor(gl, getInputs) {
     this.gl = gl
-    this.res = res
-    this.res2 = res2
-    this.res4 = res4
-    this.colorField = fieldRT
-
-    this.smooth = new TrailPass(gl, res, 0.2)
-
-    this.blur1 = new GaussianPass(gl, res2, this.smooth.output, 7)
+    this.getInputs = getInputs
 
     this.programs = {
       postBlur: glu.program(gl, fullVS, postBlurFS, {
@@ -31,16 +21,40 @@ export class MembraneOuter {
         },
       }),
     }
+    this.#allocate()
+    this.smooth = new TrailPass(gl, getInputs().res, 0.2)
+    this.blur1 = new GaussianPass(
+      gl,
+      () => ({ res: getInputs().res, tex: this.smooth.output }),
+      7
+    )
+  }
+
+  #allocate() {
+    const { gl, getInputs } = this
+
+    glu.free(gl, this.rts)
+
+    const { res, colorField } = getInputs()
+    const res2 = res.clone().div(2)
+
+    this.res = res
+    this.res2 = res2
+    this.colorField = colorField
 
     this.rts = {
       postBlur: glu.renderTarget(gl, res.x, res.y, gl.R32F),
     }
-
     this.output = this.rts.postBlur.tex
   }
 
+  onResize() {
+    this.#allocate()
+    this.blur1.onResize()
+  }
+
   render() {
-    const { gl, programs, rts, res, res2 } = this
+    const { gl, programs, rts, res } = this
 
     this.smooth.render(this.colorField)
     this.blur1.render()

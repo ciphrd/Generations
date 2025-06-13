@@ -27,12 +27,14 @@ export class Sediments {
   /**
    * @param {WebGL2RenderingContext} gl
    */
-  constructor(gl, res, distanceField, otherField, membraneOuter) {
+  constructor(gl, getInputs) {
     this.gl = gl
+    this.getInputs = getInputs
+    const { res, cellField, otherField, membraneOuter } = getInputs()
     this.res = res
-    let res2 = (this.res2 = res.clone().div(2))
+    const res2 = (this.res2 = res.clone().div(2))
     this.texel = res.clone().inv()
-    this.distanceField = distanceField
+    this.cellField = cellField
     this.otherField = otherField
     this.membraneOuter = membraneOuter
 
@@ -131,8 +133,7 @@ export class Sediments {
 
     this.blurFieldPass = new GaussianPass(
       gl,
-      res.clone().div(4),
-      this.distanceField,
+      () => ({ res: res.clone().div(4), tex: this.cellField }),
       1
     )
 
@@ -143,7 +144,11 @@ export class Sediments {
 
     this.edgePass1 = new EdgePass(gl, res, null)
     this.edgePass2 = new EdgePass(gl, res, this.edgePass1.output)
-    this.gaussianPass = new GaussianPass(gl, res, this.edgePass2.output, 11)
+    this.gaussianPass = new GaussianPass(
+      gl,
+      () => ({ res, tex: this.edgePass2.output }),
+      11
+    )
     this.sharpenPass = new SharpenPass(gl, res, this.gaussianPass.output)
 
     this.programs.initSubstrate.use()
@@ -154,6 +159,11 @@ export class Sediments {
       pre: this.substratePP.back().tex,
       post: this.sharpenPass.output,
     }
+  }
+
+  onResize() {
+    const inputs = this.getInputs()
+    this.membraneOuter = inputs.membraneOuter
   }
 
   render(time) {

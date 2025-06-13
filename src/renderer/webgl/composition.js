@@ -12,12 +12,9 @@ export class CompositionPass {
   /**
    * @param {WebGL2RenderingContext} gl
    */
-  constructor(gl, res, absorpTex) {
+  constructor(gl, getInputs) {
     this.gl = gl
-    this.res = res
-    this.res2 = res.clone().div(2)
-    this.texel = res.clone().inv()
-    this.absorpTex = absorpTex
+    this.getInputs = getInputs
 
     this.programs = {
       emboss: glu.program(gl, fullVS, convolveFS, {
@@ -46,10 +43,28 @@ export class CompositionPass {
       }),
     }
 
+    this.#allocate()
+  }
+
+  #allocate() {
+    const { gl, getInputs } = this
+    const { res, absorb } = getInputs()
+
+    glu.free(gl, this.rts)
+
+    this.res = res
+    this.res2 = res.clone().div(2)
+    this.texel = res.clone().inv()
+    this.absorpTex = absorb
+
     this.rts = {
       emboss: glu.renderTarget(gl, this.res2.x, this.res2.y, gl.R32F),
       comp: glu.renderTarget(gl, res.x, res.y),
     }
+  }
+
+  onResize() {
+    this.#allocate()
   }
 
   render() {

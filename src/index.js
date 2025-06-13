@@ -315,7 +315,6 @@ async function start() {
       : WebGLRenderer
 
   const renderer = new Renderer(world, selection)
-  Mouse.init(renderer.cvs)
 
   const engine = new Engine({
     world,

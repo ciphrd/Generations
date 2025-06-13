@@ -37,13 +37,23 @@ export class MembranePass {
       }),
     }
 
-    this.blurFieldPass = new GaussianPass(gl, res, this.cellNoiseField, 13, {
-      format: gl.R32F,
-    })
+    this.blurFieldPass = new GaussianPass(
+      gl,
+      () => ({ res, tex: this.cellNoiseField }),
+      13,
+      {
+        format: gl.R32F,
+      }
+    )
     this.edgePass = new EdgePass(gl, res, this.colorField)
-    this.blurEdgePass = new GaussianPass(gl, res, this.rt.texture, 9, {
-      format: gl.R32F,
-    })
+    this.blurEdgePass = new GaussianPass(
+      gl,
+      () => ({ res, tex: this.rt.texture }),
+      9,
+      {
+        format: gl.R32F,
+      }
+    )
 
     this.output = this.postBlurRt.tex
   }

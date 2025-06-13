@@ -48,7 +48,7 @@ export class PointsRenderer {
 
     program.use()
     viewUniform(gl, program, worldSpace)
-    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.points.length)
+    glu.draw.instanced(gl, this.points.length)
   }
 
   update() {

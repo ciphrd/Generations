@@ -16,5 +16,5 @@ export function Simulation() {
     }
   }, [])
 
-  return <div className="sim-wrapper" ref={$container} />
+  return <div className="sim-wrapper fullscreen" ref={$container} />
 }

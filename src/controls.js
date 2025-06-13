@@ -1,4 +1,4 @@
-import { res } from "./renderer/webgl/renderer"
+import { Globals } from "./globals"
 import { emitter } from "./utils/emitter"
 import { lerp } from "./utils/math"
 import { vec2 } from "./utils/vec"
@@ -12,7 +12,7 @@ class ControlsClass {
     this.txy = vec2(0, 0)
     this.#setScale(2.5)
     this.txArray = Array(4)
-    this.#setTransformArray()
+    this.updateTxArray()
     this.emitter = emitter()
     this.largestOrganism = null
 
@@ -51,13 +51,11 @@ class ControlsClass {
   }
 
   translate(tx, ty) {
-    // todo: compute here the actual tx value needed for best ux
     this.trackingTarget.add(tx, ty)
     this.#viewUpdated()
   }
 
   tweakScale(ds) {
-    // todo compute scale value needed for best ux
     this.scale += ds
     this.#setScale(this.scale + ds)
     this.#viewUpdated()
@@ -73,7 +71,14 @@ class ControlsClass {
     this.#autoTrack()
   }
 
-  #setTransformArray() {
+  #setTranslate(x, y) {
+    this.txy.set(x, y)
+    const d = abs(this.txArray[0] - x) + abs(this.txArray[1] - y)
+    if (d > 0.001) this.updateTxArray()
+  }
+
+  updateTxArray() {
+    const res = Globals.res
     this.txArray[0] = this.txy.x
     this.txArray[1] = this.txy.y
     this.txArray[2] = this.scale * (res.x > res.y ? res.y / res.x : 1)
@@ -81,6 +86,7 @@ class ControlsClass {
   }
 
   #viewUpdated() {
+    this.updateTxArray()
     this.emitUpdated()
   }
 
@@ -125,7 +131,7 @@ class ControlsClass {
     }
 
     // slowly move camera to target
-    this.txy.set(lerp(this.txy.x, tt.x, 0.1), lerp(this.txy.y, tt.y, 0.1))
+    this.#setTranslate(lerp(this.txy.x, tt.x, 0.1), lerp(this.txy.y, tt.y, 0.1))
   }
 }
 

@@ -17,6 +17,11 @@ main {
   gap: 5px;
 }
 
+.fullscreen {
+  width: 100vw;
+  height: 100vh;
+}
+
 .sim-wrapper {
   outline: 1px solid rgba(255, 255, 255, 0.15);
 }

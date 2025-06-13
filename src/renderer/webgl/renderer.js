@@ -32,6 +32,9 @@ import { CompositionPass } from "./composition"
 import { BodyFlags } from "../../physics/body"
 import { MembraneOuter } from "./membrane-outer"
 import { Params } from "../../parametric-space"
+import { Mouse } from "../../interactions/mouse"
+import { Globals } from "../../globals"
+import { Controls } from "../../controls"
 
 //
 // - Rendering resolution
@@ -40,16 +43,51 @@ import { Params } from "../../parametric-space"
 // - Environment res (always the same)
 //
 
-export const res = vec2(1000, 1000)
-export const deviceRes = res
-  .clone()
-  .mul(devicePixelRatio)
-  .apply((x) => floor(x))
-export const envRes = vec2(1600, 1600)
-
 export class WebGLRenderer extends Renderer {
   constructor(world, selection) {
     super(world, selection)
+    this.prepared = false
+  }
+
+  updateRes() {
+    const prevX = Globals.res.x
+    const prevY = Globals.res.y
+    const rect = this.$container.getBoundingClientRect()
+
+    if (rect.width !== prevX || rect.height !== prevY) {
+      Globals.res.x = rect.width
+      Globals.res.y = rect.height
+      Globals.deviceRes.x = floor(Globals.res.x * window.devicePixelRatio)
+      Globals.deviceRes.y = floor(Globals.res.y * window.devicePixelRatio)
+      Controls.updateTxArray()
+
+      if (this.prepared) this.#onResize()
+    }
+  }
+
+  #onResize() {
+    const { res, deviceRes } = Globals
+    this.cvs.width = deviceRes.x
+    this.cvs.height = deviceRes.y
+    this.cvs.style.width = res.x + "px"
+    this.cvs.style.height = res.y + "px"
+
+    this.#allocateRenderTargets()
+    this.blurColorFieldPass.onResize()
+    this.membraneOuter.onResize()
+    this.sediments.onResize()
+    this.compositionPass.onResize()
+  }
+
+  #attachEvents() {
+    new ResizeObserver(() => this.updateRes()).observe(this.$container)
+  }
+
+  providerRenderingContainer($container) {
+    super.providerRenderingContainer($container)
+
+    this.updateRes()
+    const { res, deviceRes } = Globals
 
     this.cvs = document.createElement("canvas")
     this.cvs.width = deviceRes.x
@@ -79,16 +117,16 @@ export class WebGLRenderer extends Renderer {
     })
 
     this.prepare()
-  }
+    this.#attachEvents()
 
-  providerRenderingContainer($container) {
-    super.providerRenderingContainer($container)
     $container.appendChild(this.cvs)
+    Mouse.init(this.cvs)
   }
 
   prepare() {
     let loc
     const { gl, world } = this
+    const { res, deviceRes, envRes } = Globals
     const { organisms, liaisons, bodies } = world
 
     const nb = organisms.length
@@ -297,7 +335,7 @@ export class WebGLRenderer extends Renderer {
       }),
     }
 
-    const quadBuffer = glu.quadBuffer(gl)
+    this.#allocateRenderTargets()
 
     this.bacterias = new PointsRenderer(gl, bacteriasFS, () => world.bacterias)
     this.food = new PointsRenderer(gl, foodFS, () => world.food)
@@ -318,54 +356,33 @@ export class WebGLRenderer extends Renderer {
       bodies.filter((b) => b.hasFlag(BodyFlags.FOOD))
     )
 
-    this.rts = {
-      absorb: glu.renderTarget(gl, deviceRes.x, deviceRes.y, gl.RGBA32F, {
-        // todo: not needed atm, but keeping in case we use cell shaders at some
-        // point (should avoid if possible!)
-        depth: true,
-      }),
-      cellFieldWorld: glu.renderTarget(gl, envRes.x, envRes.y, gl.RGBA32F, {
-        depth: true,
-      }),
-      otherFieldWorld: glu.renderTarget(gl, envRes.x, envRes.y, gl.RGBA32F),
-      cellFieldView: glu.renderTargetN(
-        2,
-        gl,
-        deviceRes.x,
-        deviceRes.y,
-        gl.RGBA32F,
-        {
-          depth: true,
-        }
-      ),
-    }
-
     this.blurColorFieldPass = new GaussianPass(
       gl,
-      deviceRes.clone().div(4),
-      this.rts.cellFieldView.textures[1],
+      () => ({
+        res: deviceRes.clone().div(4),
+        tex: this.rts.cellFieldView.textures[1],
+      }),
       5
     )
 
-    this.membraneOuter = new MembraneOuter(
-      gl,
-      deviceRes.clone().div(2),
-      this.rts.cellFieldWorld.tex
-    )
+    this.membraneOuter = new MembraneOuter(gl, () => ({
+      res: deviceRes.clone().div(2),
+      colorField: this.rts.cellFieldWorld.tex,
+    }))
 
-    this.sediments = new Sediments(
-      gl,
-      envRes,
-      this.rts.cellFieldWorld.tex,
-      this.rts.otherFieldWorld.tex,
-      this.membraneOuter.output
-    )
+    this.sediments = new Sediments(gl, () => ({
+      res: envRes,
+      cellField: this.rts.cellFieldWorld.tex,
+      otherField: this.rts.otherFieldWorld.tex,
+      membraneOuter: this.membraneOuter.output,
+    }))
 
-    this.compositionPass = new CompositionPass(
-      gl,
-      deviceRes,
-      this.rts.absorb.tex
-    )
+    this.compositionPass = new CompositionPass(gl, () => ({
+      res: deviceRes,
+      absorb: this.rts.absorb.tex,
+    }))
+
+    this.prepared = true
 
     world.emitter.on("bodies:updated", () => {
       this.bacterias.update()
@@ -377,11 +394,47 @@ export class WebGLRenderer extends Renderer {
     })
   }
 
+  #allocateRenderTargets() {
+    const gl = this.gl
+    const { deviceRes, envRes } = Globals
+
+    if (this.rts) {
+      glu.free(gl, this.rts.absorb, this.rts.cellFieldView)
+    }
+
+    this.rts = {
+      absorb: glu.renderTarget(gl, deviceRes.x, deviceRes.y, gl.RGBA32F, {
+        // todo: not needed atm, but keeping in case we use cell shaders at some
+        // point (should avoid if possible!)
+        depth: true,
+      }),
+      cellFieldWorld:
+        this.rts?.cellFieldWorld ||
+        glu.renderTarget(gl, envRes.x, envRes.y, gl.RGBA32F, {
+          depth: true,
+        }),
+      otherFieldWorld:
+        this.rts?.otherFieldWorld ||
+        glu.renderTarget(gl, envRes.x, envRes.y, gl.RGBA32F),
+      cellFieldView: glu.renderTargetN(
+        2,
+        gl,
+        deviceRes.x,
+        deviceRes.y,
+        gl.RGBA32F,
+        {
+          depth: true,
+        }
+      ),
+    }
+  }
+
   render(t, dt) {
     let program
 
     const { gl, world, programs } = this
     const { organisms, liaisons } = world
+    const { res, deviceRes, envRes } = Globals
     const nb = organisms.length
 
     this.buffers.cells.geo.update()
