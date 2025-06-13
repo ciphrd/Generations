@@ -63,7 +63,7 @@ export class CompositionPass {
     gl.uniform2f(programs.emboss.uniforms.u_texel_size, texel.x, texel.y)
     glu.draw.quad(gl)
 
-    glu.bindFB(gl, res.x, res.y, rts.comp.fb)
+    glu.bindFB(gl, res.x, res.y, null)
     programs.composition.use()
     glu.uniformTex(gl, programs.composition.uniforms.u_absorption, absorpTex, 0)
     glu.uniformTex(
@@ -78,9 +78,9 @@ export class CompositionPass {
     )
     glu.draw.quad(gl)
 
-    glu.bindFB(gl, res.x, res.y, null)
-    programs.chroma.use()
-    glu.uniformTex(gl, programs.composition.uniforms.u_tex, rts.comp.tex)
-    glu.draw.quad(gl)
+    // glu.bindFB(gl, res.x, res.y, null)
+    // programs.chroma.use()
+    // glu.uniformTex(gl, programs.composition.uniforms.u_tex, rts.comp.tex)
+    // glu.draw.quad(gl)
   }
 }

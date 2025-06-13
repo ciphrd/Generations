@@ -33,72 +33,32 @@ import { BodyFlags } from "../../physics/body"
 import { MembraneOuter } from "./membrane-outer"
 import { Params } from "../../parametric-space"
 
-const W = 800
-const H = 800
-const tW = W * devicePixelRatio
-const tH = H * devicePixelRatio
+//
+// - Rendering resolution
+//   - css pixels
+//   - device pixels
+// - Environment res (always the same)
+//
 
-/**
- * todo.
- *
- * ( ) modulate the shape of the cells / membrane on all the fragment shaders
- *     where these are rendered for consistency
- *     (include the liaison deformation)
- *
- *
- * (x) initial webgl setup
- * ( ) render cells & springs
- *   ( ) optimized pipeline for instancing
- *   ( ) instanced rendering of cells
- *   ( ) instanced rendering of springs
- * ( ) Have a single buffer with all the body positions
- *   ( ) Pass the buffer as a uniform, use sections of this buffer to render
- *       different bodies with different shaders ?
- * ( ) render other bodies
- * ( ) optimized updates (new springs, bodies, etc...)
- * ( ) shading of cells/springs
- * ( ) add details to environment
- *   ( ) agent-based simulation for dust-noise pattern, influenced by the
- *       the motion of bodies in the space
- *   ( ) various patterns to add texture, controllable via parameters
- *
- * ( ) 3d lighting using the field map as a depth layer. can be used to add
- *     subtle depth which can be observed through the microscope sometimes
- * ( ) subtle reaction diffusion trail
- * ( ) apply (edge2)->[blur]->[sharpness] to remove the 1px artifact on the
- *     edges due to the 2 passes of [edge] on the field
- * ( ) looking at touch, there's a limit node between the 2 edge passes, which
- *     allows getting much better edges. to test
- * ( ) to try
- *     potentially render every cell with a different color, such that
- *     there is a visual border which can be used to compute the edges
- *
- * ( ) IMPORTANT !
- *     Do not render the cells/liaisons on the full quads, or it creates
- *     artifacts on the edges.
- *
- * ( ) TODO
- *     Find a way to handle the view coordinates elegantly without rendering
- *     more that what's needed.
- *     Define what is rendered in full screen to preserve dimensions (membrane,)
- *     and what is rendered in view space for quality (cells)
- *
- *     Write an elegant pipeline to support these 2 coordinate systems and
- *     the different cases
- */
+export const res = vec2(1000, 1000)
+export const deviceRes = res
+  .clone()
+  .mul(devicePixelRatio)
+  .apply((x) => floor(x))
+export const envRes = vec2(1600, 1600)
 
 export class WebGLRenderer extends Renderer {
   constructor(world, selection) {
     super(world, selection)
 
     this.cvs = document.createElement("canvas")
-    this.cvs.width = tW
-    this.cvs.height = tH
-    this.cvs.style.width = W + "px"
-    this.cvs.style.height = H + "px"
+    this.cvs.width = deviceRes.x
+    this.cvs.height = deviceRes.y
+    this.cvs.style.width = res.x + "px"
+    this.cvs.style.height = res.y + "px"
 
     this.gl = this.cvs.getContext("webgl2")
-    this.texel = vec2(1 / this.cvs.width, 1 / this.cvs.height)
+    this.texel = res.clone().inv()
 
     this.gl.getExtension("EXT_color_buffer_float")
     this.gl.getExtension("EXT_float_blend")
@@ -118,7 +78,6 @@ export class WebGLRenderer extends Renderer {
       NOISE_SEED: Params.snoiseSeed,
     })
 
-    this.vaos = {}
     this.prepare()
   }
 
@@ -332,6 +291,9 @@ export class WebGLRenderer extends Renderer {
       tex: glu.program(gl, fullVS, textureFS, {
         attributes: ["a_position"],
         uniforms: ["u_texture"],
+        vao: (prg) => (u) => {
+          u.quad(prg)
+        },
       }),
     }
 
@@ -357,37 +319,43 @@ export class WebGLRenderer extends Renderer {
     )
 
     this.rts = {
-      absorb: glu.renderTarget(gl, tW, tH, gl.RGBA32F, { depth: true }),
-      cellFieldWorld: glu.renderTarget(gl, tW, tH, gl.RGBA32F, { depth: true }),
-      otherFieldWorld: glu.renderTarget(gl, tW, tH, gl.RGBA32F),
-      cellFieldView: glu.renderTargetN(2, gl, tW, tH, gl.RGBA32F, {
+      absorb: glu.renderTarget(gl, deviceRes.x, deviceRes.y, gl.RGBA32F, {
+        // todo: not needed atm, but keeping in case we use cell shaders at some
+        // point (should avoid if possible!)
         depth: true,
       }),
+      cellFieldWorld: glu.renderTarget(gl, envRes.x, envRes.y, gl.RGBA32F, {
+        depth: true,
+      }),
+      otherFieldWorld: glu.renderTarget(gl, envRes.x, envRes.y, gl.RGBA32F),
+      cellFieldView: glu.renderTargetN(
+        2,
+        gl,
+        deviceRes.x,
+        deviceRes.y,
+        gl.RGBA32F,
+        {
+          depth: true,
+        }
+      ),
     }
 
     this.blurColorFieldPass = new GaussianPass(
       gl,
-      vec2(tW, tH).div(2),
+      deviceRes.clone().div(4),
       this.rts.cellFieldView.textures[1],
-      11
+      5
     )
 
     this.membraneOuter = new MembraneOuter(
       gl,
-      vec2(tW, tH),
+      deviceRes.clone().div(2),
       this.rts.cellFieldWorld.tex
     )
 
-    this.vaos.tex = gl.createVertexArray()
-    gl.bindVertexArray(this.vaos.tex)
-    loc = this.programs.tex.attributes.a_position
-    gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer)
-    gl.enableVertexAttribArray(loc)
-    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
-
     this.sediments = new Sediments(
       gl,
-      vec2(tW, tH),
+      envRes,
       this.rts.cellFieldWorld.tex,
       this.rts.otherFieldWorld.tex,
       this.membraneOuter.output
@@ -395,7 +363,7 @@ export class WebGLRenderer extends Renderer {
 
     this.compositionPass = new CompositionPass(
       gl,
-      vec2(tW, tH),
+      deviceRes,
       this.rts.absorb.tex
     )
 
@@ -423,7 +391,7 @@ export class WebGLRenderer extends Renderer {
     //
     // Render field, merging the cells / liaisons in a smooth way
     //
-    glu.bindFB(gl, tW, tH, this.rts.cellFieldWorld.fb)
+    glu.bindFB(gl, envRes.x, envRes.y, this.rts.cellFieldWorld.fb)
     gl.enable(gl.DEPTH_TEST)
     gl.depthFunc(gl.LESS)
     glu.blend(gl, null)
@@ -438,7 +406,7 @@ export class WebGLRenderer extends Renderer {
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, liaisons.length)
 
     //
-    glu.bindFB(gl, tW, tH, this.rts.cellFieldView.fb)
+    glu.bindFB(gl, deviceRes.x, deviceRes.y, this.rts.cellFieldView.fb)
     gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1])
 
     programs.fieldCell.use()
@@ -452,7 +420,7 @@ export class WebGLRenderer extends Renderer {
     gl.disable(gl.DEPTH_TEST)
 
     glu.blend(gl, gl.ONE, gl.ONE)
-    glu.bindFB(gl, tW, tH, this.rts.otherFieldWorld.fb)
+    glu.bindFB(gl, envRes.x, envRes.y, this.rts.otherFieldWorld.fb)
     this.otherBodiesPass.render(true)
     //
 
@@ -477,7 +445,7 @@ export class WebGLRenderer extends Renderer {
     gl.depthFunc(gl.LESS)
     glu.blend(gl, null)
 
-    glu.bindFB(gl, tW, tH, this.rts.absorb.fb)
+    glu.bindFB(gl, deviceRes.x, deviceRes.y, this.rts.absorb.fb)
 
     // program = programs.cells
     // program.use()
@@ -567,9 +535,12 @@ export class WebGLRenderer extends Renderer {
     //
     this.compositionPass.render()
 
-    // gl.useProgram(programs.tex.program)
-    // gl.bindVertexArray(this.vaos.tex)
-    // glu.uniformTex(gl, programs.tex.uniforms.u_texture, this.rts.colorConv.tex)
+    // programs.tex.use()
+    // glu.uniformTex(
+    //   gl,
+    //   programs.tex.uniforms.u_texture,
+    //   this.membraneOuter.output
+    // )
     // glu.draw.quad(gl)
   }
 }

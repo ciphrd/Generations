@@ -1,3 +1,4 @@
+import { res } from "./renderer/webgl/renderer"
 import { emitter } from "./utils/emitter"
 import { lerp } from "./utils/math"
 import { vec2 } from "./utils/vec"
@@ -10,6 +11,8 @@ class ControlsClass {
     this.autoTracking = true
     this.txy = vec2(0, 0)
     this.#setScale(2.5)
+    this.txArray = Array(4)
+    this.#setTransformArray()
     this.emitter = emitter()
     this.largestOrganism = null
 
@@ -50,14 +53,14 @@ class ControlsClass {
   translate(tx, ty) {
     // todo: compute here the actual tx value needed for best ux
     this.trackingTarget.add(tx, ty)
-    this.emitUpdated()
+    this.#viewUpdated()
   }
 
   tweakScale(ds) {
     // todo compute scale value needed for best ux
     this.scale += ds
     this.#setScale(this.scale + ds)
-    this.emitUpdated()
+    this.#viewUpdated()
   }
 
   #setScale(scale) {
@@ -68,6 +71,17 @@ class ControlsClass {
       max: halfScaled,
     }
     this.#autoTrack()
+  }
+
+  #setTransformArray() {
+    this.txArray[0] = this.txy.x
+    this.txArray[1] = this.txy.y
+    this.txArray[2] = this.scale * (res.x > res.y ? res.y / res.x : 1)
+    this.txArray[3] = this.scale * (res.x > res.y ? 1 : res.x / res.y)
+  }
+
+  #viewUpdated() {
+    this.emitUpdated()
   }
 
   #autoTrack() {
@@ -96,6 +110,10 @@ class ControlsClass {
       scale: this.scale,
       instance: this,
     }
+  }
+
+  getTxMatrix() {
+    return this.txArray
   }
 
   update(t, dt) {

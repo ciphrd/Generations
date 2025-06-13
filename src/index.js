@@ -93,21 +93,6 @@ document.body.appendChild(stats.dom)
 //   by other bodies (we may want to optimize there if we use big bodies, as
 //   the current collisions are computed with small radiuses)
 
-// todo: coloring
-// (x) colors are handled by the DNA
-//     (x) add OP to define colors (8 bits for color)
-//         note: clamp bits if end of DNA ?
-//     (x) color assigned to cell
-// (x) color rendering
-//     (x) cells are colored based on instance color
-//     (x) smooth transitions between cells (HARD — re: no lol)
-//     (x) improve coloration as a whole
-//         (x) function to get variations of base color
-//         (x) add these variations everywhere
-// (x) sediments
-//     (x) improve coloring of sediments, rn pretty bad
-//     (x) too regular: maybe change rules with some noise
-
 //! Scoping the final phase of the project
 // ( ) base requirements
 //     ( ) work on evolutions extensively and make sure it's interesting to
@@ -129,6 +114,11 @@ document.body.appendChild(stats.dom)
 //         ( ) handle pixel ratio dependant rendering (shouldn't depend on PR)
 //         ( ) perform gaussian blur on color field in a different color space
 //             get more natural blended colors
+//         ( ) optimize cells field rendering (probably only need 1 texture
+//             output)
+//         ( ) optimize: maybe now we can transfer world field cells to view
+//             cells instead of re-rendering ?
+//             if so is there even a need to do so or can we use invTx() ?
 //     ( ) fix bugs
 //         ( ) Unknown promise rejection reason
 //             ooxEXWZrKip6H71hEnxvfnWZkh5G9iudmy3FC9XKxg41HvneufY
@@ -147,29 +137,6 @@ document.body.appendChild(stats.dom)
 //     ( ) think about whether the UI is included or not
 //         ( ) if so, think about what's missing from the UI
 //     ( ) rename rnd to rng
-
-// todo: cell deformations
-// Right now only the liaisons are deformed, which creates some un-orgnanic
-// feel to the whole, as cells are never deformed
-// ( ) investigate how cells could get deformed
-// ( ) implement cell deformations
-// ( ) hope for the best
-
-// todo:
-// Think about visual variations. Color won't be enough, their should be other
-// properties. Some ideas:
-// - membranes are different
-// - cells are smaller
-// - other microscopy techniques ?
-// - add other kinds of rendering ?
-//   - fish-egg kind of rendering
-//   - only membranes ?
-// -
-
-// todo: mutations
-// for open-form
-// ( ) initial DNA definition based on first hash
-// ( ) add mutations to the DNA based on the list of following hashes
 
 // todo: bugfux
 // ( ) Unknown promise rejection reason

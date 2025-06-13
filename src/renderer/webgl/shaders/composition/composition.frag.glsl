@@ -29,6 +29,6 @@ void main() {
   // outColor = vec4(C + vec3(emboss), 1.0);
 
   // lens
-  float lens = smoothstep(0.48, 0.487, length(v_uv - 0.5));
-  outColor.rgb *= 1.0 - lens;
+  // float lens = smoothstep(0.48, 0.487, length(v_uv - 0.5));
+  // outColor.rgb *= 1.0 - lens;
 }

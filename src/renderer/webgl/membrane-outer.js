@@ -20,7 +20,7 @@ export class MembraneOuter {
 
     this.smooth = new TrailPass(gl, res, 0.2)
 
-    this.blur1 = new GaussianPass(gl, res2, this.smooth.output, 13)
+    this.blur1 = new GaussianPass(gl, res2, this.smooth.output, 7)
 
     this.programs = {
       postBlur: glu.program(gl, fullVS, postBlurFS, {
