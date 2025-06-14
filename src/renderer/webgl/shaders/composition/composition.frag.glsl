@@ -31,4 +31,9 @@ void main() {
   // lens
   // float lens = smoothstep(0.48, 0.487, length(v_uv - 0.5));
   // outColor.rgb *= 1.0 - lens;
+
+
+  // todo: test with lens color coming from sim
+  // float lens = smoothstep(0.48, 0.487, length(v_uv - 0.5));
+  // outColor.rgb = mix(outColor.rgb, vec3(0.3,0.4,0.8), lens);
 }

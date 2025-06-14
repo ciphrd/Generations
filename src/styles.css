@@ -18,7 +18,7 @@ main {
 }
 
 .fullscreen {
-  width: 100vw;
+  width: 100vh;
   height: 100vh;
 }
 

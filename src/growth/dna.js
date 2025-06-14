@@ -89,7 +89,7 @@ function mutatePermutationDNA(dna, rng, strength) {
 
   // todo: here work on the randomness
 
-  for (let i = 0, m = 8; i < m; i++) {
+  for (let i = 0, m = 16; i < m; i++) {
     bitman.flipBit(mutated)
   }
 
