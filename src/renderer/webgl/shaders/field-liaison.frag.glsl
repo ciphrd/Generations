@@ -20,20 +20,6 @@ void main() {
   float S = smoothstep(0.42, 0.4199, L);
   float S2 = max(0.0, 1.0 - L * 2.0);
 
-  vec3 C = hash31(id);
-  float lC = C.r + C.g + C.g;
-  if (lC < 0.6) {
-    C = (C + 0.1) / max(lC, 0.1);
-  }
-  // C.r += snoise(vec3(v_uv * 3.0, id * 123.938)) * 0.2;
-  // C.g += snoise(vec3(v_uv * 3.0, id * 22.9)) * 0.2;
-  // C.b += snoise(vec3(v_uv * 3.0, id * 13.291)) * 0.2;
-
-  outColor0 = vec4(C * S, S2); 
-          //  * (1.0 + snoise(vec3(uv * 1.2, 22.23)) * 0.7)
-           ;
-  
-  outColor1 = vec4( membraneNoise(uv, id * 26.953), v_color );
-
+  outColor0 = vec4(v_color * S, S2);
   gl_FragDepth = L;
 } 

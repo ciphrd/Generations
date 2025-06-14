@@ -1,5 +1,4 @@
 import { glu } from "../../utils/glu"
-import { vec2 } from "../../utils/vec"
 import { Renderer } from "../renderer"
 import mathGL from "./shaders/lib/math.glsl"
 import colorGL from "./shaders/lib/color.glsl"
@@ -27,7 +26,7 @@ import { Spring, SpringFlags } from "../../physics/constraints/spring"
 import { settings } from "../../settings"
 import { GaussianPass } from "./gaussian"
 import { Sediments } from "./sediments"
-import { viewUniform } from "./view"
+import { ViewPass, viewUniform } from "./view"
 import { CompositionPass } from "./composition"
 import { BodyFlags } from "../../physics/body"
 import { MembraneOuter } from "./membrane-outer"
@@ -73,6 +72,7 @@ export class WebGLRenderer extends Renderer {
     this.cvs.style.height = res.y + "px"
 
     this.#allocateRenderTargets()
+    this.cellsFieldView.onResize()
     this.blurColorFieldPass.onResize()
     this.membraneOuter.onResize()
     this.sediments.onResize()
@@ -356,11 +356,16 @@ export class WebGLRenderer extends Renderer {
       bodies.filter((b) => b.hasFlag(BodyFlags.FOOD))
     )
 
+    this.cellsFieldView = new ViewPass(gl, () => ({
+      res: deviceRes,
+      tex: this.rts.cellFieldWorld.tex,
+    }))
+
     this.blurColorFieldPass = new GaussianPass(
       gl,
       () => ({
         res: deviceRes.clone().div(4),
-        tex: this.rts.cellFieldView.textures[1],
+        tex: this.cellsFieldView.output,
       }),
       5
     )
@@ -399,7 +404,7 @@ export class WebGLRenderer extends Renderer {
     const { deviceRes, envRes } = Globals
 
     if (this.rts) {
-      glu.free(gl, this.rts.absorb, this.rts.cellFieldView)
+      glu.free(gl, this.rts.absorb)
     }
 
     this.rts = {
@@ -416,16 +421,6 @@ export class WebGLRenderer extends Renderer {
       otherFieldWorld:
         this.rts?.otherFieldWorld ||
         glu.renderTarget(gl, envRes.x, envRes.y, gl.RGBA32F),
-      cellFieldView: glu.renderTargetN(
-        2,
-        gl,
-        deviceRes.x,
-        deviceRes.y,
-        gl.RGBA32F,
-        {
-          depth: true,
-        }
-      ),
     }
   }
 
@@ -448,7 +443,6 @@ export class WebGLRenderer extends Renderer {
     gl.enable(gl.DEPTH_TEST)
     gl.depthFunc(gl.LESS)
     glu.blend(gl, null)
-    gl.drawBuffers([gl.COLOR_ATTACHMENT0])
 
     programs.fieldCell.use()
     viewUniform(gl, programs.fieldCell, true)
@@ -458,25 +452,13 @@ export class WebGLRenderer extends Renderer {
     viewUniform(gl, programs.fieldLiaison, true)
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, liaisons.length)
 
-    //
-    glu.bindFB(gl, deviceRes.x, deviceRes.y, this.rts.cellFieldView.fb)
-    gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1])
-
-    programs.fieldCell.use()
-    viewUniform(gl, programs.fieldCell)
-    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, nb)
-
-    programs.fieldLiaison.use()
-    viewUniform(gl, programs.fieldLiaison)
-    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, liaisons.length)
-
     gl.disable(gl.DEPTH_TEST)
 
     glu.blend(gl, gl.ONE, gl.ONE)
     glu.bindFB(gl, envRes.x, envRes.y, this.rts.otherFieldWorld.fb)
     this.otherBodiesPass.render(true)
-    //
 
+    this.cellsFieldView.render()
     this.blurColorFieldPass.render()
 
     //
@@ -554,7 +536,7 @@ export class WebGLRenderer extends Renderer {
     glu.uniformTex(
       gl,
       programs.sediments.uniforms.u_cells,
-      this.rts.cellFieldView.textures[0],
+      this.cellsFieldView.output,
       2
     )
     glu.uniformTex(
@@ -589,11 +571,7 @@ export class WebGLRenderer extends Renderer {
     this.compositionPass.render()
 
     // programs.tex.use()
-    // glu.uniformTex(
-    //   gl,
-    //   programs.tex.uniforms.u_texture,
-    //   this.membraneOuter.output
-    // )
+    // glu.uniformTex(gl, programs.tex.uniforms.u_texture, this.cellsFieldView.output)
     // glu.draw.quad(gl)
   }
 }

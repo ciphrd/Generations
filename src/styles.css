@@ -18,8 +18,8 @@ main {
 }
 
 .fullscreen {
-  width: 100vh;
-  height: 100vh;
+  width: 800px;
+  height: 800px;
 }
 
 .sim-wrapper {

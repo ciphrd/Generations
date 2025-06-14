@@ -1,4 +1,3 @@
-import { settings } from "../../settings"
 import { glu } from "../../utils/glu"
 import fullVS from "./shaders/full.vert.glsl"
 import pointsVS from "./shaders/sediments/points.vert.glsl"
@@ -6,12 +5,10 @@ import pointsFS from "./shaders/sediments/points.frag.glsl"
 import updateFS from "./shaders/sediments/update.frag.glsl"
 import initSubstrateFS from "./shaders/sediments/init-substrate.frag.glsl"
 import substrateFS from "./shaders/sediments/substrate.frag.glsl"
-import viewFS from "./shaders/view.frag.glsl"
 import { GaussianPass, initGaussianProgram } from "./gaussian"
 import { EdgePass } from "./edge"
 import { SharpenPass } from "./sharpen"
-import { viewUniform } from "./view"
-import { TrailPass } from "./trail"
+import { ViewPass } from "./view"
 import { Params } from "../../parametric-space"
 
 /**
@@ -122,15 +119,9 @@ export class Sediments {
         },
       }),
       gaussian: initGaussianProgram(gl, Params.rdGaussianFilterSize),
-      view: glu.program(gl, fullVS, viewFS, {
-        attributes: ["a_position"],
-        uniforms: ["u_tex", "u_view"],
-        vao: (prg) => (u) => {
-          u.quad(prg)
-        },
-      }),
     }
 
+    // todo: reuse the blurred field in renderer.js
     this.blurFieldPass = new GaussianPass(
       gl,
       () => ({ res: res.clone().div(4), tex: this.cellField }),
@@ -140,7 +131,7 @@ export class Sediments {
     this.fullSedsRt = glu.renderTarget(gl, res.x, res.y, gl.R32F)
     this.substratePP = glu.pingpong(gl, res.x, res.y, gl.RGBA32F)
 
-    this.viewRt = glu.renderTarget(gl, res.x, res.y)
+    this.viewPass = new ViewPass(gl, () => ({ res, tex: null }))
 
     this.edgePass1 = new EdgePass(gl, res, null)
     this.edgePass2 = new EdgePass(gl, res, this.edgePass1.output)
@@ -164,6 +155,7 @@ export class Sediments {
   onResize() {
     const inputs = this.getInputs()
     this.membraneOuter = inputs.membraneOuter
+    this.viewPass.onResize()
   }
 
   render(time) {
@@ -263,16 +255,12 @@ export class Sediments {
     //
     // Render on view, post-processing for cool-looking effect
     //
-    glu.bindFB(gl, res.x, res.y, this.viewRt.fb)
-    programs.view.use()
-    viewUniform(gl, programs.view)
-    glu.uniformTex(gl, programs.view.uniforms.u_tex, substratePP.back().tex)
-    glu.draw.quad(gl)
+    this.viewPass.render(substratePP.back().tex)
 
     //
     // Post-processing effects for a cool look
     //
-    this.edgePass1.render(this.viewRt.tex)
+    this.edgePass1.render(this.viewPass.output)
     this.edgePass2.render()
     this.gaussianPass.render()
     this.sharpenPass.render()

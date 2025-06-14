@@ -57,7 +57,7 @@ void main() {
   ));
   outColor0 = vec4(col * I, 1);
 
-  vec3 cell_color = texture(u_cell_colors, v_uv).gba;
+  vec3 cell_color = texture(u_cell_colors, v_uv).rgb;
   C = smoothstep(CELL_COLOR_SPREAD, 1.5, cells.a);
 
   rd = pow(rd, 0.5) * 1.0;

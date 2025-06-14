@@ -30,8 +30,7 @@ void main() {
   vec4 tex = texture(u_substrate, v_uv);
   float agent = texture(u_agents, v_uv).r;
   float mem_outer = texture(u_membrane_outer, v_uv).r;
-  vec4 cells_tex = texture(u_cells, v_uv);
-  float cells = cells_tex.a * (0.8 + 0.2 * cells_tex.r);
+  float cells = texture(u_cells, v_uv).a;
   float other_cells = texture(u_other_cells, v_uv).a;
 
   float substrate = tex.r;
