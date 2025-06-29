@@ -7,13 +7,13 @@ uniform vec4 u_view;
 layout(location = 0) in vec4 a_position;
 layout(location = 1) in mat2x3 a_geometry;
 layout(location = 3) in vec3 a_color;
-layout(location = 4) in vec4 a_signals;
+layout(location = 4) in float a_signal;
 
 out vec2 v_uv;
 out vec2 v_guv;
 out vec3 v_color;
 out float v_id;
-out vec4 v_signals;
+out float v_signal;
 
 #include <math.glsl>
 #include <view.glsl>
@@ -46,5 +46,5 @@ void main() {
   v_guv = pos.xy * 0.5 + 0.5;
   v_id = geo.id;
   v_color = a_color;
-  v_signals = a_signals;
+  v_signal = a_signal;
 }

@@ -135,7 +135,7 @@ export class WebGLRenderer extends Renderer {
     this.cells = {
       geo: new Float32Array(nb * 6),
       colors: new Float32Array(nb * 3),
-      signals: new Float32Array(nb * 4),
+      signals: new Float32Array(nb),
     }
     for (let i = 0; i < nb; i++) {
       this.cells.colors[i * 3 + 0] = organisms[i].color.r / 255
@@ -172,7 +172,7 @@ export class WebGLRenderer extends Renderer {
         col: glu.buffer(gl, this.cells.colors),
         signals: glu.dynamicBuffer(gl, this.cells.signals, () => {
           for (let i = 0; i < nb; i++) {
-            this.cells.signals[i * 4 + 0] = organisms[i].emittedSignal
+            this.cells.signals[i] = organisms[i].signal
           }
           return this.cells.signals
         }),
@@ -200,7 +200,7 @@ export class WebGLRenderer extends Renderer {
 
     this.programs = {
       fieldCell: glu.program(gl, quadVS, fieldCellFS, {
-        attributes: ["a_position", "a_geometry", "a_color"],
+        attributes: ["a_position", "a_geometry", "a_color", "a_signal"],
         uniforms: ["u_view"],
         variables: {
           CELL_SCALE: settings.rendering.cell.scale.toFixed(4),
@@ -219,6 +219,13 @@ export class WebGLRenderer extends Renderer {
             prg.attributes.a_color,
             this.buffers.cells.col,
             3,
+            gl.FLOAT,
+            true
+          )
+          u.attrib(
+            prg.attributes.a_signal,
+            this.buffers.cells.signals.buffer,
+            1,
             gl.FLOAT,
             true
           )
@@ -250,7 +257,7 @@ export class WebGLRenderer extends Renderer {
         },
       }),
       cells: glu.program(gl, quadVS, cellFS, {
-        attributes: ["a_position", "a_geometry", "a_color", "a_signals"],
+        attributes: ["a_position", "a_geometry", "a_color", "a_signal"],
         uniforms: ["u_view", "u_blurred_membrane", "u_color_field", "u_time"],
         variables: {
           CELL_SCALE: settings.rendering.cell.scale.toFixed(4),
@@ -273,9 +280,9 @@ export class WebGLRenderer extends Renderer {
             true
           )
           u.attrib(
-            prg.attributes.a_signals,
+            prg.attributes.a_signal,
             this.buffers.cells.signals.buffer,
-            4,
+            1,
             gl.FLOAT,
             true
           )

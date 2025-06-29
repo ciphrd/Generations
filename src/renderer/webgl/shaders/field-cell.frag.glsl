@@ -7,6 +7,8 @@ precision highp float;
 in vec2 v_uv;
 in float v_id;
 in vec3 v_color;
+in float v_signal;
+
 layout (location = 0) out vec4 outColor0;
 layout (location = 1) out vec4 outColor1;
 

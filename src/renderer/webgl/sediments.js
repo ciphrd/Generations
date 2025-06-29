@@ -124,7 +124,7 @@ export class Sediments {
     // todo: reuse the blurred field in renderer.js
     this.blurFieldPass = new GaussianPass(
       gl,
-      () => ({ res: res.clone().div(4), tex: this.cellField }),
+      () => ({ res: res.clone().div(2), tex: this.cellField }),
       1
     )
 

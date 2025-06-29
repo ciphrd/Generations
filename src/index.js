@@ -70,9 +70,9 @@ document.body.appendChild(stats.dom)
 // (x) parametrize the different noises with a seed (as well as the various
 //     color settings such as microscope light, etc): general pre-processing
 //     solution with a variable maybe ?
-// ( ) look at current signaling solution and check what can be simplified
+// (x) look at current signaling solution and check what can be simplified
 //     so that it works in a smoother way. right now not so great
-//     ( ) have a single signal instead of 4. simpler is all ways
+//     (x) have a single signal instead of 4. simpler is all ways
 // ( ) cleanup rendering
 //     tend towards color crispiness, clean
 // ( ) add signal rendering (single signal much easier, there can be 2 colors

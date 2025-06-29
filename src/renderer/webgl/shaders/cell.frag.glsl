@@ -9,7 +9,7 @@ in vec2 v_uv;
 in vec2 v_guv;
 in float v_id;
 in vec3 v_color;
-in vec4 v_signals;
+in float v_signal;
 
 out vec4 outColor;
 
@@ -25,5 +25,5 @@ void main() {
   // to create a cellular-like pattern we use the depth based on the distance
   // field of the cell. this will create a voronoi-like pattern
   gl_FragDepth = length(uv - 0.5);
-  outColor = cellColor(uv, texture(u_color_field, v_guv).rgb, v_signals, u_time);
+  outColor = cellColor(uv, texture(u_color_field, v_guv).rgb, v_signal, u_time);
 }
