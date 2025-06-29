@@ -45,15 +45,6 @@ export class Operation {
 }
 
 export function mergeOperations(ops, directCpu = false) {
-  // let op
-  // const map = {}
-  // for (let i = ops.length - 1; i >= 0; i--) {
-  //   op = ops[i]
-  //   if (map[op.name]) continue
-  //   map[op.name] = op
-  // }
-  // return Object.values(map)
-
   //! this strategy uses the merge method of the action; not sure if required
   //! TBD
   const grouped = aggregate(ops, (op) => op.name)
@@ -100,13 +91,6 @@ export class CPU {
       ) {
         this.stack.values[i] = initialStack[i]
       }
-      // for (
-      //   let i = 0, di = 0;
-      //   i <= this.stack.values.length;
-      //   i++, di = i % initialStack.length
-      // ) {
-      //   this.stack.push(initialStack[di])
-      // }
     }
 
     let i = 0

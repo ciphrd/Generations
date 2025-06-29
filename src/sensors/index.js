@@ -1,19 +1,17 @@
-import { ClockSensor } from "./clock"
 import { SmellSensor } from "./smell"
 import { VisionSensor } from "./vision"
 
 export const SensorChemicals = {
-  clock: 0,
-  vision: 1,
-  smell: 2,
+  vision: 0,
+  smell: 1,
 }
 
 export const Sensors = {
-  clock: ClockSensor,
   smell: SmellSensor,
   vision: VisionSensor,
   // add an empty sensor for distribution equilibrium, since sensor is picked
   // using 2 bits
   none: null,
+  none2: null,
 }
 export const SensorKeys = Object.keys(Sensors)

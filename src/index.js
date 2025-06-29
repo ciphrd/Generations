@@ -18,7 +18,6 @@
  * Project inspirations
  * - Stephen Worlfram Physics project
  * - ALIEN simulation
- * - Clusters Jeffrey Ventrella
  * - https://en.wikipedia.org/wiki/Hebbian_theory
  * - Petri-Nets
  */
@@ -27,17 +26,13 @@ import "./inject.js"
 // import { parametricSpace } from "./parametric-space.js"
 
 import Stats from "stats.js"
-import { Body, BodyFlags, body } from "./physics/body"
+import { Body, BodyFlags } from "./physics/body"
 import { Spring } from "./physics/constraints/spring"
 import { CanvasRenderer } from "./renderer/canvas/renderer"
 import { vec2 } from "./utils/vec"
-import { larf } from "./physics/constraints/lar"
 import { Food } from "./physics/entities/food"
-import { fract } from "./utils/math"
-import { Mouse } from "./interactions/mouse"
 import { GlobalRepulsion } from "./physics/constraints/repulsion"
 import { nodeTupleId } from "./graph/node"
-import { rnd0 } from "./utils/rnd"
 import { Collisions } from "./physics/constraints/collisions"
 import { World } from "./physics/world"
 import { Solver } from "./physics/solver"
@@ -53,7 +48,6 @@ import { Engine } from "./engine/engine"
 import { WebGLRenderer } from "./renderer/webgl/renderer"
 import { Controls } from "./controls"
 import { Params, generateParameters } from "./parametric-space.js"
-import { generateDNAs } from "./growth/dna.js"
 
 const stats = new Stats()
 stats.showPanel(1)
@@ -82,6 +76,8 @@ document.body.appendChild(stats.dom)
 //     ( ) go through JS implementation (tackle todos potentially)
 //     ( ) rename rnd to rng
 //     ( ) cleanup initialization, all in index is dirty rn
+//     ( ) cleanup bytecode instructions, too many rn
+//     ( ) only a single CPU needed now
 // ( ) optimisation pass: what can be optimzed ?
 //     ( ) budget different app areas and optimize the slow ones
 // ( ) finalize parameters and growth
@@ -90,8 +86,9 @@ document.body.appendChild(stats.dom)
 //     ( ) implement fast capture
 //     ( ) check if capture works on fxhash
 // ( ) add features
-// ( ) work on final bundling
+// ( ) remove Metrics
 // ( ) remove UI
+// ( ) work on final bundling
 
 //! Scoping the final phase of the project
 // ( ) base requirements
@@ -229,36 +226,8 @@ async function start() {
     }
   }
 
-  // const clusterRules = Array(settings.clusters.nb ** 2)
-  // for (let i = 0; i < clusterRules.length; i++) {
-  //   clusterRules[i] = {
-  //     attr: larf(
-  //       rnd0.range(
-  //         settings.clusters.attr.range.min,
-  //         settings.clusters.attr.range.max
-  //       ),
-  //       rnd0.range(
-  //         settings.clusters.attr.strength.min,
-  //         settings.clusters.attr.strength.max
-  //       )
-  //     ),
-  //     rep: larf(
-  //       rnd0.range(
-  //         settings.clusters.rep.range.min,
-  //         settings.clusters.rep.range.max
-  //       ) * (fract(sqrt(i)) === 0 ? 0.02 : 1),
-  //       rnd0.range(
-  //         settings.clusters.rep.strength.min,
-  //         settings.clusters.rep.strength.max
-  //       )
-  //     ),
-  //   }
-  // }
-
-  // todo: clusters, maybe just remove ?
-  // console.log({ clusterRules })
   bodies.forEach((body) => {
-    // body.color = settings.clusters.colors[body.data.clusterGroup]
+    // todo: remove DEBUG flag
     body.addFlag(BodyFlags.REPELLING | BodyFlags.REPELLED | BodyFlags.DEBUG)
   })
 
@@ -279,23 +248,12 @@ async function start() {
 
   allBodies.push(...food, ...testBodies, ...bodies)
 
-  // constraints.pre.push(new Clusters(bodies, clusterRules, settings.clusters.nb))
   constraints.pre.push(
     new GlobalRepulsion(world, {
       radius: 0.05,
       strength: 0.0002,
     })
   )
-  // constraints.pre.push(
-  //   new LAR(
-  //     bodies.filter((body) => body.hasFlag(BodyFlags.FOOD_SEEKER)),
-  //     food,
-  //     {
-  //       attr: larf(0.2, 0.05),
-  //       rep: larf(0, 0),
-  //     }
-  //   )
-  // )
 
   world.setBodies(allBodies)
 

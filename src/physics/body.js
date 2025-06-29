@@ -36,7 +36,6 @@ export class Body extends Entity {
     super()
     this.world = world
     this.id = c++
-    this.energy = 1
     this.radius = radius
     this.color = color
     this.pos = pos
@@ -83,40 +82,14 @@ export class Body extends Entity {
   }
 
   receiveSignal(energy, source) {
-    // if (selection.is(this)) {
-    //   console.log("receive", { chemical, energy, source })
-    // }
-
-    //! multiply signals
-    // if (this.receivedSignals[chemical] === null) {
-    //   this.receivedSignals[chemical] = energy
-    // } else {
-    //   if (energy !== 0) {
-    //     this.receivedSignals[chemical] *= energy
-    //   }
-    // }
-
-    //! add signals
-    // this.receivedSignal = clamp(this.receivedSignal + energy, -1, 1)
-
-    //! keep signal with highest intensity
     if (abs(energy) > abs(this.receivedSignal)) {
       this.receivedSignal = clamp(energy, -1, 1)
     }
   }
 
   sendSignal(energy) {
-    // if (chemical === 0) {
-    //   console.log(`body:${this.id}`, "send", { quantity })
-    // }
-
-    const N = this.springs.length
-    if (N === 0) return
+    if (this.springs.length === 0) return
     for (const spring of this.springs) {
-      //! Note: this was used when signals were added to each other
-      //! It's not so relevant if the max() is kept instead
-      // spring.sendSignal(this, energy / (log(pow(N, 0.5)) + 1))
-
       spring.sendSignal(this, energy)
     }
   }
@@ -148,7 +121,6 @@ export class Body extends Entity {
         op.name === "eat"
       ) {
         this.actions[op.name].activate(t, dt, op.energy)
-        this.energy -= 0.00001
       }
     }
 
@@ -178,20 +150,13 @@ export class Body extends Entity {
     if (this.springs.length === 0) {
       this.forwards.set(1, 0)
     } else {
-      let other, dE
+      let other
       _v2b.set(0, 0)
       for (let i = 0, spring; i < this.springs.length; i++) {
         spring = this.springs[i]
         other = spring.bodyA === this ? spring.bodyB : spring.bodyA
         _v2a.copy(other.pos).sub(this.pos)
         _v2b.add(_v2a)
-
-        dE = this.energy - other.energy
-        if (dE > 0) {
-          dE *= 0.1
-          this.energy -= dE
-          other.energy += dE
-        }
 
         if (i === 0) {
           this.forwards.copy(_v2a).normalize()

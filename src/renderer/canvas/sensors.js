@@ -3,7 +3,6 @@ import { chemicalStyle } from "./body"
 const SensorRendererMap = {
   VisionSensor: renderVisionSensor,
   SmellSensor: renderSmellSensor,
-  ClockSensor: renderClockSensor,
 }
 
 export function renderSensors(ctx, sensors) {
@@ -34,16 +33,5 @@ function renderSmellSensor(ctx, sensor) {
   ctx.beginPath()
   ctx.arc(0, 0, sensor.dist, 0, TAU)
   ctx.fill()
-  ctx.restore()
-}
-
-function renderClockSensor(ctx, sensor) {
-  ctx.save()
-  ctx.strokeStyle = `rgba(${chemicalStyle[2].color}, 1)`
-  ctx.lineWidth = 0.001
-  ctx.translate(sensor.body.pos.x, sensor.body.pos.y)
-  ctx.beginPath()
-  ctx.arc(0, 0, sensor.body.radius * 1.2, 0, TAU)
-  ctx.stroke()
   ctx.restore()
 }

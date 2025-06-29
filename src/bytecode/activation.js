@@ -190,9 +190,9 @@ export const ActivationBytecode = {
         case 0x11: {
           break
         }
+        // todo: remove
         // reng
         case 0x12: {
-          stack.push(context.body.energy)
           break
         }
         // fw

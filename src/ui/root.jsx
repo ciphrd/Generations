@@ -1,7 +1,6 @@
 import { createContext, useState, useEffect } from "react"
 import { Cell } from "./Cell.jsx"
 import { Tabs } from "./components/Tabs.jsx"
-import { General } from "./General.jsx"
 import { Viewer } from "./Viewer.jsx"
 import { Simulation } from "./Simulation.jsx"
 
@@ -87,9 +86,6 @@ export function Root({ engine }) {
             {state.selected ? (
               <>
                 <Tabs tabs={["General", "Cell"]} defaultTab={1}>
-                  <>
-                    <General />
-                  </>
                   <>
                     <Cell />
                   </>

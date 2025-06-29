@@ -1,7 +1,6 @@
-import { useRef, useMemo, useEffect, useCallback } from "react"
-import { clamp01 } from "../utils/math"
+import { useMemo, useCallback } from "react"
 import { Graph } from "./components/Graph.jsx"
-import { useSelected, useSim } from "./hooks"
+import { useSim } from "./hooks"
 import { Tabs } from "./components/Tabs.jsx"
 import { arr } from "../utils/array"
 import { CellCpu } from "./components/CellCpu.jsx"
@@ -13,16 +12,6 @@ const a4 = arr.new(4)
 export function Cell() {
   const { engine, selected } = useSim()
 
-  const $energy = useRef()
-  useEffect(
-    () =>
-      engine.ticker.emitter.on("tick", () => {
-        if (!$energy.current) return
-        $energy.current.innerText = selected.energy.toFixed(2)
-      }),
-    [selected]
-  )
-
   return (
     <div className="panel">
       <Table colHeader>
@@ -33,10 +22,6 @@ export function Cell() {
         <Row>
           <span>Organism ID</span>
           <span>{selected.data.organism}</span>
-        </Row>
-        <Row>
-          <span>Energy</span>
-          <span ref={$energy}></span>
         </Row>
       </Table>
 

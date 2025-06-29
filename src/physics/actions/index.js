@@ -44,107 +44,12 @@ export const Actions = {
   },
   fire: {
     module: FireAction,
-    // merge: (operations) => [operations.at(-1)],
-    // mergeCpu: (operations) => {
-    //   //! only last
-    //   // return [operations.at(-1)]
-
-    //   //! highest of each chemical
-    //   const chems = arr.new(4, 0)
-    //   for (const op of operations) {
-    //     if (abs(op.values[1]) > abs(chems[op.values[0]])) {
-    //       chems[op.values[0]] = op.values[1]
-    //     }
-    //   }
-    //   const fire = []
-    //   for (let i = 0; i < 4; i++) {
-    //     fire.push(new Operation("fire", chems[i], [i, chems[i]]))
-    //   }
-    //   return fire
-
-    //   //! multiply each chemical
-    //   // const chems = arr.new(4, null)
-    //   // for (const op of operations) {
-    //   //   if (chems[op.values[0]] === null) chems[op.values[0]] = 1
-    //   //   chems[op.values[0]] *= op.values[1]
-    //   // }
-    //   // const fire = []
-    //   // for (let i = 0; i < 4; i++) {
-    //   //   if (chems[i] !== null) {
-    //   //     fire.push(new Operation("fire", chems[i], [i, chems[i]]))
-    //   //   }
-    //   // }
-    //   // return fire
-
-    //   //! add each chemical
-    //   // const chems = arr.new(4, 0)
-    //   // for (const op of operations) {
-    //   //   chems[op.values[0]] += op.values[1]
-    //   // }
-    //   // const fire = []
-    //   // for (let i = 0; i < 4; i++) {
-    //   //   if (chems[i] !== null) {
-    //   //     fire.push(new Operation("fire", chems[i], [i, chems[i]]))
-    //   //   }
-    //   // }
-    //   // return fire
-    // },
     merge: (operations) => {
-      //! always highest chemical
-      // let op = operations[0]
-      // for (let i = 1; i < operations.length; i++) {
-      //   if (operations[i].chemicalStrength > op.chemicalStrength) {
-      //     op = operations[i]
-      //   }
-      // }
-      // return [op]
-
-      //! only last
-      // return [operations.at(-1)]
-
-      //! average of each chemical
-      // const chems = arr.new(4, () => [])
-      // for (const op of operations) {
-      //   chems[op.values[0]].push(op.chemicalStrength)
-      // }
-      // const fire = []
-      // let c
-      // for (let i = 0; i < 4; i++) {
-      //   c = chems[i].length > 0 ? arr.avg(chems[i]) : 0
-      //   if (c > 0) {
-      //     fire.push(new Operation("fire", c, [i]))
-      //   }
-      // }
-      // return fire
-
-      //! highest
       let highest = 0
       for (const op of operations) {
         if (abs(op.energy) > abs(highest)) highest = op.energy
       }
       return [new Operation("fire", highest)]
-
-      //! multiply each chemical
-      // const chems = arr.new(4, null)
-      // for (const op of operations) {
-      //   if (chems[op.values[0]] === null) chems[op.values[0]] = 1
-      //   chems[op.values[0]] *= op.values[1]
-      // }
-      // const fire = []
-      // for (let i = 0; i < 4; i++) {
-      //   if (chems[i] !== null) {
-      //     fire.push(new Operation("fire", chems[i], [i, chems[i]]))
-      //   }
-      // }
-      // return fire
-
-      //! add each chemical
-      return [
-        new Operation(
-          "fire",
-          arr.sum(operations, (op) => op.energy)
-        ),
-      ]
     },
     normalize: (v) => v,
   },

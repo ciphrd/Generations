@@ -1,5 +1,9 @@
 import { strHash } from "./string"
 
+/**
+ * Small custom gl lib for reusable directives for common operations.
+ */
+
 let libs = {}
 let vars = {}
 let quadBuffer = null

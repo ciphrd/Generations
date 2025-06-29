@@ -1,7 +1,6 @@
 import { clamp } from "../../utils/math"
 import { Action } from "./action"
 
-// todo as general simulation parameter
 const MAX_STRENGTH = 1.0
 
 export class BackwardAction extends Action {

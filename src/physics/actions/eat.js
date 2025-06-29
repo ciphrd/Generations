@@ -32,7 +32,6 @@ export class EatAction extends Action {
     if (this.eating) {
       const amount = 0.06 * dt
       this.eating.eat(amount)
-      this.body.energy += amount * 10
     }
     this.eated = this.eating
     this.eating = null
