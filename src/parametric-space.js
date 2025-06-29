@@ -172,9 +172,9 @@ function parametricSpace(seeds) {
   })
 
   const snoiseSeed = randMutate({
-    initial: (rng) => rng.one(),
-    mutate: (prev, rng) => rng.one(),
-    output: (v) => v * 1000,
+    initial: (rng) => arr.new(3, () => rng.one()),
+    mutate: (prev, rng) => arr.new(3, () => rng.one()),
+    output: (v) => v.map((v) => v * 1000),
   })
 
   return {

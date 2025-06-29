@@ -113,7 +113,9 @@ export class WebGLRenderer extends Renderer {
     })
 
     glu.vars({
-      NOISE_SEED: Params.snoiseSeed,
+      NOISE_SEED: `vec3(${Params.snoiseSeed
+        .map((c) => c.toFixed(4))
+        .join(",")})`,
     })
 
     this.prepare()
