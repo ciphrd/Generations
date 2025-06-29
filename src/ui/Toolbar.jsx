@@ -1,3 +1,4 @@
+import { Metrics } from "../utils/metrics"
 import { useEngine, useSim } from "./hooks"
 
 export function Toolbar() {
@@ -38,6 +39,8 @@ export function Toolbar() {
       >
         {">>>"}
       </button>
+
+      <button onClick={() => Metrics.export()}>export</button>
 
       <div>
         <label>
