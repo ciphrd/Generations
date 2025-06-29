@@ -21,7 +21,7 @@ export class SmellSensor extends Sensor {
     for (const food of part.posNeighbours(body.pos)) {
       if (body.pos.distSq(food.pos) < (this.dist + food.radius) ** 2) {
         this.activation = cos(t * 0.04) * 0.5
-        body.receiveSignal(SensorChemicals.smell, this.activation)
+        body.receiveSignal(this.activation)
         break
       }
     }

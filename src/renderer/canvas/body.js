@@ -39,16 +39,14 @@ export function renderBody(ctx, body) {
 
   let style
   ctx.lineWidth = 0.0008
-  for (let i = 0; i < 4; i++) {
-    style = chemicalStyle[i]
-    ctx.strokeStyle = `rgba(${style.color},${body.signals[i]})`
-    ctx.beginPath()
-    ctx.rect(
-      body.pos.x - style.size,
-      body.pos.y - style.size,
-      style.size * 2,
-      style.size * 2
-    )
-    ctx.stroke()
-  }
+  style = chemicalStyle[0]
+  ctx.strokeStyle = `rgba(${style.color},${body.signal})`
+  ctx.beginPath()
+  ctx.rect(
+    body.pos.x - style.size,
+    body.pos.y - style.size,
+    style.size * 2,
+    style.size * 2
+  )
+  ctx.stroke()
 }

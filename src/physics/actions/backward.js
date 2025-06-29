@@ -10,9 +10,8 @@ export class BackwardAction extends Action {
     this.strength = 0
   }
 
-  activate(t, dt, chemicalQuantity, values) {
-    const v = clamp(values[0], 0, 1)
-    this.strength = v
+  activate(t, dt, energy) {
+    this.strength = clamp(energy, 0, 1)
   }
 
   apply(t, dt) {

@@ -23,8 +23,8 @@ export class DirectionalModulator {
     out[0] = (Iab * (factor + 1)) / 2
     out[1] = Iba * ((1 - factor) / 2)
 
-    out[0] = lerp(Iab, out[0], 1)
-    out[1] = lerp(Iba, out[1], 1)
+    out[0] = lerp(Iab, out[0], 0)
+    out[1] = lerp(Iba, out[1], 0)
 
     // if (selection.is(this.bodyA) || selection.is(this.bodyB)) {
     //   console.log("modulate", {

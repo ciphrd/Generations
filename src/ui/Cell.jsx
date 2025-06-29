@@ -87,28 +87,10 @@ export function Cell() {
                 min: -1,
                 max: 1,
               },
-              {
-                name: "chem1",
-                color: "#ff00ff",
-                min: -1,
-                max: 1,
-              },
-              {
-                name: "chem2",
-                color: "#00ffff",
-                min: -1,
-                max: 1,
-              },
-              {
-                name: "chem3",
-                color: "#ff0000",
-                min: -1,
-                max: 1,
-              },
             ],
             []
           )}
-          get={useCallback(() => selected.signals, [selected])}
+          get={useCallback(() => [selected.signal], [selected])}
         />
         <Graph
           def={useMemo(
@@ -119,37 +101,13 @@ export function Cell() {
                 min: -1,
                 max: 1,
               },
-              {
-                name: "emit-chem1",
-                color: "#ff00ff",
-                min: -1,
-                max: 1,
-              },
-              {
-                name: "emit-chem2",
-                color: "#00ffff",
-                min: -1,
-                max: 1,
-              },
-              {
-                name: "emit-chem3",
-                color: "#ff0000",
-                min: -1,
-                max: 1,
-              },
             ],
             []
           )}
           get={useCallback(() => {
-            const fireOps = selected.operations.filter(
-              (op) => op.name === "fire"
-            )
-            const chems = arr.new(4, 0)
-            let found
-            for (let i = 0; i < 4; i++) {
-              found = fireOps.find((op) => op.values[0] === i)
-              if (found) chems[i] = found.values[1]
-            }
+            const fireOp = selected.operations.find((op) => op.name === "fire")
+            const chems = [0]
+            if (fireOp) chems[0] = fireOp.strength
             return chems
           }, [selected])}
         />

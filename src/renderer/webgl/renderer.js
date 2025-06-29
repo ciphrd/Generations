@@ -172,10 +172,7 @@ export class WebGLRenderer extends Renderer {
         col: glu.buffer(gl, this.cells.colors),
         signals: glu.dynamicBuffer(gl, this.cells.signals, () => {
           for (let i = 0; i < nb; i++) {
-            this.cells.signals[i * 4 + 0] = organisms[i].emittedSignals[0]
-            this.cells.signals[i * 4 + 1] = organisms[i].emittedSignals[1]
-            this.cells.signals[i * 4 + 2] = organisms[i].emittedSignals[2]
-            this.cells.signals[i * 4 + 3] = organisms[i].emittedSignals[3]
+            this.cells.signals[i * 4 + 0] = organisms[i].emittedSignal
           }
           return this.cells.signals
         }),

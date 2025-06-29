@@ -1,4 +1,5 @@
 import { Actions } from "../physics/actions"
+import { aggregate } from "../utils/aggregate"
 
 class Stack {
   constructor() {
@@ -37,10 +38,9 @@ class Stack {
 }
 
 export class Operation {
-  constructor(name, chemicalStrength, values) {
+  constructor(name, energy) {
     this.name = name
-    this.chemicalStrength = chemicalStrength
-    this.values = values.map((val) => Actions[name]?.normalize(val) || val)
+    this.energy = Actions[name]?.normalize(energy) || energy
   }
 }
 
@@ -56,17 +56,14 @@ export function mergeOperations(ops, directCpu = false) {
 
   //! this strategy uses the merge method of the action; not sure if required
   //! TBD
-  const grouped = {}
-  for (const op of ops) {
-    if (!grouped[op.name]) grouped[op.name] = []
-    grouped[op.name].push(op)
-  }
+  const grouped = aggregate(ops, (op) => op.name)
   const names = Object.keys(grouped)
   const merged = []
   let actionDef, merge
   for (let i = 0; i < names.length; i++) {
     actionDef = Actions[names[i]]
     merge = directCpu ? actionDef.mergeCpu || actionDef.merge : actionDef.merge
+    // todo: optimize, this must be a lot computationnaly
     merged.push(...merge(grouped[names[i]]))
   }
   return merged

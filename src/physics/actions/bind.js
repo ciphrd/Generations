@@ -22,8 +22,8 @@ export class BindAction extends Action {
     })
   }
 
-  activate(t, dt, chemicalQuantity, values) {
-    this.strength = values[0]
+  activate(t, dt, energy) {
+    this.strength = energy
     if (this.spring || this.strength <= 0) return
 
     const part = this.body.world.partition(BIND_DIST, BodyFlags.BINDABLE)

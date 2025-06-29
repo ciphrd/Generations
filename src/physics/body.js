@@ -54,11 +54,10 @@ export class Body extends Entity {
     this.springs = []
     this.modifiers = []
     this.friction = friction
-    this.receivedSignals = Array(4).fill(0)
-    this.signals = Array(4).fill(0)
-    this.emittedSignals = arr.new(4, 0)
+    this.receivedSignal = 0
+    this.signal = 0
+    this.emittedSignal = 0
     this.operations = []
-    this.netCycle = 0
     this.sensors = []
     this.actions = Object.fromEntries(
       Object.entries(Actions).map(([name, props]) => [
@@ -79,39 +78,34 @@ export class Body extends Entity {
   }
 
   prepare() {
-    let tmp = this.signals
-    this.signals = this.receivedSignals
-    this.receivedSignals = tmp.fill(0)
+    this.signal = this.receivedSignal
+    this.receivedSignal = 0
   }
 
-  receiveSignal(chemical, quantity, source) {
+  receiveSignal(energy, source) {
     // if (selection.is(this)) {
-    //   console.log("receive", { chemical, quantity, source })
+    //   console.log("receive", { chemical, energy, source })
     // }
 
     //! multiply signals
     // if (this.receivedSignals[chemical] === null) {
-    //   this.receivedSignals[chemical] = quantity
+    //   this.receivedSignals[chemical] = energy
     // } else {
-    //   if (quantity !== 0) {
-    //     this.receivedSignals[chemical] *= quantity
+    //   if (energy !== 0) {
+    //     this.receivedSignals[chemical] *= energy
     //   }
     // }
 
     //! add signals
-    // this.receivedSignals[chemical] = clamp(
-    //   this.receivedSignals[chemical] + quantity,
-    //   -1,
-    //   1
-    // )
+    // this.receivedSignal = clamp(this.receivedSignal + energy, -1, 1)
 
     //! keep signal with highest intensity
-    if (abs(quantity) > abs(this.receivedSignals[chemical])) {
-      this.receivedSignals[chemical] = clamp(quantity, -1, 1)
+    if (abs(energy) > abs(this.receivedSignal)) {
+      this.receivedSignal = clamp(energy, -1, 1)
     }
   }
 
-  sendSignal(chemical, quantity) {
+  sendSignal(energy) {
     // if (chemical === 0) {
     //   console.log(`body:${this.id}`, "send", { quantity })
     // }
@@ -121,30 +115,22 @@ export class Body extends Entity {
     for (const spring of this.springs) {
       //! Note: this was used when signals were added to each other
       //! It's not so relevant if the max() is kept instead
-      // spring.sendSignal(this, chemical, quantity / (log(pow(N, 0.5)) + 1))
+      // spring.sendSignal(this, energy / (log(pow(N, 0.5)) + 1))
 
-      spring.sendSignal(this, chemical, quantity)
+      spring.sendSignal(this, energy)
     }
   }
 
   processSignals(t, dt) {
     this.operations.length = 0
 
-    // if (selection.is(this)) {
-    //   console.log([...this.signals])
-    // }
-
-    let quantity
-    for (let i = 0; i < 4; i++) {
-      quantity = this.signals[i]
-      this.cpus[i].prepare()
-      this.operations.push(
-        ...this.cpus[i].run(
-          { body: this, chemicalStrength: quantity },
-          quantity
-        )
+    this.cpus[0].prepare()
+    this.operations.push(
+      ...this.cpus[0].run(
+        { body: this, chemicalStrength: this.signal },
+        this.signal
       )
-    }
+    )
 
     this.operations = mergeOperations(this.operations)
     this.processOperations(this.operations, t, dt)
@@ -161,17 +147,14 @@ export class Body extends Entity {
         op.name === "bind" ||
         op.name === "eat"
       ) {
-        this.actions[op.name].activate(t, dt, op.chemicalStrength, op.values)
+        this.actions[op.name].activate(t, dt, op.energy)
         this.energy -= 0.00001
       }
     }
 
     // opti: for fast access of emitted signals data
     const fireOps = ops.filter((op) => op.name === "fire")
-    for (let i = 0; i < 4; i++) {
-      this.emittedSignals[i] =
-        fireOps.find((op) => op.values[0] === i)?.values[1] || 0
-    }
+    this.emittedSignal = fireOps.length > 0 ? fireOps.at(-1).energy : 0
   }
 
   update(t, dt) {
@@ -242,8 +225,4 @@ export class Body extends Entity {
 
     this.pos.apply((x) => clamp(x, 0, 0.999))
   }
-}
-
-export function body(world, pos, rad, friction, col) {
-  return new Body(world, pos, rad, friction, col)
 }

@@ -3,7 +3,7 @@ export class Action {
     this.body = body
   }
 
-  activate(t, dt, chemicalQuantity, values) {}
+  activate(t, dt, energy) {}
 
   apply(t, dt) {}
 }

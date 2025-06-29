@@ -13,7 +13,7 @@ export class EatAction extends Action {
       this.body.initial.radius + settings.food.default.radius + EAT_DIST
   }
 
-  activate(t, dt, chemicalQuantity, values) {
+  activate(t, dt) {
     const part = this.body.world.partition(this.maxEatRadius, BodyFlags.FOOD)
     let lowD = Infinity,
       d,

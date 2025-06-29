@@ -27,7 +27,7 @@ import "./inject.js"
 // import { parametricSpace } from "./parametric-space.js"
 
 import Stats from "stats.js"
-import { BodyFlags, body } from "./physics/body"
+import { Body, BodyFlags, body } from "./physics/body"
 import { Spring } from "./physics/constraints/spring"
 import { CanvasRenderer } from "./renderer/canvas/renderer"
 import { vec2 } from "./utils/vec"
@@ -173,7 +173,7 @@ async function start() {
   //
   //
   for (const node of nodes) {
-    const bod = body(world, node.pos, settings.radius, 0.01, node.color)
+    const bod = new Body(world, node.pos, settings.radius, 0.01, node.color)
     bod.data = node.data
     bod.addFlag(BodyFlags.ORGANISM | BodyFlags.BINDABLE)
     bod.setDNA(node.dna)
@@ -266,7 +266,7 @@ async function start() {
   const NB = 0
   for (let i = 0; i < NB; i++) {
     for (let j = 0; j < NB; j++) {
-      const bod = body(
+      const bod = new Body(
         world,
         vec2((i + 0.5) / NB, (j + 0.5) / NB),
         settings.radius * 0.4,

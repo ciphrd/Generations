@@ -20,18 +20,12 @@ const seeds = [
   `
     fire_1
   `,
-  `
-    fire_2
-  `,
-  `
-    fire_3
-  `,
 
   // move forward
   `
     fw
-    fire_2
-    fire_3
+    fire_0
+    fire_1
   `,
 
   // actuate
@@ -177,8 +171,8 @@ const InstructionSet = [
   "mod",
   "fire_0",
   "fire_1",
-  "fire_2",
-  "fire_3",
+  "nop_2",
+  "nop_3",
   "reng",
   "fw",
   "bw",

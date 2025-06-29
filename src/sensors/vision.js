@@ -28,7 +28,7 @@ export class VisionSensor extends Sensor {
       for (const food of part.posNeighbours(_v2a)) {
         if (_v2a.distSq(food.pos) < food.radius ** 2) {
           this.activation = cos(t * 0.04) * 0.5
-          body.receiveSignal(SensorChemicals.vision, this.activation)
+          body.receiveSignal(this.activation)
           return
         }
       }

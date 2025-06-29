@@ -63,8 +63,8 @@ const set = [
   "mod",
   "fire_0",
   "fire_1",
-  "fire_2",
-  "fire_3",
+  "nop_2",
+  "nop_3",
   "reng",
   "fw",
   "bw",
@@ -104,8 +104,7 @@ export const ActivationBytecode = {
 
     if (isNaN(context.chemicalStrength)) throw null
 
-    const op = (type, values = [stack.get(0)]) =>
-      new Operation(type, context.chemicalStrength, values)
+    const op = (type, energy = stack.get(0)) => new Operation(type, energy)
 
     try {
       switch (instruction) {
@@ -178,13 +177,17 @@ export const ActivationBytecode = {
           break
         }
         // fire0
-        case 0x0e:
-        case 0x0f:
+        case 0x0e: {
+          operations.push(op("fire", clamp(stack.get(0), -1, 1)))
+          break
+        }
+        // fire chemical strength
+        case 0x0f: {
+          operations.push(op("fire", context.chemicalStrength))
+        }
+        // nop
         case 0x10:
         case 0x11: {
-          operations.push(
-            op("fire", [instruction - 0x0e, clamp(stack.get(0), -1, 1)])
-          )
           break
         }
         // reng

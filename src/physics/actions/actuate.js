@@ -39,23 +39,16 @@ export class ActuateAction extends Action {
   // then using specific math functions we can actually encode pretty unique
   // behaviours if using the values in the stack to drive the actions
 
-  activate(t, dt, chemicalQuantity, values) {
+  activate(t, dt, energy) {
     this.activation = t
-    let v = clamp(values[0], -1, 1)
-
-    // if (selection.selected === this.body) {
-    //   console.log("actuate", { v, chemicalQuantity })
-    // }
-
-    //! test: using chemical quantity instead of value passed
-    v = clamp(chemicalQuantity, -1, 1)
+    energy = clamp(energy, -1, 1)
 
     for (const spring of this.body.springs) {
-      spring.contraction = lerp(spring.contraction, v, 1)
+      spring.contraction = lerp(spring.contraction, energy, 1)
     }
 
     this.prevValue = this.value
-    this.value = v
+    this.value = energy
   }
 
   apply(t, dt) {

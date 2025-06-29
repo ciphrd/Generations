@@ -37,10 +37,10 @@ export function GraphOperations({ operations }) {
       get={() => {
         const ops = operations()
         return [
-          ops.find((op) => op.name === "actuate")?.values[0] || 0,
-          ops.find((op) => op.name === "grab")?.values[0] || 0,
-          ops.find((op) => op.name === "forward")?.values[0] || 0,
-          ops.find((op) => op.name === "backward")?.values[0] || 0,
+          ops.find((op) => op.name === "actuate")?.strength || 0,
+          ops.find((op) => op.name === "grab")?.strength || 0,
+          ops.find((op) => op.name === "forward")?.strength || 0,
+          ops.find((op) => op.name === "backward")?.strength || 0,
         ]
       }}
     />
