@@ -3,7 +3,7 @@ import { arr } from "./array"
 export const Metrics = {
   measures: {},
   samples: {},
-  collect: (name, value) => {
+  collect(name, value) {
     if (!this.samples[name]) this.samples[name] = []
     this.samples[name].push(value)
   },
@@ -16,14 +16,24 @@ export const Metrics = {
   },
   export() {
     const samples = Object.entries(this.samples)
-    const rows = [samples[0].join(",")]
-    for (let i = 0, m = arr.max(samples[1], (a) => a.length); i < m; i++) {
-      const cols = []
-      for (let j = 0; j < samples[1].length; i++) {
-        cols.push(samples[1][j].length > i ? samples[1][j][i].toFixed(6) : "")
-      }
-      rows.push(cols.join(","))
-    }
+    console.log(samples)
+    const rows = [samples.map((s) => s[0]).join(",")]
+    // for (
+    //   let i = 0,
+    //     m = arr.max(
+    //       samples.map((s) => s[1]),
+    //       (a) => a.length
+    //     );
+    //   i < m;
+    //   i++
+    // ) {
+    //   const cols = []
+    //   for (let j = 0; j < samples.length; j++) {
+    //     cols.push(samples[j][1].length > i ? samples[j][1][i].toFixed(6) : "")
+    //   }
+    //   rows.push(cols.join(","))
+    // }
+    rows.push(samples.map((s) => arr.avg(s[1])).join(","))
     downloadAsCsvFile("samples.csv", rows.join("\n"))
   },
 }

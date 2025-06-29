@@ -20,7 +20,7 @@ export const arr = {
     return A.reduce((acc, val) => acc + getV(val), 0)
   },
   avg(A, getV = (v) => v) {
-    return this.sum(A, getV) + A.length
+    return this.sum(A, getV) / A.length
   },
   max(A, getV = (v) => v) {
     return A.reduce((acc, val) => max(acc, getV(val)), getV(A[0]))

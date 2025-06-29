@@ -1,6 +1,7 @@
 import { SpacePartition } from "../opti/hash-partition"
 import { arr } from "../utils/array"
 import { emitter } from "../utils/emitter"
+import { Metrics } from "../utils/metrics"
 import { BodyFlags } from "./body"
 import { Spring } from "./constraints/spring"
 
@@ -65,6 +66,8 @@ export class World {
 
   update() {
     this.emitter.runQueue()
+    Metrics.time("part-update")
     for (const K in this.partitions) this.partitions[K].update()
+    Metrics.timeEnd("part-update")
   }
 }
