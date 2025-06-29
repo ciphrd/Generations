@@ -196,6 +196,10 @@ function parametricSpace(seeds) {
     cellsColorSpread,
     rdEggsEffect,
     snoiseSeed,
+    sobelStrength: randMutate({
+      initial: (rng) => rng.range(0.6, 1.0),
+      mutate: (prev, rng) => clamp(prev + rng.range(-0.15, 0.15), 0.6, 2.0),
+    }),
   }
 }
 

@@ -1,6 +1,8 @@
 #version 300 es
 precision highp float;
 
+#define SOBEL_STRENGTH $SOBEL_STRENGTH
+
 uniform sampler2D u_absorption;
 uniform sampler2D u_emboss;
 uniform vec3 u_backlight_color;
@@ -15,7 +17,7 @@ float czm_luminance(vec3 rgb){
 }
 
 void main() {
-  float emboss = texture(u_emboss, v_uv).r * 0.7;
+  float emboss = texture(u_emboss, v_uv).r * SOBEL_STRENGTH;
 
   // brightfield
   vec4 T = texture(u_absorption, v_uv);

@@ -4,6 +4,7 @@ import compFS from "./shaders/composition/composition.frag.glsl"
 import chromaFS from "./shaders/composition/chroma.frag.glsl"
 import convolveFS from "./shaders/convolve.frag.glsl"
 import { settings } from "../../settings"
+import { Params } from "../../parametric-space"
 
 /**
  * Simulates the microscopy vision, by using the absorption map.
@@ -32,6 +33,9 @@ export class CompositionPass {
         uniforms: ["u_absorption", "u_emboss", "u_backlight_color"],
         vao: (prg) => (u) => {
           u.quad(prg)
+        },
+        variables: {
+          SOBEL_STRENGTH: Params.sobelStrength.toFixed(3),
         },
       }),
       chroma: glu.program(gl, fullVS, chromaFS, {
