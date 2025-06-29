@@ -63,35 +63,35 @@ stats.dom.style.right = "0px" // Align to the right
 stats.dom.style.top = "0px"
 document.body.appendChild(stats.dom)
 
-// todo
-// [x] Add some basic signal system to test the different options
-// [x] Body chemicals array instead of object
-// [x] Implement predefined functions for the signal processing
-// [ ] Test different options:
-//     [ ] growth/activation DNA strands with a 2 step process: growth, then
-//         activation happening through the signaling system
-//     [ ] growth-in-activation: growth happens as any other function of the
-//         activation system.
-// [ ] Function to "follow sensor" - might get triggered as sensor spawn tokens
-//     on the sensor node — could result in simple follow dynamics
-// [ ] Parametrize clock (& more generally sensors), bounded by allowing for
-//     variation during growth
-// [ ] Support deleting entities from the world, and have everything handling
-//     it elegantly (ex: eating food should make the food disappear)
-
-// todo
-// - square rules
-//   "{{{x,y},{y,z},{z,w},{w,x}}->{{x,y},{y,z},{z,w},{w,x},{y,x},{z,y},{w,z},{x,w},{x,z},{y,w},{z,v},{v,u},{u,y},{v,y},{z,u}}}",
-// - rules can apply behaviors to nodes
-// - (Implement hypergraphs (an edge can link multiple nodes at once))
-//   not sure it will yield great results, if we good good results from
-//   previous steps that's fine.
-// - add other resources in the environment
-//   - random other bodies, maybe cannot be food ?
-//   - ...
-// - add topology in the environment: some colliders which can't be passed
-//   by other bodies (we may want to optimize there if we use big bodies, as
-//   the current collisions are computed with small radiuses)
+//! very last todo
+// ( ) double check if growth works properly
+//     ( ) potentially fix mutations on growth which tend to yield completely
+//         different results / break
+// (x) parametrize the different noises with a seed (as well as the various
+//     color settings such as microscope light, etc): general pre-processing
+//     solution with a variable maybe ?
+// ( ) look at current signaling solution and check what can be simplified
+//     so that it works in a smoother way. right now not so great
+//     ( ) have a single signal instead of 4. simpler is all ways
+// ( ) cleanup rendering
+//     tend towards color crispiness, clean
+// ( ) add signal rendering (single signal much easier, there can be 2 colors
+//     one for negative and one for positive, or just single color even)
+// ( ) clean up code as much as possible
+//     ( ) go through shaders
+//     ( ) go through JS implementation (tackle todos potentially)
+//     ( ) rename rnd to rng
+//     ( ) cleanup initialization, all in index is dirty rn
+// ( ) optimisation pass: what can be optimzed ?
+//     ( ) budget different app areas and optimize the slow ones
+// ( ) finalize parameters and growth
+//     ( ) parametrize number of nodes
+// ( ) captures
+//     ( ) implement fast capture
+//     ( ) check if capture works on fxhash
+// ( ) add features
+// ( ) work on final bundling
+// ( ) remove UI
 
 //! Scoping the final phase of the project
 // ( ) base requirements
@@ -136,7 +136,7 @@ document.body.appendChild(stats.dom)
 //         ( ) fluoresence with colored bg
 //     ( ) think about whether the UI is included or not
 //         ( ) if so, think about what's missing from the UI
-//     ( ) rename rnd to rng
+//
 
 // todo: bugfux
 // ( ) Unknown promise rejection reason
