@@ -10,7 +10,6 @@ class ControlsClass {
   constructor() {
     this.autoTracking = true
     this.txy = vec2(0, 0)
-    this.#setScale(2.5)
     this.txArray = Array(4)
     this.updateTxArray()
     this.emitter = emitter()
@@ -22,7 +21,14 @@ class ControlsClass {
 
   init(world) {
     this.world = world
+    this.#setScale(2.5)
     this.#setupTracking()
+
+    window.addEventListener("resize", () => {
+      this.#setBounds()
+      this.#viewUpdated()
+      this.#autoTrack()
+    })
   }
 
   setTracking(enabled) {
@@ -61,13 +67,30 @@ class ControlsClass {
     this.#viewUpdated()
   }
 
+  #setBounds() {
+    const { x: w, y: h } = Globals.res
+    const bd = vec2(1, 1).div(2).div(this.scale)
+
+    this.trackBounds = {
+      min: vec2(1, 1).sub(bd),
+      max: bd,
+    }
+
+    // i'm not proud of this, but brain cells are gone
+    if (h > w) {
+      const dy = abs(w / h - 1.0) / 2
+      this.trackBounds.min.y -= dy
+      this.trackBounds.max.y += dy
+    } else {
+      const dx = abs(h / w - 1.0) / 2
+      this.trackBounds.min.x -= dx
+      this.trackBounds.max.x += dx
+    }
+  }
+
   #setScale(scale) {
     this.scale = scale
-    const halfScaled = vec2(0.5, 0.5).div(scale)
-    this.trackBounds = {
-      min: vec2(1, 1).sub(halfScaled),
-      max: halfScaled,
-    }
+    this.#setBounds()
     this.#autoTrack()
   }
 

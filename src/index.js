@@ -47,6 +47,7 @@ import { WebGLRenderer } from "./renderer/webgl/renderer"
 import { Controls } from "./controls"
 import { Params, generateParameters } from "./parametric-space.js"
 import { defineFeatures } from "./utils/features.js"
+import { Mouse } from "./interactions/mouse.js"
 
 const stats = new Stats()
 stats.showPanel(1)
@@ -89,6 +90,7 @@ document.body.appendChild(stats.dom)
 // ( ) remove Metrics
 // (x) remove UI
 // ( ) work on final bundling
+//     ( ) many files are included
 
 async function start() {
   const seeds = await getSeeds()
@@ -221,9 +223,9 @@ async function start() {
     renderer,
   })
 
-  Controls.init(world)
-
   engine.provideRenderingContainer(document.querySelector("body"))
+  Controls.init(world)
+  Mouse.init(document.querySelector("canvas#sim"))
 
   if ($fx.context.includes("capture")) {
     const steps = $fx.context === "fast-capture" ? 50 : 80
