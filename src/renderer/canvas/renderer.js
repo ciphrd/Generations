@@ -32,6 +32,7 @@ export class CanvasRenderer extends Renderer {
 
     this.entities = [world.bodies, world.constraints.pre, [selection]]
     this.cvs = document.createElement("canvas")
+    this.cvs.id = "sim"
     this.cvs.width = W * devicePixelRatio
     this.cvs.height = H * devicePixelRatio
     this.cvs.style.width = W + "px"

@@ -31,13 +31,13 @@ export class Body extends Entity {
     pos,
     radius,
     friction = 0,
-    color = Params.cellsDefaultColor.clone()
+    color = Params.cellsDefaultColor
   ) {
     super()
     this.world = world
     this.id = c++
     this.radius = radius
-    this.color = color
+    this.color = color.clone()
     this.pos = pos
     this.vel = vec2()
     this.acc = vec2()
@@ -86,7 +86,7 @@ export class Body extends Entity {
   sendSignal(energy) {
     if (this.springs.length === 0) return
     for (const spring of this.springs) {
-      spring.sendSignal(this, energy)
+      spring.other(this).receiveSignal(energy)
     }
   }
 

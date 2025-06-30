@@ -82,6 +82,7 @@ export class WebGLRenderer extends Renderer {
     const { res, deviceRes } = Globals
 
     this.cvs = document.createElement("canvas")
+    this.cvs.id = "sim"
     this.cvs.width = deviceRes.x
     this.cvs.height = deviceRes.y
     this.cvs.style.width = res.x + "px"
@@ -135,9 +136,9 @@ export class WebGLRenderer extends Renderer {
       signals: new Float32Array(nb),
     }
     for (let i = 0; i < nb; i++) {
-      this.cells.colors[i * 3 + 0] = organisms[i].color.r / 255
-      this.cells.colors[i * 3 + 1] = organisms[i].color.g / 255
-      this.cells.colors[i * 3 + 2] = organisms[i].color.b / 255
+      this.cells.colors[i * 3 + 0] = organisms[i].color.r
+      this.cells.colors[i * 3 + 1] = organisms[i].color.g
+      this.cells.colors[i * 3 + 2] = organisms[i].color.b
     }
 
     const nbLiaisons = liaisons.length
@@ -148,9 +149,9 @@ export class WebGLRenderer extends Renderer {
     let liaison
     for (let i = 0; i < nbLiaisons; i++) {
       liaison = liaisons[i]
-      this.liaisons.col[i * 3 + 0] = liaison.color.r / 255
-      this.liaisons.col[i * 3 + 1] = liaison.color.g / 255
-      this.liaisons.col[i * 3 + 2] = liaison.color.b / 255
+      this.liaisons.col[i * 3 + 0] = liaison.color.r
+      this.liaisons.col[i * 3 + 1] = liaison.color.g
+      this.liaisons.col[i * 3 + 2] = liaison.color.b
     }
 
     this.buffers = {

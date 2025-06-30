@@ -12,7 +12,7 @@ export const settings = {
   },
   food: {
     default: {
-      color: new Color(0, 0, 255),
+      color: new Color(0, 0, 1),
       radius: 0.02,
     },
   },

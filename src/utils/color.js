@@ -11,11 +11,7 @@ export class Color {
   }
 
   static fromByteRgb332(byte) {
-    return new Color(
-      round(((byte >> 5) / 7) * 255),
-      round((((byte >> 2) & 7) / 7) * 255),
-      round(((byte & 3) / 3) * 255)
-    )
+    return new Color((byte >> 5) / 7, ((byte >> 2) & 7) / 7, (byte & 3) / 3)
   }
 
   int() {
@@ -27,8 +23,7 @@ export class Color {
   }
 
   css() {
-    if (this.a === 1) return this.hex()
-    return `rgba(${this.r}, ${this.g}, ${this.b}, ${this.a})`
+    return `rgba(${this.r * 255}, ${this.g * 255}, ${this.b * 255}, ${this.a})`
   }
 
   clone() {
