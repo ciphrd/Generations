@@ -23,7 +23,6 @@
  */
 
 import "./inject.js"
-// import { parametricSpace } from "./parametric-space.js"
 
 import Stats from "stats.js"
 import { Body, BodyFlags } from "./physics/body"
@@ -47,6 +46,7 @@ import { Engine } from "./engine/engine"
 import { WebGLRenderer } from "./renderer/webgl/renderer"
 import { Controls } from "./controls"
 import { Params, generateParameters } from "./parametric-space.js"
+import { defineFeatures } from "./utils/features.js"
 
 const stats = new Stats()
 stats.showPanel(1)
@@ -74,8 +74,9 @@ document.body.appendChild(stats.dom)
 //     ( ) go through shaders
 //     ( ) go through JS implementation (tackle todos potentially)
 //     ( ) rename rnd to rng
-//     ( ) cleanup initialization, all in index is dirty rn
+//     (x) cleanup initialization, all in index is dirty rn
 //     ( ) cleanup bytecode instructions, too many rn
+//     ( ) todos
 //     (x) only a single CPU needed now
 // ( ) optimisation pass: what can be optimzed ?
 //     ( ) budget different app areas and optimize the slow ones
@@ -84,83 +85,25 @@ document.body.appendChild(stats.dom)
 // ( ) captures
 //     (x) implement fast capture
 //     ( ) check if capture works on fxhash
-// ( ) add features
+// (x) add features
 // ( ) remove Metrics
 // (x) remove UI
 // ( ) work on final bundling
 
-//! Scoping the final phase of the project
-// ( ) base requirements
-//     ( ) work on evolutions extensively and make sure it's interesting to
-//         evolve certain organisms (low but existing variance)
-//     ( ) more seed DNAs for a bit more variety
-//     (x) parametrize the different noises
-//     ( ) rework the signals to a much simpler state (with Clock, etc...)
-//         it was less open-ended but maybe that's for the best
-//     ( ) render
-//         (x) food, other cells, temp liaisons
-//         (x) they should too interact with env.
-//         ( ) cell activations
-//             small color flashes ?
-//         ( ) a bit of env variations (subtle noisy patterns, dust)
-//         ( ) extra post-processing
-//             microscope lens ? kinda signature yk
-//             chromatic abberation
-//         ( ) responsive output (no microscope lens)
-//         ( ) handle pixel ratio dependant rendering (shouldn't depend on PR)
-//         ( ) perform gaussian blur on color field in a different color space
-//             get more natural blended colors
-//         ( ) optimize cells field rendering (probably only need 1 texture
-//             output)
-//         ( ) optimize: maybe now we can transfer world field cells to view
-//             cells instead of re-rendering ?
-//             if so is there even a need to do so or can we use invTx() ?
-//     ( ) fix bugs
-//         ( ) Unknown promise rejection reason
-//             ooxEXWZrKip6H71hEnxvfnWZkh5G9iudmy3FC9XKxg41HvneufY
-//         ( ) isNaN on position
-//             oohnPj3cAUVfAVUiLvuCXqUG5HbD1RBCLfTkJJD2bPyAYSvqj3e
-//         ( ) Temp liaisons are flashing
-//             ooqcMLZVwx9j2TXpVt74ZmRMA1dAbydYrosJUjHHQx8K3cq4UgK
-// ( ) extra
-//     ( ) other microscopy techniques
-//         ( ) general framework for allowing other techniques
-//             essentially each light absorption layer has support for all
-//             techniques as each technique as specific requirements
-//         ( ) phase-contrast
-//         ( ) fluoresence
-//         ( ) fluoresence with colored bg
-//     ( ) think about whether the UI is included or not
-//         ( ) if so, think about what's missing from the UI
-//
-
-// todo: bugfux
-// ( ) Unknown promise rejection reason
-//     ooxEXWZrKip6H71hEnxvfnWZkh5G9iudmy3FC9XKxg41HvneufY
-// ( ) isNaN on position
-//     oohnPj3cAUVfAVUiLvuCXqUG5HbD1RBCLfTkJJD2bPyAYSvqj3e
-
 async function start() {
   const seeds = await getSeeds()
   generateParameters(seeds)
+  defineFeatures()
 
   const world = new World()
 
   const nodes = grow(vec2(0.501, 0.502), Params.dnas, Params.nbCells)
-  console.log({ nodes })
   const dnahexes = {}
   nodes.forEach((node) => {
     const hex = dnahex(node.dna)
     if (!dnahexes[hex]) dnahexes[hex] = 0
     dnahexes[hex]++
   })
-  console.log(dnahexes)
-  console.log(nodes)
-  // throw null
-
-  // const nodes = importNetwork(made)
-  // console.log(nodes)
-  // throw null
 
   const bodies = []
   const allBodies = []
@@ -197,10 +140,7 @@ async function start() {
           Params.poolRngSequence.one() * 0.99,
           Params.poolRngSequence.one() * 0.99
         ),
-        (fd) => {
-          console.log("eaten !!!")
-          world.removeBody(fd)
-        }
+        (fd) => world.removeBody(fd)
       )
     )
   }

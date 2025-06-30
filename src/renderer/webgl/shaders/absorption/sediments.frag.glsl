@@ -34,21 +34,13 @@ void main() {
 
   vec4 cells = texture(u_cells, v_uv);
   float C = (cells.r + cells.g + cells.b) * 0.333;
-  C = smoothstep(0.0, 0.01, C);
-  C = clamp(C, 0.0, 1.0);
+  C = clamp(smoothstep(0.0, 0.01, C), 0.0, 1.0);
 
-  float sediments = texture(u_sediments, uv).r;
-  sediments = pow(sediments, 0.15);
-  float invSediments = 1.0 - sediments;
-  // invSediments = smin(invSediments, 0.85, 0.1);
-  invSediments = clamp(invSediments, 0.0, 1.0);
-
-  float n1 = .5+.5*snoise(vec3(guv * 10.0, 0.0));
+  float invSediments = clamp(1. - pow(texture(u_sediments, uv).r, 0.15), 0., 1.);
 
   float rd = texture(u_rd, guv).b;
 
-  float I = invSediments;
-  I = pow(I, 2.5 /*- n1*1.6*/) * u_thickness.x;
+  float I = pow(invSediments, 2.5) * u_thickness.x;
 
   vec3 col = vec3(1.0) - hsv2rgb(vec3(
     u_hues.x,
@@ -62,13 +54,7 @@ void main() {
 
   rd = pow(rd, 0.5) * 1.0;
   rd = clamp(rd, 0.0, 1.0);
-  // todo: add time to noises
-  float n2 = fbm(vec3(guv * 20.0, 0.0), 4, 0.5);
-  col = hsv2rgb(vec3(
-    u_hues.y + n2 * 0.00,
-    1.0,
-    1.0
-  ));
+  col = hsv2rgb(vec3(u_hues.y, 1, 1));
   vec3 rdCol = col;
 
   // rd-substrate coloring
@@ -81,8 +67,7 @@ void main() {
 
   // cell coloring
   vec3 nColB = outColor0.rgb;
-  col = mix(rdCol, cell_color, min(1.0, C * rd * 4.0));
-  col = vec3(1) - col;
+  col = vec3(1) - mix(rdCol, cell_color, min(1.0, C * rd * 4.0));
   nColB += col * rd * (0.1 + 0.9 * pow(I, 0.5));
 
   // mixing based

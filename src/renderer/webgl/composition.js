@@ -1,7 +1,6 @@
 import { glu } from "../../utils/glu"
 import fullVS from "./shaders/full.vert.glsl"
 import compFS from "./shaders/composition/composition.frag.glsl"
-import chromaFS from "./shaders/composition/chroma.frag.glsl"
 import convolveFS from "./shaders/convolve.frag.glsl"
 import { settings } from "../../settings"
 import { Params } from "../../parametric-space"
@@ -36,13 +35,6 @@ export class CompositionPass {
         },
         variables: {
           SOBEL_STRENGTH: Params.sobelStrength.toFixed(3),
-        },
-      }),
-      chroma: glu.program(gl, fullVS, chromaFS, {
-        attributes: ["a_position"],
-        uniforms: ["u_tex"],
-        vao: (prg) => (u) => {
-          u.quad(prg)
         },
       }),
     }
@@ -96,10 +88,5 @@ export class CompositionPass {
       settings.microscopy.light.backlightColor.rgb
     )
     glu.draw.quad(gl)
-
-    // glu.bindFB(gl, res.x, res.y, null)
-    // programs.chroma.use()
-    // glu.uniformTex(gl, programs.composition.uniforms.u_tex, rts.comp.tex)
-    // glu.draw.quad(gl)
   }
 }

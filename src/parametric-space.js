@@ -15,19 +15,6 @@ import { rnd, rnd0, rngSequence } from "./utils/rnd"
  */
 export const Params = {}
 
-// rand({
-//   // here goes the initial value
-//   initial: (rnd) => rnd.one(),
-//   // for values mapped using a non-linear function, it might be best to work
-//   // with 2 values at all time, x and y. This framework always manipulates x,
-//   // but will eventually return y (the derivative)
-//   derive: (v) => x**2,
-//   // is called at each depth
-//   mutate: (prev, rnd, depth) => prev + 0,
-//   // optional: used to enforce value within bounds at all times
-//   bounds: (v) => clamp(v, 0.2, 1.0),
-// })
-
 const noop = (v) => v
 function randMutate({ initial, mutate, output }) {
   output = output || noop
@@ -168,7 +155,7 @@ function parametricSpace(seeds) {
   const rdEggsEffect = randMutate({
     initial: (rng) => pow(rng.one(), 2.0) * 0.5,
     mutate: (prev, rng) => clamp01(prev + rng.range(-0.1, 0.1)),
-    output: (v) => remap01(v, 0, 0.1),
+    output: (v) => remap01(v, 0, 0.05),
   })
 
   const snoiseSeed = randMutate({

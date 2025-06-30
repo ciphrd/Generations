@@ -24,7 +24,6 @@ function generateActivation(seeds, rng) {
 }
 
 export function generateDNA(seeds, rng) {
-  console.log({ seeds: { ...seeds } })
   const growth = []
 
   // all dns start with a permutation rule

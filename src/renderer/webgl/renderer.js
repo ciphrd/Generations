@@ -14,7 +14,6 @@ import cellFS from "./shaders/cell.frag.glsl"
 import liaisonVS from "./shaders/liaison.vert.glsl"
 import liaisonFS from "./shaders/liaison.frag.glsl"
 import liaisonTempFS from "./shaders/liaison-temp.frag.glsl"
-import bacteriasFS from "./shaders/bacterias.frag.glsl"
 import fieldLiaisonFS from "./shaders/field-liaison.frag.glsl"
 import fieldCellFS from "./shaders/field-cell.frag.glsl"
 import fieldPointFS from "./shaders/field-point.frag.glsl"
@@ -34,13 +33,6 @@ import { Params } from "../../parametric-space"
 import { Mouse } from "../../interactions/mouse"
 import { Globals } from "../../globals"
 import { Controls } from "../../controls"
-
-//
-// - Rendering resolution
-//   - css pixels
-//   - device pixels
-// - Environment res (always the same)
-//
 
 export class WebGLRenderer extends Renderer {
   constructor(world, selection) {
@@ -331,7 +323,7 @@ export class WebGLRenderer extends Renderer {
           "u_thickness",
         ],
         variables: {
-          CELL_COLOR_SPREAD: Params.cellsColorSpread,
+          CELL_COLOR_SPREAD: Params.cellsColorSpread.toFixed(4),
         },
         vao: (prog) => (u) => {
           u.attrib(prog.attributes.a_position, glu.quad(gl), 2)
@@ -348,7 +340,6 @@ export class WebGLRenderer extends Renderer {
 
     this.#allocateRenderTargets()
 
-    this.bacterias = new PointsRenderer(gl, bacteriasFS, () => world.bacterias)
     this.food = new PointsRenderer(gl, foodFS, () => world.food)
     this.bindLiaisons = new LiaisonsRenderer(
       gl,
@@ -401,7 +392,6 @@ export class WebGLRenderer extends Renderer {
     this.prepared = true
 
     world.emitter.on("bodies:updated", () => {
-      this.bacterias.update()
       this.food.update()
       this.bindLiaisons.update()
     })
@@ -572,7 +562,6 @@ export class WebGLRenderer extends Renderer {
     )
     glu.draw.quad(gl)
 
-    // this.bacterias.render()
     this.food.render()
     this.bindLiaisons.render()
 
