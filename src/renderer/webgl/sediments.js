@@ -121,13 +121,6 @@ export class Sediments {
       gaussian: initGaussianProgram(gl, Params.rdGaussianFilterSize),
     }
 
-    // todo: reuse the blurred field in renderer.js
-    this.blurFieldPass = new GaussianPass(
-      gl,
-      () => ({ res: res.clone().div(2), tex: this.cellField }),
-      1
-    )
-
     this.fullSedsRt = glu.renderTarget(gl, res.x, res.y, gl.R32F)
     this.substratePP = glu.pingpong(gl, res.x, res.y, gl.RGBA32F)
 
@@ -161,8 +154,6 @@ export class Sediments {
   render(time) {
     const { gl, res, programs, pingpong, substratePP, nbRoot, texel } = this
 
-    this.blurFieldPass.render()
-
     pingpong.swap()
     glu.bindFB(gl, nbRoot, nbRoot, pingpong.back().fb)
     programs.update.use()
@@ -176,7 +167,7 @@ export class Sediments {
     glu.uniformTex(
       gl,
       programs.update.uniforms.u_distance_field,
-      this.blurFieldPass.output,
+      this.cellField,
       2
     )
     gl.uniform1f(programs.update.uniforms.u_time, time * 0.001)
@@ -212,12 +203,7 @@ export class Sediments {
         this.membraneOuter,
         2
       )
-      glu.uniformTex(
-        gl,
-        programs.substrate.uniforms.u_cells,
-        this.blurFieldPass.output,
-        3
-      )
+      glu.uniformTex(gl, programs.substrate.uniforms.u_cells, this.cellField, 3)
       glu.uniformTex(
         gl,
         programs.substrate.uniforms.u_other_cells,

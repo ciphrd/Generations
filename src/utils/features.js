@@ -1,7 +1,8 @@
 import { Params } from "../parametric-space"
+import { clamp01 } from "./math"
 
 function feature(features, value, min, max) {
-  return features[floor((features.length * (value - min)) / (max - min))]
+  return features[floor(features.length * clamp01((value - min) / (max - min)))]
 }
 
 const lowHigh = ["very low", "low", "medium", "high", "very high"]

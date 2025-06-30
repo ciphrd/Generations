@@ -11,8 +11,7 @@ class Stack {
     return value
   }
   push(value) {
-    if (isNaN(value)) throw null
-    if (abs(value) === Infinity) value = 0
+    if (isNaN(value) || abs(value) === Infinity) value = 0
     for (let i = 9; i >= 1; i--) this.values[i] = this.values[i - 1]
     this.values[0] = value
   }

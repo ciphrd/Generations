@@ -76,19 +76,27 @@ document.body.appendChild(stats.dom)
 //     ( ) go through JS implementation (tackle todos potentially)
 //     ( ) rename rnd to rng
 //     (x) cleanup initialization, all in index is dirty rn
-//     ( ) cleanup bytecode instructions, too many rn
+//     (x) cleanup bytecode instructions, too many rn
 //     ( ) todos
 //     (x) only a single CPU needed now
 // ( ) optimisation pass: what can be optimzed ?
 //     ( ) budget different app areas and optimize the slow ones
 // ( ) finalize parameters and growth
 //     (x) parametrize number of nodes
+// ( ) bugs
+//     (x) colors not normalized
+//     (x) viewport panning out of bounds
+//     (x) subarray not a fn
 // ( ) captures
-//     (x) implement fast capture
+//     ( ) implement fast capture using canvas as a fallback renderer
 //     ( ) check if capture works on fxhash
 // (x) add features
 // ( ) remove Metrics
 // (x) remove UI
+// ( ) if time
+//     ( ) add mutation rate (hard coded at gen0)
+//     ( ) decrease nb of DNAs, as it results in very different generations
+//         experiment with a single DNA ? -> too monotonous ?
 // ( ) work on final bundling
 //     ( ) many files are included
 
@@ -228,7 +236,7 @@ async function start() {
   Mouse.init(document.querySelector("canvas#sim"))
 
   if ($fx.context.includes("capture")) {
-    const steps = $fx.context === "fast-capture" ? 50 : 80
+    const steps = $fx.context === "fast-capture" ? 1 : 80
     engine.ticker.running = true
     for (let i = 0; i < steps; i++) {
       engine.ticker.tick()

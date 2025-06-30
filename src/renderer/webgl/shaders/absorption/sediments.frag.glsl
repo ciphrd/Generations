@@ -33,8 +33,9 @@ void main() {
   vec2 guv = invViewTx(v_uv);
 
   vec4 cells = texture(u_cells, v_uv);
-  float C = (cells.r + cells.g + cells.b) * 0.333;
-  C = clamp(smoothstep(0.0, 0.01, C), 0.0, 1.0);
+  float C = clamp(smoothstep(.0,.01,(cells.r+cells.g+cells.b) * 0.333), 0., 1.);
+  float C2 = smoothstep(0.1, 0.4, cells.a);
+  float C3 = smoothstep(0.01, 0.3, cells.a);
 
   float invSediments = clamp(1. - pow(texture(u_sediments, uv).r, 0.15), 0., 1.);
 
@@ -55,7 +56,8 @@ void main() {
   rd = pow(rd, 0.5) * 1.0;
   rd = clamp(rd, 0.0, 1.0);
   col = hsv2rgb(vec3(u_hues.y, 1, 1));
-  vec3 rdCol = col;
+
+  vec3 rdCol = mix(col, vec3(1) - col, C3);
 
   // rd-substrate coloring
   col = vec3(1) - rdCol;
@@ -71,7 +73,6 @@ void main() {
   nColB += col * rd * (0.1 + 0.9 * pow(I, 0.5));
 
   // mixing based
-  float C2 = smoothstep(0.1, 0.4, cells.a);
   outColor0.rgb = mix(nColA, nColB, C2);
 
   // final color correction
