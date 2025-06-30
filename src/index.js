@@ -55,10 +55,10 @@ document.body.appendChild(stats.dom)
 //     tend towards color crispiness, clean
 // ( ) add signal rendering (single signal much easier, there can be 2 colors
 //     one for negative and one for positive, or just single color even)
-// ( ) clean up code as much as possible
-//     ( ) go through shaders
-//     ( ) go through JS implementation (tackle todos potentially)
-//     ( ) rename rnd to rng
+// (x) clean up code as much as possible
+//     (x) go through shaders
+//     (x) go through JS implementation (tackle todos potentially)
+//     (x) rename rnd to rng
 //     (x) cleanup initialization, all in index is dirty rn
 //     (x) cleanup bytecode instructions, too many rn
 //     (x) todos
@@ -75,7 +75,7 @@ document.body.appendChild(stats.dom)
 //     ( ) implement fast capture using canvas as a fallback renderer
 //     ( ) check if capture works on fxhash
 // (x) add features
-// ( ) remove Metrics
+// ( ) remove Metrics / stats
 // (x) remove UI
 // ( ) if time
 //     ( ) add mutation rate (hard coded at gen0)
@@ -83,6 +83,7 @@ document.body.appendChild(stats.dom)
 //         experiment with a single DNA ? -> too monotonous ?
 // ( ) work on final bundling
 //     ( ) many files are included
+// ( ) fix mobile
 
 async function start() {
   const seeds = await getSeeds()

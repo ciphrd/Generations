@@ -1,5 +1,5 @@
 import { arr, u8arr } from "../utils/array"
-import { randomizer, rnd, rnd0 } from "../utils/rnd"
+import { randomizer, rng, rng0 } from "../utils/rng"
 
 function generateActivation(seeds, rng) {
   const out = []
@@ -7,12 +7,12 @@ function generateActivation(seeds, rng) {
     out.push(...rng.el(seeds.activations))
   }
   // add at the end
-  for (let i = 0, n = rnd0.int(0, 10); i < n; i++) {
-    out.push(rnd0.int(0, 32) & 0xff)
+  for (let i = 0, n = rng0.int(0, 10); i < n; i++) {
+    out.push(rng0.int(0, 32) & 0xff)
   }
   // within
-  for (let i = 0, n = rnd0.int(0, 10); i < n; i++) {
-    out.splice(rnd0.int(0, out.length - 1), 0, rnd0.int(0, 32) & 0xff)
+  for (let i = 0, n = rng0.int(0, 10); i < n; i++) {
+    out.splice(rng0.int(0, out.length - 1), 0, rng0.int(0, 32) & 0xff)
   }
   return out
 }

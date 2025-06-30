@@ -1,7 +1,7 @@
 import { Node } from "../graph/node"
 import { Params } from "../parametric-space"
 import { arr } from "../utils/array"
-import { rnd, rnd0 } from "../utils/rnd"
+import { rng, rng0 } from "../utils/rng"
 
 export function grow(center, dnas, maxNodes) {
   const nodes = [new Node(center)]

@@ -40,8 +40,8 @@ const randomizers = arr.new($fx.depth + 1, (i) =>
   randomizer(() => $fx.randAt(i))
 )
 
-export const rnd0 = randomizers[0]
-export const rnd = (depth) => randomizers[depth]
+export const rng0 = randomizers[0]
+export const rng = (depth) => randomizers[depth]
 
 // creates a rng using a sequence of pre-generated numbers
 export const rngSequence = (sequence) => {

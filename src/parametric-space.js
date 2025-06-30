@@ -7,7 +7,7 @@ import { generateDNA, mutateDNA } from "./growth/dna"
 import { arr } from "./utils/array"
 import { Color } from "./utils/color"
 import { clamp, clamp01, fract, remap01 } from "./utils/math"
-import { rnd, rnd0, rngSequence } from "./utils/rnd"
+import { rng, rng0, rngSequence } from "./utils/rng"
 
 /**
  * will be populated by parametricSpace()
@@ -19,9 +19,9 @@ const noop = (v) => v
 function randMutate({ initial, mutate, output }) {
   output = output || noop
 
-  let value = initial(rnd(0))
+  let value = initial(rng(0))
   for (let i = 1; i <= $fx.depth; i++) {
-    value = mutate(value, rnd(i), i)
+    value = mutate(value, rng(i), i)
   }
 
   return output(value)
@@ -45,7 +45,7 @@ function parametricSpace(seeds) {
 
   const dnas = randMutate({
     initial: () => {
-      const rng = rngSequence(arr.new(10_000, () => rnd0.one()))
+      const rng = rngSequence(arr.new(10_000, () => rng0.one()))
       return arr.new(16, () => generateDNA(seeds, rng))
     },
     mutate: (prev, rngAtDepth) => {
@@ -79,65 +79,65 @@ function parametricSpace(seeds) {
 
   // coloring
   const cellsDefaultColor = randMutate({
-    initial: (rnd) => arr.new(3, () => rnd.range(0.5, 1.0)),
-    mutate: (prev, rnd) => prev.map((v) => v + rnd.range(-0.1, 0.1)),
+    initial: (rng) => arr.new(3, () => rng.range(0.5, 1.0)),
+    mutate: (prev, rng) => prev.map((v) => v + rng.range(-0.1, 0.1)),
     output: (val) => new Color(...val.map((c) => clamp01(c))),
   })
 
   const sedimentHues = randMutate({
-    initial: (rnd) => arr.new(2, () => rnd.one()),
-    mutate: (prev, rnd) => prev.map((v) => v + rnd.range(-0.05, 0.05)),
+    initial: (rng) => arr.new(2, () => rng.one()),
+    mutate: (prev, rng) => prev.map((v) => v + rng.range(-0.05, 0.05)),
     output: (vals) => vals.map((v) => fract(v)),
   })
 
   const sedimentSharpness = randMutate({
-    initial: (rnd) => rnd.range(0.1, 0.5),
-    mutate: (prev, rnd) => prev + rnd.range(-0.03, 0.03),
+    initial: (rng) => rng.range(0.1, 0.5),
+    mutate: (prev, rng) => prev + rng.range(-0.03, 0.03),
     output: (v) => clamp(v, 0.1, 0.5),
   })
 
   const sedimentBgThickness = randMutate({
-    initial: (rnd) => rnd.range(0.9, 3.5),
-    mutate: (prev, rnd) => prev + rnd.range(-0.1, 0.1),
+    initial: (rng) => rng.range(0.9, 3.5),
+    mutate: (prev, rng) => prev + rng.range(-0.1, 0.1),
     output: (v) => clamp(v, 0.9, 3.5),
   })
 
   const sedimentFgThickness = randMutate({
-    initial: (rnd) => rnd.range(0.5, 1.0),
-    mutate: (prev, rnd) => prev + rnd.range(-0.04, 0.04),
+    initial: (rng) => rng.range(0.5, 1.0),
+    mutate: (prev, rng) => prev + rng.range(-0.04, 0.04),
     output: (v) => clamp(v, 0.5, 1.0),
   })
 
   const sedimentNbAgents = randMutate({
-    initial: (rnd) => rnd.range(16, 64),
-    mutate: (prev, rnd) => prev + rnd.range(-10, 10),
+    initial: (rng) => rng.range(16, 64),
+    mutate: (prev, rng) => prev + rng.range(-10, 10),
     output: (v) => floor(clamp(v, 16, 128)),
   })
 
   const rdDiffRateB = randMutate({
-    initial: (rnd) => rnd.range(0.3, 1.0),
-    mutate: (prev, rnd) => clamp(prev + rnd.range(-0.1, 0.1), 0.3, 1.0),
+    initial: (rng) => rng.range(0.3, 1.0),
+    mutate: (prev, rng) => clamp(prev + rng.range(-0.1, 0.1), 0.3, 1.0),
   })
 
   const cellsBgSeparation = randMutate({
-    initial: (rnd) => rnd.range(0.0, 0.03),
-    mutate: (prev, rnd) => rnd.range(0.0, 0.03),
+    initial: (rng) => rng.range(0.0, 0.03),
+    mutate: (prev, rng) => rng.range(0.0, 0.03),
   })
 
   const rdGaussianFilterSize = randMutate({
-    initial: (rnd) => 3 + round(rnd.one()) * 2, // 3 or 5
-    mutate: (prev, rnd) => 3 + round(rnd.one()) * 2,
+    initial: (rng) => 3 + round(rng.one()) * 2, // 3 or 5
+    mutate: (prev, rng) => 3 + round(rng.one()) * 2,
   })
 
   const substrateAgentsRndMove = randMutate({
-    initial: (rnd) => rnd.range(0.1, 0.3),
-    mutate: (prev, rnd) => clamp(prev + rnd.range(-0.02, 0.02), 0.01, 0.3),
+    initial: (rng) => rng.range(0.1, 0.3),
+    mutate: (prev, rng) => clamp(prev + rng.range(-0.02, 0.02), 0.01, 0.3),
     output: (v) => clamp(v, 0.01, 0.3),
   })
 
   const substrateAgentsMoveSpeed = randMutate({
-    initial: (rnd) => rnd.range(0.001, 0.005),
-    mutate: (prev, rnd) => clamp(prev + rnd.range(-0.001, 0.001), 0.001, 0.03),
+    initial: (rng) => rng.range(0.001, 0.005),
+    mutate: (prev, rng) => clamp(prev + rng.range(-0.001, 0.001), 0.001, 0.03),
     output: (v) => clamp(v, 0.001, 0.03),
   })
 
