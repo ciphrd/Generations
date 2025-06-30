@@ -3,21 +3,21 @@ import { randomizer, rnd, rnd0 } from "../utils/rnd"
 
 function generateActivation(seeds, rng) {
   const out = []
-  for (let i = 0, n = rng.int(1, 4); i < n; i++) {
+  for (let i = 0, n = rng.int(3, 10); i < n; i++) {
     out.push(...rng.el(seeds.activations))
   }
 
   // todo: improve ofc
 
   // add at the end
-  // for (let i = 0, n = rnd0.int(0, 10); i < n; i++) {
-  //   out.push(rnd0.int(0, 32) & 0xff)
-  // }
+  for (let i = 0, n = rnd0.int(0, 10); i < n; i++) {
+    out.push(rnd0.int(0, 32) & 0xff)
+  }
 
   // within
-  // for (let i = 0, n = rnd0.int(0, 10); i < n; i++) {
-  //   out.splice(rnd0.int(0, out.length - 1), 0, rnd0.int(0, 32) & 0xff)
-  // }
+  for (let i = 0, n = rnd0.int(0, 10); i < n; i++) {
+    out.splice(rnd0.int(0, out.length - 1), 0, rnd0.int(0, 32) & 0xff)
+  }
   return out
 }
 
@@ -57,10 +57,6 @@ export function generateDNA(seeds, rng) {
   ]
 }
 
-export function generateDNAs(seeds) {
-  return [...Array(16)].map(() => generateDNA(seeds, randomizer(random)))
-}
-
 const bitManRng = (rng) => ({
   flipBit: (u8array) => {
     const nbBits = u8array.length * 8
@@ -87,22 +83,20 @@ function mutatePermutationDNA(dna, rng, strength) {
   let mutated = dna.subarray(1, dna.length - 1)
   const bitman = bitManRng(rng)
 
-  // todo: here work on the randomness
-
-  for (let i = 0, m = 16; i < m; i++) {
+  for (let i = 0, m = 8; i < m; i++) {
     bitman.flipBit(mutated)
   }
 
-  // if (rng.one() < 0.3) {
-  //   mutated = bitman.delByte(mutated)
-  // }
+  if (rng.one() < 0.05) {
+    mutated = bitman.delByte(mutated)
+  }
 
-  // if (rng.one() < 0.3) {
-  //   mutated = bitman.addByte(mutated, rng.byte())
-  // }
+  if (rng.one() < 0.05) {
+    mutated = bitman.addByte(mutated, rng.byte())
+  }
 
   const out = new Uint8Array(mutated.length + 2)
-  out.at[out.length - 1] = dna[dna.length - 1]
+  out[out.length - 1] = dna[dna.length - 1]
   out[0] = dna[0]
   for (let i = 0; i < mutated.length; i++) {
     out[i + 1] = mutated[i]
@@ -112,6 +106,20 @@ function mutatePermutationDNA(dna, rng, strength) {
 }
 
 function mutateActivationDNA(dna, rng, strength) {
+  const bitman = bitManRng(rng)
+
+  for (let i = 0, m = 8; i < m; i++) {
+    bitman.flipBit(dna)
+  }
+
+  if (rng.one() < 0.05) {
+    dna = bitman.delByte(dna)
+  }
+
+  if (rng.one() < 0.05) {
+    dna = bitman.addByte(dna, rng.byte())
+  }
+
   return dna
 }
 

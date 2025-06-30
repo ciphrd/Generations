@@ -78,11 +78,6 @@ export const GrowthBytecode = {
     const operations = []
     const instruction = instructions[pointer]
 
-    // todo remove
-    console.log({ instructions, pointer, instruction })
-    console.log(`Executing instruction: ${set[instruction]}`)
-    console.log({ stack: [...stack.values] })
-
     switch (instruction) {
       // nop
       case 0x0:

@@ -42,7 +42,6 @@ import { getSeeds } from "./opti/seeds"
 import { Sensors } from "./sensors"
 import { NodeSelection } from "./interactions/selection"
 import { dnahex } from "./utils/string"
-import { ui } from "./ui/index.jsx"
 import { Ticker } from "./engine/ticker"
 import { Engine } from "./engine/engine"
 import { WebGLRenderer } from "./renderer/webgl/renderer"
@@ -87,7 +86,7 @@ document.body.appendChild(stats.dom)
 //     ( ) check if capture works on fxhash
 // ( ) add features
 // ( ) remove Metrics
-// ( ) remove UI
+// (x) remove UI
 // ( ) work on final bundling
 
 //! Scoping the final phase of the project
@@ -284,9 +283,7 @@ async function start() {
 
   Controls.init(world)
 
-  console.log("---")
-  console.log(engine.world)
-
-  ui(engine)
+  engine.provideRenderingContainer(document.querySelector("body"))
+  engine.start()
 }
 start()
