@@ -5,7 +5,7 @@ import { randomizer, rnd, rnd0 } from "../utils/rnd"
 
 function generateActivation(seeds, rng) {
   const out = []
-  for (let i = 0, n = rng.int(3, 10); i < n; i++) {
+  for (let i = 0, n = rng.int(1, 16); i < n; i++) {
     out.push(...rng.el(seeds.activations))
   }
 

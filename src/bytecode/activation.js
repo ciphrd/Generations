@@ -61,11 +61,7 @@ const set = [
   "sub",
   "mul",
   "mod",
-  "fire_0",
-  "fire_1",
-  "nop_2",
-  "nop_3",
-  "reng",
+  "fire",
   "fw",
   "bw",
   "act",
@@ -176,67 +172,57 @@ export const ActivationBytecode = {
           stack.push(mod(stack.get(0), stack.get(1)))
           break
         }
-        // fire0
+        // fire
         case 0x0e: {
           operations.push(op("fire", clamp(stack.get(0), -1, 1)))
           break
         }
-        // fire chemical strength
-        case 0x0f: {
-          operations.push(op("fire", context.chemicalStrength))
-        }
-        // nop
-        case 0x10:
-        case 0x11: {
-          break
-        }
-        // todo: remove
-        // reng
-        case 0x12: {
-          break
-        }
         // fw
-        case 0x13: {
+        case 0x0f: {
           operations.push(op("forward"))
           break
         }
         // bw
-        case 0x14: {
+        case 0x10: {
           operations.push(op("backward"))
           break
         }
         // act
-        case 0x15: {
+        case 0x11: {
           operations.push(op("actuate"))
           break
         }
         // bnd
-        case 0x16: {
+        case 0x12: {
           operations.push(op("bind"))
           break
         }
         // grb
-        case 0x17: {
+        case 0x13: {
           operations.push(op("grab"))
           break
         }
         // eat
-        case 0x18: {
+        case 0x14: {
           operations.push(op("eat"))
           break
         }
         // sin
-        case 0x19: {
+        case 0x15: {
           stack.push(sin(stack.get(0)))
           break
         }
         // cos
-        case 0x1a: {
+        case 0x16: {
           stack.push(cos(stack.get(0)))
           break
         }
 
         // undefined yet
+        case 0x17:
+        case 0x18:
+        case 0x19:
+        case 0x1a:
         case 0x1b:
         case 0x1c:
         case 0x1d:

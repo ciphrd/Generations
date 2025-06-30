@@ -15,24 +15,19 @@ function withValues(values, code) {
 const seeds = [
   // always fire chemicals
   `
-    fire_0
-  `,
-  `
-    fire_1
+    fire
   `,
 
   // move forward
   `
     fw
-    fire_0
-    fire_1
+    fire
   `,
 
   // actuate
   `
     act
-    fire_0
-    fire_1
+    fire
   `,
 
   // simpler counter
@@ -67,7 +62,7 @@ const seeds = [
       swp
       rot
       swp
-      fire_0
+      fire
     `
   ),
 
@@ -111,7 +106,7 @@ const seeds = [
       pop
       swp
       rot
-      fire_0
+      fire
     `
   ),
 
@@ -129,7 +124,7 @@ const seeds = [
     pop
     swp
     pop
-    fire_0
+    fire
   `,
 
   // signal inverter
@@ -146,7 +141,7 @@ const seeds = [
     pop
     swp
     pop
-    fire_0
+    fire
   `,
 
   // todos
@@ -169,11 +164,7 @@ const InstructionSet = [
   "sub",
   "mul",
   "mod",
-  "fire_0",
-  "fire_1",
-  "nop_2",
-  "nop_3",
-  "reng",
+  "fire",
   "fw",
   "bw",
   "act",
