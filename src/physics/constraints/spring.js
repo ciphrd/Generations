@@ -2,7 +2,6 @@ import { Params } from "../../parametric-space"
 import { arr } from "../../utils/array"
 import { vec2 } from "../../utils/vec"
 import { Entity } from "../entity"
-import { modulator } from "../signals/modulator"
 
 const a2 = arr.new(2)
 
@@ -43,14 +42,11 @@ export class Spring extends Entity {
     this.bodyB.springs.push(this)
 
     this.contraction = 0
-
     this.prevLength = restLength
     this.length = restLength
 
     this.color = color
 
-    // for each signal band, there's a modulator controlling the flow
-    this.modulator = modulator(bodyA, bodyB)
     this.signal = arr.new(2, 0)
   }
 
@@ -71,12 +67,6 @@ export class Spring extends Entity {
   }
 
   apply(t, dt) {
-    // process the signals
-    this.modulator.modulate(this.signal[0], this.signal[1], a2)
-    this.bodyA.receiveSignal(a2[1], `body:${this.bodyB.id}`)
-    this.bodyB.receiveSignal(a2[0], `body:${this.bodyA.id}`)
-    this.signal.fill(0)
-
     this.restLength = this.initial.restLength * (1 - this.contraction)
     this.stiffness = this.initial.stiffness * (1 + abs(this.contraction) * 1.5)
     this.contraction *= 0.98
