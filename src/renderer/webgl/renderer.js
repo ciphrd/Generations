@@ -95,7 +95,12 @@ export class WebGLRenderer extends Renderer {
     this.cvs.style.width = res.x + "px"
     this.cvs.style.height = res.y + "px"
 
-    this.gl = this.cvs.getContext("webgl2")
+    this.gl = this.cvs.getContext("webgl2", {
+      antialias: false,
+      depth: false,
+      powerPreference: "high-performance",
+      preserveDrawingBuffer: true,
+    })
     this.texel = res.clone().inv()
 
     this.gl.getExtension("EXT_color_buffer_float")

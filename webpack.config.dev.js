@@ -5,13 +5,6 @@ export default withFxhashCli(
     module: {
       rules: [
         {
-          test: /\.(jsx)$/, // support both .js and .jsx
-          exclude: /node_modules/,
-          use: {
-            loader: "babel-loader",
-          },
-        },
-        {
           test: /\.glsl$/,
           exclude: /node_modules/,
           use: {

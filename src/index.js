@@ -82,7 +82,7 @@ document.body.appendChild(stats.dom)
 // ( ) finalize parameters and growth
 //     ( ) parametrize number of nodes
 // ( ) captures
-//     ( ) implement fast capture
+//     (x) implement fast capture
 //     ( ) check if capture works on fxhash
 // ( ) add features
 // ( ) remove Metrics
@@ -284,6 +284,16 @@ async function start() {
   Controls.init(world)
 
   engine.provideRenderingContainer(document.querySelector("body"))
-  engine.start()
+
+  if ($fx.context.includes("capture")) {
+    const steps = $fx.context === "fast-capture" ? 50 : 80
+    engine.ticker.running = true
+    for (let i = 0; i < steps; i++) {
+      engine.ticker.tick()
+    }
+    $fx.preview()
+  } else {
+    engine.start()
+  }
 }
 start()

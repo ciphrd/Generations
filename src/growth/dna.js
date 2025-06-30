@@ -1,6 +1,8 @@
 import { arr, u8arr } from "../utils/array"
 import { randomizer, rnd, rnd0 } from "../utils/rnd"
 
+// todo: look more carefully into this file
+
 function generateActivation(seeds, rng) {
   const out = []
   for (let i = 0, n = rng.int(3, 10); i < n; i++) {

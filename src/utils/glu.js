@@ -81,15 +81,6 @@ export const glu = {
         instances = false,
         normalized = false
       ) => {
-        console.log({
-          loc,
-          buffer,
-          numCols,
-          numRows,
-          type,
-          instances,
-          normalized,
-        })
         for (let i = 0; i < numCols; ++i) {
           utils.attrib(
             loc + i,
