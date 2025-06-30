@@ -69,10 +69,6 @@ export class Body extends Entity {
 
   setDNA(dna) {
     this.dna = dna
-    this.cpus = []
-    for (let i = 0; i < 4; i++) {
-      this.cpus[i] = new CPU(dna[i + 1], ActivationBytecode)
-    }
     this.cpu = new CPU(dna[1], ActivationBytecode)
   }
 
@@ -95,14 +91,10 @@ export class Body extends Entity {
   }
 
   processSignals(t, dt) {
-    this.operations.length = 0
-
-    this.cpus[0].prepare()
-    this.operations.push(
-      ...this.cpus[0].run(
-        { body: this, chemicalStrength: this.signal },
-        this.signal
-      )
+    this.cpu.prepare()
+    this.operations = this.cpu.run(
+      { body: this, chemicalStrength: this.signal },
+      this.signal
     )
 
     this.operations = mergeOperations(this.operations)

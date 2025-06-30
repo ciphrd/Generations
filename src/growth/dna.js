@@ -48,15 +48,10 @@ export function generateDNA(seeds, rng) {
     growth.push(rng.int(0, 256) & 0xff)
   }
 
-  const activations = Array(4)
-    .fill(0)
-    .map(() => generateActivation(seeds, rng))
+  const activation = generateActivation(seeds, rng)
 
   // improve this mapping for a more robust sol
-  return [
-    new Uint8Array(growth),
-    ...activations.map((act) => new Uint8Array(act)),
-  ]
+  return [new Uint8Array(growth), activation]
 }
 
 const bitManRng = (rng) => ({
@@ -128,6 +123,6 @@ function mutateActivationDNA(dna, rng, strength) {
 export function mutateDNA(dna, rng, strength) {
   return [
     mutatePermutationDNA(dna[0], rng),
-    ...arr.new(4, (i) => mutateActivationDNA(dna[i + 1], rng, strength)),
+    mutateActivationDNA(dna[1], rng, strength),
   ]
 }

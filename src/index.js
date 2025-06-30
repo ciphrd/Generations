@@ -76,11 +76,11 @@ document.body.appendChild(stats.dom)
 //     ( ) rename rnd to rng
 //     ( ) cleanup initialization, all in index is dirty rn
 //     ( ) cleanup bytecode instructions, too many rn
-//     ( ) only a single CPU needed now
+//     (x) only a single CPU needed now
 // ( ) optimisation pass: what can be optimzed ?
 //     ( ) budget different app areas and optimize the slow ones
 // ( ) finalize parameters and growth
-//     ( ) parametrize number of nodes
+//     (x) parametrize number of nodes
 // ( ) captures
 //     (x) implement fast capture
 //     ( ) check if capture works on fxhash

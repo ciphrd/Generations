@@ -88,8 +88,8 @@ function parametricSpace(seeds) {
    */
 
   const nbCells = randMutate({
-    initial: (rng) => rng.range(70, 120),
-    mutate: (prev, rng) => clamp(prev + rng.range(-10, 20), 10, 800),
+    initial: (rng) => rng.range(70, 180),
+    mutate: (prev, rng) => clamp(prev + rng.range(-15, 22), 10, 800),
   })
 
   // coloring
@@ -127,7 +127,7 @@ function parametricSpace(seeds) {
   })
 
   const sedimentNbAgents = randMutate({
-    initial: (rnd) => rnd.range(16, 128),
+    initial: (rnd) => rnd.range(16, 64),
     mutate: (prev, rnd) => prev + rnd.range(-10, 10),
     output: (v) => floor(clamp(v, 16, 128)),
   })
