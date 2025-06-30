@@ -1,21 +1,15 @@
 import { arr, u8arr } from "../utils/array"
 import { randomizer, rnd, rnd0 } from "../utils/rnd"
 
-// todo: look more carefully into this file
-
 function generateActivation(seeds, rng) {
   const out = []
   for (let i = 0, n = rng.int(1, 16); i < n; i++) {
     out.push(...rng.el(seeds.activations))
   }
-
-  // todo: improve ofc
-
   // add at the end
   for (let i = 0, n = rnd0.int(0, 10); i < n; i++) {
     out.push(rnd0.int(0, 32) & 0xff)
   }
-
   // within
   for (let i = 0, n = rnd0.int(0, 10); i < n; i++) {
     out.splice(rnd0.int(0, out.length - 1), 0, rnd0.int(0, 32) & 0xff)
@@ -34,9 +28,6 @@ export function generateDNA(seeds, rng) {
 
   for (let i = 0, m = rng.int(5, 20); i < m; i++) {
     growth.push(rng.int(0, 256) & 0xff)
-    // if ($fx.rand() < 0.1) {
-    //   growth.push(((0xc << 4) + rng.int(0, 16)) & 0xf)
-    // }
   }
 
   // add random coloration rules

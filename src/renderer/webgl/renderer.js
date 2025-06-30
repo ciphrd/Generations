@@ -410,11 +410,7 @@ export class WebGLRenderer extends Renderer {
     }
 
     this.rts = {
-      absorb: glu.renderTarget(gl, deviceRes.x, deviceRes.y, gl.RGBA32F, {
-        // todo: not needed atm, but keeping in case we use cell shaders at some
-        // point (should avoid if possible!)
-        depth: true,
-      }),
+      absorb: glu.renderTarget(gl, deviceRes.x, deviceRes.y, gl.RGBA32F),
       cellFieldWorld:
         this.rts?.cellFieldWorld ||
         glu.renderTarget(gl, envRes.x, envRes.y, gl.RGBA32F, {

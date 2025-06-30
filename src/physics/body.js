@@ -12,14 +12,13 @@ const _v2a = vec2(),
   _v2b = vec2()
 
 export const BodyFlags = {
-  DEBUG: 2 ** 0,
-  REPELLING: 2 ** 1,
-  REPELLED: 2 ** 2,
-  FOOD: 2 ** 3,
-  FOOD_SEEKER: 2 ** 4,
-  ORGANISM: 2 ** 5,
-  BINDABLE: 2 ** 6,
-  BACTERIA: 2 ** 7,
+  REPELLING: 1 << 0,
+  REPELLED: 1 << 1,
+  FOOD: 1 << 2,
+  FOOD_SEEKER: 1 << 3,
+  ORGANISM: 1 << 4,
+  BINDABLE: 1 << 5,
+  BACTERIA: 1 << 6,
 }
 
 const MAX_VELOCITY = 0.2
@@ -158,9 +157,7 @@ export class Body extends Entity {
 
     this.friction = lerp(this.friction, this.initial.friction, 0.1)
 
-    if (isNaN(this.pos.x) || isNaN(this.pos.y)) {
-      debugger
-    }
+    if (isNaN(this.pos.x) || isNaN(this.pos.y)) debugger
   }
 
   clamp() {

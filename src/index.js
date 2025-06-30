@@ -1,19 +1,3 @@
-// Nice seeds
-// - ooQRoiuLxppVjdXLT8qeTsHq29QiXm9cFDxRKktHxKNHidHTKhD
-// - ooqiGoeSg1AEZcVjrH7mTf1P3f3e5cbgE3DJYsKd1M33Yd9j1UA
-//   grabber on food proximity + eater (nice working organism)
-// - ooNDYieq77FrGqYJDLNoMe7K3eWJDq9YH7Dt4CJPr75LTiobaHR
-//   (200)
-//   nice food graber
-// - ooEMgLs6iWBVTgtkaZ8Fpy4kBVM1LLx669GBFFf5PUcwBbe5TS4
-//   devour
-// -
-
-/**
- * !DEBUG
- * - ooZFinCejNF6FdgLemP3BhmEQFMuAGPv9k7nEWaAJYzX4Si9UGR
- */
-
 /**
  * Project inspirations
  * - Stephen Worlfram Physics project
@@ -67,7 +51,7 @@ document.body.appendChild(stats.dom)
 // (x) look at current signaling solution and check what can be simplified
 //     so that it works in a smoother way. right now not so great
 //     (x) have a single signal instead of 4. simpler is all ways
-// ( ) cleanup rendering
+// (x) cleanup rendering
 //     tend towards color crispiness, clean
 // ( ) add signal rendering (single signal much easier, there can be 2 colors
 //     one for negative and one for positive, or just single color even)
@@ -77,7 +61,7 @@ document.body.appendChild(stats.dom)
 //     ( ) rename rnd to rng
 //     (x) cleanup initialization, all in index is dirty rn
 //     (x) cleanup bytecode instructions, too many rn
-//     ( ) todos
+//     (x) todos
 //     (x) only a single CPU needed now
 // ( ) optimisation pass: what can be optimzed ?
 //     ( ) budget different app areas and optimize the slow ones
@@ -176,8 +160,7 @@ async function start() {
   }
 
   bodies.forEach((body) => {
-    // todo: remove DEBUG flag
-    body.addFlag(BodyFlags.REPELLING | BodyFlags.REPELLED | BodyFlags.DEBUG)
+    body.addFlag(BodyFlags.REPELLING | BodyFlags.REPELLED)
   })
 
   const testBodies = []

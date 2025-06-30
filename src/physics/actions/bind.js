@@ -32,7 +32,6 @@ export class BindAction extends Action {
       d
     for (const b of part.neighbours(this.body)) {
       if (b.data.organism === this.body.data.organism) continue
-      // todo: move this (and other dist calc between bodies) to compute cache
       d = this.body.pos.dist(b.pos)
       if (d - b.radius < BIND_DIST && d < closestD) {
         closestD = d

@@ -45,12 +45,10 @@ function parametricSpace(seeds) {
 
   const dnas = randMutate({
     initial: () => {
-      // todo: figure out the exact number here
       const rng = rngSequence(arr.new(10_000, () => rnd0.one()))
       return arr.new(16, () => generateDNA(seeds, rng))
     },
     mutate: (prev, rngAtDepth) => {
-      // todo: same as above
       const rng = rngSequence(arr.new(10_000, () => rngAtDepth.one()))
       for (let i = 0; i < 16; i++) {
         prev[i] = mutateDNA(prev[i], rng /* todo: strength ? */)
@@ -85,9 +83,6 @@ function parametricSpace(seeds) {
     mutate: (prev, rnd) => prev.map((v) => v + rnd.range(-0.1, 0.1)),
     output: (val) => new Color(...val.map((c) => clamp01(c))),
   })
-
-  // todo: right now output is same range as initial, would be interesting
-  //       to allow out-of-bounds exploration
 
   const sedimentHues = randMutate({
     initial: (rnd) => arr.new(2, () => rnd.one()),

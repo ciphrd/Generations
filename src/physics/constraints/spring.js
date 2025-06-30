@@ -9,12 +9,6 @@ export const SpringFlags = {
   BIND: 2 ** 0,
 }
 
-/**
- * todo.
- * Higher abstraction with Liaison ?
- * contains a spring & wire
- */
-
 export class Spring extends Entity {
   constructor(
     bodyA,

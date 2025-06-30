@@ -1,3 +1,6 @@
+import { ActivationBytecode } from "../bytecode/activation"
+import { GrowthBytecode } from "../bytecode/growth"
+import { bytecodeToMnemonics } from "../bytecode/utils"
 import { BodyFlags } from "../physics/body"
 import { emitter } from "../utils/emitter"
 import { Mouse } from "./mouse"
@@ -29,6 +32,12 @@ export class NodeSelection {
     Mouse.on("down", () => {
       if (this.selected !== this.hovered) {
         this.selected = this.hovered
+        console.log(this.selected)
+        console.log(bytecodeToMnemonics(this.selected.dna[0], GrowthBytecode))
+        console.log(
+          ActivationBytecode.parser(this.selected.dna[1]),
+          bytecodeToMnemonics(this.selected.dna[1], ActivationBytecode)
+        )
         this.emitter.emit("change")
       }
     })

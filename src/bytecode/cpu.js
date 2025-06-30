@@ -44,8 +44,6 @@ export class Operation {
 }
 
 export function mergeOperations(ops, directCpu = false) {
-  //! this strategy uses the merge method of the action; not sure if required
-  //! TBD
   const grouped = aggregate(ops, (op) => op.name)
   const names = Object.keys(grouped)
   const merged = []
@@ -53,7 +51,6 @@ export function mergeOperations(ops, directCpu = false) {
   for (let i = 0; i < names.length; i++) {
     actionDef = Actions[names[i]]
     merge = directCpu ? actionDef.mergeCpu || actionDef.merge : actionDef.merge
-    // todo: optimize, this must be a lot computationnaly
     merged.push(...merge(grouped[names[i]]))
   }
   return merged

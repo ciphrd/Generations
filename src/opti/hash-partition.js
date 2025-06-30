@@ -25,11 +25,7 @@ export class SpacePartition {
     this.space.forEach((slot) => (slot.length = 0))
     this.hashes.reset()
     for (const body of this.bodies) {
-      try {
-        this.space[this.#hash(body)].push(body)
-      } catch (err) {
-        debugger
-      }
+      this.space[this.#hash(body)].push(body)
     }
   }
 

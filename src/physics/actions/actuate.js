@@ -1,9 +1,6 @@
 import { clamp, clamp01, lerp, sign } from "../../utils/math"
 import { Action } from "./action"
 
-// todo as general simulation parameter
-const MAX_STRENGTH = 1.0
-
 export class ActuateAction extends Action {
   constructor(body) {
     super(body)

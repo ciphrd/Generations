@@ -27,7 +27,6 @@ float smin( float a, float b, float k ){
 }
 
 // todo: cleanup
-
 void main() {
   vec2 uv = v_uv;
   vec2 guv = invViewTx(v_uv);

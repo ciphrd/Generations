@@ -58,9 +58,7 @@ const set = [
 ]
 
 const sortedLetters = "xyzwstuv"
-
-// todo: used elsewhere ? single declaration
-const letters = "xyzwstuv".split("")
+const letters = sortedLetters.split("")
 
 export const GrowthBytecode = {
   mnemonics: set,
@@ -87,17 +85,12 @@ export const GrowthBytecode = {
         // only 1 permutation rule per run ?
         if (context.nodemap) break
 
-        // todo implement with more resilience
-
         const rule = [[], []]
         let c = -1
         pointer++
         while (pointer < instructions.length) {
           if (instructions[pointer] & 8) c++
-          // todo: check if this instruction is correct based on the design
-          //       this is a quick hack to get mutations working
-          if (c < 0) break
-          if (c >= 2) break
+          if (c < 0 || c >= 2) break
           rule[c].push([
             sortedLetters[instructions[pointer++] & 7],
             sortedLetters[instructions[pointer++] & 7],
@@ -229,7 +222,6 @@ export const GrowthBytecode = {
         break
       // dnal
       case 0xd: {
-        // todo: check if works
         const letter = GrowthBytecode.decode(stack.get(0), "letter", context)
         stack.push(dnas.indexOf(nodemap[letter].dna) & 0xf)
         break
