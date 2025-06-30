@@ -50,7 +50,7 @@ export function generateDNA(seeds, rng) {
   const activation = generateActivation(seeds, rng)
 
   // improve this mapping for a more robust sol
-  return [new Uint8Array(growth), activation]
+  return [new Uint8Array(growth), new Uint8Array(activation)]
 }
 
 const bitManRng = (rng) => ({
