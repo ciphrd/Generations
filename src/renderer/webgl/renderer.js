@@ -13,16 +13,12 @@ import quadVS from "./shaders/quad.vert.glsl"
 import cellFS from "./shaders/cell.frag.glsl"
 import liaisonVS from "./shaders/liaison.vert.glsl"
 import liaisonFS from "./shaders/liaison.frag.glsl"
-import liaisonTempFS from "./shaders/liaison-temp.frag.glsl"
 import fieldLiaisonFS from "./shaders/field-liaison.frag.glsl"
 import fieldCellFS from "./shaders/field-cell.frag.glsl"
 import fieldPointFS from "./shaders/field-point.frag.glsl"
 import foodFS from "./shaders/food.frag.glsl"
 import sedimentsFS from "./shaders/absorption/sediments.frag.glsl"
 import { PointsRenderer } from "./points"
-import { LiaisonsRenderer } from "./liaisons"
-import { Spring, SpringFlags } from "../../physics/constraints/spring"
-import { settings } from "../../settings"
 import { GaussianPass } from "./gaussian"
 import { Sediments } from "./sediments"
 import { ViewPass, viewUniform } from "./view"
@@ -33,11 +29,13 @@ import { Params } from "../../parametric-space"
 import { Mouse } from "../../interactions/mouse"
 import { Globals } from "../../globals"
 import { Controls } from "../../controls"
+import { isMobileDevice } from "../../utils/device"
 
 export class WebGLRenderer extends Renderer {
   constructor(world, selection) {
     super(world, selection)
     this.prepared = false
+    console.log("starting renderer")
   }
 
   updateRes() {
@@ -48,8 +46,9 @@ export class WebGLRenderer extends Renderer {
     if (rect.width !== prevX || rect.height !== prevY) {
       Globals.res.x = rect.width
       Globals.res.y = rect.height
-      Globals.deviceRes.x = floor(Globals.res.x * window.devicePixelRatio)
-      Globals.deviceRes.y = floor(Globals.res.y * window.devicePixelRatio)
+      const pixelRatio = isMobileDevice() ? 1 : window.devicePixelRatio
+      Globals.deviceRes.x = floor(Globals.res.x * pixelRatio)
+      Globals.deviceRes.y = floor(Globals.res.y * pixelRatio)
       Controls.updateTxArray()
 
       if (this.prepared) this.#onResize()
@@ -96,9 +95,11 @@ export class WebGLRenderer extends Renderer {
     })
     this.texel = res.clone().inv()
 
-    this.gl.getExtension("EXT_color_buffer_float")
-    this.gl.getExtension("EXT_float_blend")
-    this.gl.getExtension("OES_texture_float_linear")
+    Globals.supports = this.supports = {
+      colorBufferFloat: this.gl.getExtension("EXT_color_buffer_float"),
+      floatBlend: this.gl.getExtension("EXT_float_blend"),
+      textureFloatLinear: this.gl.getExtension("OES_texture_float_linear"),
+    }
 
     glu.libs({
       color: colorGL,
@@ -342,22 +343,6 @@ export class WebGLRenderer extends Renderer {
     this.#allocateRenderTargets()
 
     this.food = new PointsRenderer(gl, foodFS, () => world.food)
-    this.bindLiaisons = new LiaisonsRenderer(
-      gl,
-      world,
-      liaisonTempFS,
-      () =>
-        world.constraints.pre.filter(
-          (cons) => cons instanceof Spring && cons.hasFlag(SpringFlags.BIND)
-        ),
-      {
-        fixedWidth: 0.001,
-      }
-    )
-
-    this.otherBodiesPass = new PointsRenderer(gl, fieldPointFS, () =>
-      bodies.filter((b) => b.hasFlag(BodyFlags.FOOD))
-    )
 
     this.cellsFieldView = new ViewPass(gl, () => ({
       res: deviceRes,
@@ -394,10 +379,6 @@ export class WebGLRenderer extends Renderer {
 
     world.emitter.on("bodies:updated", () => {
       this.food.update()
-      this.bindLiaisons.update()
-    })
-    world.emitter.on("constraints:updated", () => {
-      this.bindLiaisons.update()
     })
   }
 
@@ -410,15 +391,31 @@ export class WebGLRenderer extends Renderer {
     }
 
     this.rts = {
-      absorb: glu.renderTarget(gl, deviceRes.x, deviceRes.y, gl.RGBA32F),
+      absorb: glu.renderTarget(
+        gl,
+        deviceRes.x,
+        deviceRes.y,
+        isMobileDevice() ? gl.RGBA : gl.RGBA32F
+      ),
       cellFieldWorld:
         this.rts?.cellFieldWorld ||
-        glu.renderTarget(gl, envRes.x, envRes.y, gl.RGBA32F, {
-          depth: true,
-        }),
+        glu.renderTarget(
+          gl,
+          envRes.x,
+          envRes.y,
+          isMobileDevice() ? gl.RGBA : gl.RGBA32F,
+          {
+            depth: true,
+          }
+        ),
       otherFieldWorld:
         this.rts?.otherFieldWorld ||
-        glu.renderTarget(gl, envRes.x, envRes.y, gl.RGBA32F),
+        glu.renderTarget(
+          gl,
+          envRes.x,
+          envRes.y,
+          isMobileDevice() ? gl.RGBA : gl.RGBA32F
+        ),
     }
   }
 
@@ -452,9 +449,8 @@ export class WebGLRenderer extends Renderer {
 
     gl.disable(gl.DEPTH_TEST)
 
-    glu.blend(gl, gl.ONE, gl.ONE)
+    if (this.supports.floatBlend) glu.blend(gl, gl.ONE, gl.ONE)
     glu.bindFB(gl, envRes.x, envRes.y, this.rts.otherFieldWorld.fb)
-    this.otherBodiesPass.render(true)
 
     this.cellsFieldView.render()
     this.blurColorFieldPass.render()
@@ -560,7 +556,6 @@ export class WebGLRenderer extends Renderer {
     glu.draw.quad(gl)
 
     this.food.render()
-    this.bindLiaisons.render()
 
     //
     // FINAL COMP
@@ -568,7 +563,11 @@ export class WebGLRenderer extends Renderer {
     this.compositionPass.render()
 
     // programs.tex.use()
-    // glu.uniformTex(gl, programs.tex.uniforms.u_texture, this.cellsFieldView.output)
+    // glu.uniformTex(
+    //   gl,
+    //   programs.tex.uniforms.u_texture,
+    //   this.rts.cellFieldWorld.tex
+    // )
     // glu.draw.quad(gl)
   }
 }

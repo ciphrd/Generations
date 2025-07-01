@@ -33,8 +33,8 @@ import { defineFeatures } from "./utils/features.js"
 import { Mouse } from "./interactions/mouse.js"
 
 //! very last todo
-// ( ) double check if growth works properly
-//     ( ) potentially fix mutations on growth which tend to yield completely
+// (x) double check if growth works properly
+//     (x) potentially fix mutations on growth which tend to yield completely
 //         different results / break
 // (x) parametrize the different noises with a seed (as well as the various
 //     color settings such as microscope light, etc): general pre-processing
@@ -70,11 +70,11 @@ import { Mouse } from "./interactions/mouse.js"
 // (x) remove UI
 // ( ) if time
 //     ( ) add mutation rate (hard coded at gen0)
-//     ( ) decrease nb of DNAs, as it results in very different generations
+//     (-) decrease nb of DNAs, as it results in very different generations
 //         experiment with a single DNA ? -> too monotonous ?
 // ( ) work on final bundling
 //     ( ) many files are included
-// ( ) fix mobile
+// (x) fix mobile
 
 async function start() {
   const seeds = await getSeeds()
@@ -192,9 +192,7 @@ async function start() {
   window.selection = selection
 
   const Renderer =
-    $fx.context === "fast-capture"
-      ? CanvasRenderer
-      : new URLSearchParams(window.location.search).get("engine") === "canvas"
+    new URLSearchParams(window.location.search).get("engine") === "canvas"
       ? CanvasRenderer
       : WebGLRenderer
 
@@ -213,12 +211,23 @@ async function start() {
   Mouse.init(document.querySelector("canvas#sim"))
 
   if ($fx.context.includes("capture")) {
-    const steps = 80
+    const steps = $fx.context === "fast-capture" ? 60 : 120
+
+    if ($fx.context === "fast-capture") {
+      engine.rendering = false
+    }
+
     engine.ticker.running = true
     for (let i = 0; i < steps; i++) {
       engine.ticker.tick()
     }
+
+    // render on the last tick
+    engine.rendering = true
+    engine.ticker.tick()
+
     $fx.preview()
+    return
   } else {
     engine.start()
   }

@@ -10,6 +10,8 @@ import { EdgePass } from "./edge"
 import { SharpenPass } from "./sharpen"
 import { ViewPass } from "./view"
 import { Params } from "../../parametric-space"
+import { Globals } from "../../globals"
+import { isMobileDevice } from "../../utils/device"
 
 /**
  * The Sediments are tiny particles with very small interactions with the
@@ -175,13 +177,14 @@ export class Sediments {
     glu.draw.quad(gl)
 
     glu.bindFB(gl, res.x, res.y, this.fullSedsRt.fb)
-    glu.blend(gl, gl.ONE, gl.ONE)
+    if (Globals.supports.floatBlend) glu.blend(gl, gl.ONE, gl.ONE)
     programs.draw.use()
     glu.uniformTex(gl, programs.draw.uniforms.u_agents, pingpong.back().tex)
     gl.drawArrays(gl.POINTS, 0, this.nb)
     glu.blend(gl, null)
 
-    for (let i = 0; i < 8; i++) {
+    const rdSteps = isMobileDevice() ? 1 : 8
+    for (let i = 0; i < rdSteps; i++) {
       substratePP.swap()
       glu.bindFB(gl, res.x, res.y, substratePP.back().fb)
       programs.substrate.use()

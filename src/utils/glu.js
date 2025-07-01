@@ -1,3 +1,4 @@
+import { Globals } from "../globals"
 import { strHash } from "./string"
 
 /**
@@ -150,12 +151,22 @@ export const glu = {
     }
   ) {
     const formats = {
+      [gl.RGBA]: [gl.RGBA, gl.UNSIGNED_BYTE],
       [gl.RGBA32F]: [gl.RGBA, gl.FLOAT],
       [gl.R32F]: [gl.RED, gl.FLOAT],
       [gl.R8]: [gl.RED, gl.UNSIGNED_BYTE],
     }
     const internal = formats[format]
     if (!internal) throw `unsupported format`
+
+    // if linear sampling on flaot ex is not supported, enforce it here
+    if (
+      !Globals.supports.textureFloatLinear &&
+      internal[1] === gl.FLOAT &&
+      sampling === gl.LINEAR
+    ) {
+      sampling = gl.NEAREST
+    }
 
     const textures = []
     const fb = gl.createFramebuffer()
