@@ -211,7 +211,7 @@ async function start() {
   Mouse.init(document.querySelector("canvas#sim"))
 
   if ($fx.context.includes("capture")) {
-    const steps = $fx.context === "fast-capture" ? 60 : 120
+    const steps = $fx.context === "fast-capture" ? 60 : 150
 
     if ($fx.context === "fast-capture") {
       engine.rendering = false

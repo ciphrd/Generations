@@ -183,7 +183,7 @@ export class Sediments {
     gl.drawArrays(gl.POINTS, 0, this.nb)
     glu.blend(gl, null)
 
-    const rdSteps = isMobileDevice() ? 1 : 8
+    const rdSteps = isMobileDevice() || $fx.context === "fast-capture" ? 1 : 8
     for (let i = 0; i < rdSteps; i++) {
       substratePP.swap()
       glu.bindFB(gl, res.x, res.y, substratePP.back().fb)

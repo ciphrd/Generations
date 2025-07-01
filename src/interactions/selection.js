@@ -32,10 +32,11 @@ export class NodeSelection {
     Mouse.on("down", () => {
       if (this.selected !== this.hovered) {
         this.selected = this.hovered
-        console.log(this.selected)
+        console.log("---")
+        console.log("Growth:")
         console.log(bytecodeToMnemonics(this.selected.dna[0], GrowthBytecode))
+        console.log("Activation:")
         console.log(
-          ActivationBytecode.parser(this.selected.dna[1]),
           bytecodeToMnemonics(this.selected.dna[1], ActivationBytecode)
         )
         this.emitter.emit("change")
