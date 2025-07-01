@@ -10,12 +10,9 @@ import viewGL from "./shaders/lib/view.glsl"
 import fullVS from "./shaders/full.vert.glsl"
 import textureFS from "./shaders/texture.frag.glsl"
 import quadVS from "./shaders/quad.vert.glsl"
-import cellFS from "./shaders/cell.frag.glsl"
 import liaisonVS from "./shaders/liaison.vert.glsl"
-import liaisonFS from "./shaders/liaison.frag.glsl"
 import fieldLiaisonFS from "./shaders/field-liaison.frag.glsl"
 import fieldCellFS from "./shaders/field-cell.frag.glsl"
-import fieldPointFS from "./shaders/field-point.frag.glsl"
 import foodFS from "./shaders/food.frag.glsl"
 import sedimentsFS from "./shaders/absorption/sediments.frag.glsl"
 import { PointsRenderer } from "./points"
@@ -255,63 +252,6 @@ export class WebGLRenderer extends Renderer {
           )
         },
       }),
-      cells: glu.program(gl, quadVS, cellFS, {
-        attributes: ["a_position", "a_geometry", "a_color", "a_signal"],
-        uniforms: ["u_view", "u_blurred_membrane", "u_color_field", "u_time"],
-        variables: {
-          CELL_SCALE: Params.cellsScale.toFixed(4),
-        },
-        vao: (prg) => (u) => {
-          u.attrib(prg.attributes.a_position, glu.quad(gl), 2, gl.FLOAT)
-          u.matAttrib(
-            prg.attributes.a_geometry,
-            this.buffers.cells.geo.buffer,
-            2,
-            3,
-            gl.FLOAT,
-            true
-          )
-          u.attrib(
-            prg.attributes.a_color,
-            this.buffers.cells.col,
-            3,
-            gl.FLOAT,
-            true
-          )
-          u.attrib(
-            prg.attributes.a_signal,
-            this.buffers.cells.signals.buffer,
-            1,
-            gl.FLOAT,
-            true
-          )
-        },
-      }),
-      liaisons: glu.program(gl, liaisonVS, liaisonFS, {
-        attributes: ["a_position", "a_endpoints", "a_geometries", "a_color"],
-        uniforms: ["u_view", "u_points", "u_blurred_membrane", "u_color_field"],
-        variables: {
-          CELL_SCALE: Params.cellsScale.toFixed(4),
-        },
-        vao: (prg) => (u) => {
-          u.attrib(prg.attributes.a_position, glu.quad(gl), 2, gl.FLOAT)
-          u.matAttrib(
-            prg.attributes.a_geometries,
-            this.buffers.liaisons.geos.buffer,
-            2,
-            4,
-            gl.FLOAT,
-            true
-          )
-          u.attrib(
-            prg.attributes.a_color,
-            this.buffers.liaisons.col,
-            3,
-            gl.FLOAT,
-            true
-          )
-        },
-      }),
       sediments: glu.program(gl, fullVS, sedimentsFS, {
         attributes: ["a_position"],
         uniforms: [
@@ -475,40 +415,6 @@ export class WebGLRenderer extends Renderer {
     glu.blend(gl, null)
 
     glu.bindFB(gl, deviceRes.x, deviceRes.y, this.rts.absorb.fb)
-
-    // program = programs.cells
-    // program.use()
-    // viewUniform(gl, program)
-    // gl.uniform1f(program.uniforms.u_time, t * 0.001)
-    // glu.uniformTex(
-    //   gl,
-    //   program.uniforms.u_blurred_membrane,
-    //   this.outerShell.output,
-    //   0
-    // )
-    // glu.uniformTex(
-    //   gl,
-    //   program.uniforms.u_color_field,
-    //   this.blurColorFieldPass.output,
-    //   1
-    // )
-    // gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, nb)
-
-    // programs.liaisons.use()
-    // viewUniform(gl, programs.liaisons)
-    // glu.uniformTex(
-    //   gl,
-    //   programs.liaisons.uniforms.u_blurred_membrane,
-    //   this.outerShell.output,
-    //   0
-    // )
-    // glu.uniformTex(
-    //   gl,
-    //   programs.liaisons.uniforms.u_color_field,
-    //   this.blurColorFieldPass.output,
-    //   1
-    // )
-    // gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, liaisons.length)
 
     gl.disable(gl.DEPTH_TEST)
     glu.blend(gl, gl.ONE, gl.ONE)
