@@ -6,9 +6,9 @@ const SensorRendererMap = {
 }
 
 export function renderSensors(ctx, sensors) {
-  for (const sensor of sensors) {
-    SensorRendererMap[sensor.constructor.name](ctx, sensor)
-  }
+  // for (const sensor of sensors) {
+  //   SensorRendererMap[sensor.constructor.name](ctx, sensor)
+  // }
 }
 
 function renderVisionSensor(ctx, sensor) {

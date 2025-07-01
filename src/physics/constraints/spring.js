@@ -34,6 +34,7 @@ export class Spring extends Entity {
     this.disp = vec2()
     this.bodyA.springs.push(this)
     this.bodyB.springs.push(this)
+    this.temp = false
 
     this.contraction = 0
     this.prevLength = restLength

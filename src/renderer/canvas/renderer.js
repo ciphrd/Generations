@@ -1,3 +1,8 @@
+import { Controls } from "../../controls"
+import { Globals } from "../../globals"
+import { Body } from "../../physics/body"
+import { Spring } from "../../physics/constraints/spring"
+import { Food } from "../../physics/entities/food"
 import { Renderer } from "../renderer"
 import { renderActuator } from "./actuator"
 import { renderAnchor } from "./anchor"
@@ -8,13 +13,13 @@ import { renderNodeSelection } from "./interactions"
 import { renderSensors } from "./sensors"
 import { renderSpring } from "./spring"
 
-const W = 800
-const H = 800
+const W = window.innerWidth
+const H = window.innerWidth
 
 const renderers = {
-  Body: renderBody,
-  Food: renderBody,
-  Spring: renderSpring,
+  [Body.name]: renderBody,
+  [Food.name]: renderBody,
+  [Spring.name]: renderSpring,
   Eater: renderEater,
   Actuator: renderActuator,
   Anchor: renderAnchor,
@@ -43,6 +48,9 @@ export class CanvasRenderer extends Renderer {
     this.ctx.scale(1, -1)
     this.ctx.translate(-0.5, -0.5)
     this.texelSize = 1 / this.cvs.width
+
+    Globals.res.x = Globals.deviceRes.x = W
+    Globals.res.y = Globals.deviceRes.y = H
   }
 
   providerRenderingContainer($container) {
@@ -54,6 +62,13 @@ export class CanvasRenderer extends Renderer {
     this.ctx.fillStyle = "black"
     this.ctx.fillRect(0, 0, 1, 1)
 
+    const txMatrix = Controls.getTxMatrix()
+    this.ctx.save()
+    this.ctx.translate(txMatrix[0] / txMatrix[2], txMatrix[1] / txMatrix[3])
+    this.ctx.translate(0.5, 0.5)
+    this.ctx.scale(txMatrix[2], txMatrix[3])
+    this.ctx.translate(-0.5, -0.5)
+
     let renderer
     for (const group of this.entities) {
       for (const ent of group) {
@@ -63,5 +78,7 @@ export class CanvasRenderer extends Renderer {
         if (ent.sensors) renderSensors(this.ctx, ent.sensors)
       }
     }
+
+    this.ctx.restore()
   }
 }

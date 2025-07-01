@@ -8,7 +8,6 @@
 
 import "./inject.js"
 
-import Stats from "stats.js"
 import { Body, BodyFlags } from "./physics/body"
 import { Spring } from "./physics/constraints/spring"
 import { CanvasRenderer } from "./renderer/canvas/renderer"
@@ -33,14 +32,6 @@ import { Params, generateParameters } from "./parametric-space.js"
 import { defineFeatures } from "./utils/features.js"
 import { Mouse } from "./interactions/mouse.js"
 
-const stats = new Stats()
-stats.showPanel(1)
-stats.dom.style.position = "absolute"
-stats.dom.style.left = "auto"
-stats.dom.style.right = "0px" // Align to the right
-stats.dom.style.top = "0px"
-document.body.appendChild(stats.dom)
-
 //! very last todo
 // ( ) double check if growth works properly
 //     ( ) potentially fix mutations on growth which tend to yield completely
@@ -53,7 +44,7 @@ document.body.appendChild(stats.dom)
 //     (x) have a single signal instead of 4. simpler is all ways
 // (x) cleanup rendering
 //     tend towards color crispiness, clean
-// ( ) add signal rendering (single signal much easier, there can be 2 colors
+// (-) add signal rendering (single signal much easier, there can be 2 colors
 //     one for negative and one for positive, or just single color even)
 // (x) clean up code as much as possible
 //     (x) go through shaders
@@ -63,19 +54,19 @@ document.body.appendChild(stats.dom)
 //     (x) cleanup bytecode instructions, too many rn
 //     (x) todos
 //     (x) only a single CPU needed now
-// ( ) optimisation pass: what can be optimzed ?
-//     ( ) budget different app areas and optimize the slow ones
-// ( ) finalize parameters and growth
+// (-) optimisation pass: what can be optimzed ?
+//     (-) budget different app areas and optimize the slow ones
+// (x) finalize parameters and growth
 //     (x) parametrize number of nodes
-// ( ) bugs
+// (x) bugs
 //     (x) colors not normalized
 //     (x) viewport panning out of bounds
 //     (x) subarray not a fn
 // ( ) captures
-//     ( ) implement fast capture using canvas as a fallback renderer
+//     (x) implement fast capture using canvas as a fallback renderer
 //     ( ) check if capture works on fxhash
 // (x) add features
-// ( ) remove Metrics / stats
+// (x) remove Metrics / stats
 // (x) remove UI
 // ( ) if time
 //     ( ) add mutation rate (hard coded at gen0)
@@ -195,13 +186,15 @@ async function start() {
   world.setConstraints(constraints)
 
   const solver = new Solver(world)
-  const ticker = new Ticker(8.333, stats)
+  const ticker = new Ticker(8.333)
 
   const selection = new NodeSelection(world)
   window.selection = selection
 
   const Renderer =
-    new URLSearchParams(window.location.search).get("engine") === "canvas"
+    $fx.context === "fast-capture"
+      ? CanvasRenderer
+      : new URLSearchParams(window.location.search).get("engine") === "canvas"
       ? CanvasRenderer
       : WebGLRenderer
 
@@ -220,7 +213,7 @@ async function start() {
   Mouse.init(document.querySelector("canvas#sim"))
 
   if ($fx.context.includes("capture")) {
-    const steps = $fx.context === "fast-capture" ? 1 : 80
+    const steps = 80
     engine.ticker.running = true
     for (let i = 0; i < steps; i++) {
       engine.ticker.tick()

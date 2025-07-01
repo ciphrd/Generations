@@ -181,7 +181,7 @@ export class Sediments {
     gl.drawArrays(gl.POINTS, 0, this.nb)
     glu.blend(gl, null)
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 8; i++) {
       substratePP.swap()
       glu.bindFB(gl, res.x, res.y, substratePP.back().fb)
       programs.substrate.use()

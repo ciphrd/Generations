@@ -50,6 +50,7 @@ export class BindAction extends Action {
         new Color(1, 0, 1),
         SpringFlags.BIND
       )
+      this.spring.temp = true
       this.body.world.addConstraint("pre", this.spring)
     }
   }

@@ -1,6 +1,5 @@
 import { Controls } from "../controls"
 import { emitter } from "../utils/emitter"
-import { Metrics } from "../utils/metrics"
 
 export class Engine {
   constructor({ world, solver, selection, ticker, renderer }) {
@@ -35,8 +34,6 @@ export class Engine {
   }
 
   tick = () => {
-    Metrics.time("tick")
-
     const t = this.ticker.time,
       dt = this.ticker.dt
 
@@ -49,13 +46,9 @@ export class Engine {
     this.solver.solve(t, dt)
     this.emitter.emit("solver:updated")
 
-    Metrics.time("render")
     if (this.ticker.running) this.renderer.render(t, dt)
-    Metrics.timeEnd("render")
 
     this.ticks++
     // if (this.ticks === 300) this.stop()
-
-    Metrics.timeEnd("tick")
   }
 }
