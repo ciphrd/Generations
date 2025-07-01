@@ -13,6 +13,7 @@ import quadVS from "./shaders/quad.vert.glsl"
 import liaisonVS from "./shaders/liaison.vert.glsl"
 import fieldLiaisonFS from "./shaders/field-liaison.frag.glsl"
 import fieldCellFS from "./shaders/field-cell.frag.glsl"
+import fieldPointFS from "./shaders/field-point.frag.glsl"
 import foodFS from "./shaders/food.frag.glsl"
 import sedimentsFS from "./shaders/absorption/sediments.frag.glsl"
 import { PointsRenderer } from "./points"
@@ -32,7 +33,6 @@ export class WebGLRenderer extends Renderer {
   constructor(world, selection) {
     super(world, selection)
     this.prepared = false
-    console.log("starting renderer")
   }
 
   updateRes() {
@@ -283,6 +283,9 @@ export class WebGLRenderer extends Renderer {
     this.#allocateRenderTargets()
 
     this.food = new PointsRenderer(gl, foodFS, () => world.food)
+    this.otherBodiesPass = new PointsRenderer(gl, fieldPointFS, () =>
+      bodies.filter((b) => b.hasFlag(BodyFlags.FOOD))
+    )
 
     this.cellsFieldView = new ViewPass(gl, () => ({
       res: deviceRes,
@@ -391,6 +394,7 @@ export class WebGLRenderer extends Renderer {
 
     if (this.supports.floatBlend) glu.blend(gl, gl.ONE, gl.ONE)
     glu.bindFB(gl, envRes.x, envRes.y, this.rts.otherFieldWorld.fb)
+    this.otherBodiesPass.render(true)
 
     this.cellsFieldView.render()
     this.blurColorFieldPass.render()
