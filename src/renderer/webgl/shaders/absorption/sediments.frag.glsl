@@ -68,7 +68,10 @@ void main() {
 
   // cell coloring
   vec3 nColB = outColor0.rgb;
-  col = vec3(1) - mix(rdCol, cell_color, min(1.0, C * rd * 4.0));
+  col = max(
+    vec3(1) - mix(rdCol, cell_color, min(1.0, C * rd * 4.0)),
+    vec3(0.0)
+  );
   nColB += col * rd * (0.1 + 0.9 * pow(I, 0.5));
 
   // mixing based
