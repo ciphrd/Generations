@@ -6,6 +6,7 @@ function feature(features, value, min, max) {
 }
 
 const lowHigh = ["very low", "low", "medium", "high", "very high"]
+const smallLarge = ["tiny", "small", "medium", "large", "XXL"]
 
 function hueToColor(hue) {
   hue = hue % 1
@@ -36,6 +37,7 @@ function hueToColor(hue) {
 export function defineFeatures() {
   $fx.features({
     "Cells density": feature(lowHigh, min(Params.nbCells, 400), 10, 400),
+    "Cells size": feature(smallLarge, Params.cellsScale, 1, 3),
     "Bacterias density": feature(lowHigh, Params.sedimentNbAgents, 16, 128),
     "Substrate thickness": Params.rdGaussianFilterSize < 4 ? "thin" : "thick",
     "Cells pigment": feature(

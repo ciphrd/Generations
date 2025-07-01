@@ -2,11 +2,6 @@ import { Color } from "./utils/color"
 
 export const settings = {
   radius: 0.006,
-  rendering: {
-    cell: {
-      scale: 2.2,
-    },
-  },
   signals: {
     loss: 0.99,
   },

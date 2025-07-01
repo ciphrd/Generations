@@ -165,6 +165,11 @@ function parametricSpace(seeds) {
     growthRngSequence,
     poolRngSequence,
     cellsDefaultColor,
+    cellsScale: randMutate({
+      initial: (rng) => rng.range(1, 3),
+      mutate: (prev, rng) => clamp(prev + rng.range(-0.2, 0.2), 1, 3),
+      output: (v) => clamp(v, 1, 3),
+    }),
     sedimentHues,
     sedimentSharpness,
     sedimentBgThickness,

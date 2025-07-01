@@ -201,7 +201,7 @@ export class WebGLRenderer extends Renderer {
         attributes: ["a_position", "a_geometry", "a_color", "a_signal"],
         uniforms: ["u_view"],
         variables: {
-          CELL_SCALE: settings.rendering.cell.scale.toFixed(4),
+          CELL_SCALE: Params.cellsScale.toFixed(4),
         },
         vao: (prg) => (u) => {
           u.attrib(prg.attributes.a_position, glu.quad(gl), 2, gl.FLOAT)
@@ -233,7 +233,7 @@ export class WebGLRenderer extends Renderer {
         attributes: ["a_position", "a_endpoints", "a_geometries", "a_color"],
         uniforms: ["u_view"],
         variables: {
-          CELL_SCALE: settings.rendering.cell.scale.toFixed(4),
+          CELL_SCALE: Params.cellsScale.toFixed(4),
         },
         vao: (prg) => (u) => {
           u.attrib(prg.attributes.a_position, glu.quad(gl), 2, gl.FLOAT)
@@ -258,7 +258,7 @@ export class WebGLRenderer extends Renderer {
         attributes: ["a_position", "a_geometry", "a_color", "a_signal"],
         uniforms: ["u_view", "u_blurred_membrane", "u_color_field", "u_time"],
         variables: {
-          CELL_SCALE: settings.rendering.cell.scale.toFixed(4),
+          CELL_SCALE: Params.cellsScale.toFixed(4),
         },
         vao: (prg) => (u) => {
           u.attrib(prg.attributes.a_position, glu.quad(gl), 2, gl.FLOAT)
@@ -290,7 +290,7 @@ export class WebGLRenderer extends Renderer {
         attributes: ["a_position", "a_endpoints", "a_geometries", "a_color"],
         uniforms: ["u_view", "u_points", "u_blurred_membrane", "u_color_field"],
         variables: {
-          CELL_SCALE: settings.rendering.cell.scale.toFixed(4),
+          CELL_SCALE: Params.cellsScale.toFixed(4),
         },
         vao: (prg) => (u) => {
           u.attrib(prg.attributes.a_position, glu.quad(gl), 2, gl.FLOAT)

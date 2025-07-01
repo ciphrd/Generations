@@ -1,3 +1,4 @@
+import { Color } from "../../utils/color"
 import { clamp, clamp01, lerp, sign } from "../../utils/math"
 import { BodyFlags } from "../body"
 import { Spring, SpringFlags } from "../constraints/spring"
@@ -46,7 +47,7 @@ export class BindAction extends Action {
         0.02,
         100,
         5,
-        "255,0,255",
+        new Color(1, 0, 1),
         SpringFlags.BIND
       )
       this.body.world.addConstraint("pre", this.spring)
