@@ -215,6 +215,10 @@ async function start() {
 
     if ($fx.context === "fast-capture") {
       engine.rendering = false
+      const el = document.createElement("div")
+      el.id = "temp"
+      el.innerText = `temporary preview`
+      document.body.append(el)
     }
 
     engine.ticker.running = true

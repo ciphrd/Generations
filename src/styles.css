@@ -4,4 +4,24 @@ body {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
+  background: black;
+}
+
+canvas {
+  display: block;
+}
+
+#temp {
+  position: fixed;
+  bottom: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 7vw;
+  background: white;
+  color: black;
+  padding: 0.5em 1em;
+  font-family: monospace;
+  font-weight: bold;
+  white-space: nowrap;
+  word-break: keep-all;
 }
