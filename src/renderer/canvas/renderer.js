@@ -18,7 +18,7 @@ const H = window.innerWidth
 
 const renderers = {
   [Body.name]: renderBody,
-  [Food.name]: renderBody,
+  // [Food.name]: renderBody,
   [Spring.name]: renderSpring,
   Eater: renderEater,
   Actuator: renderActuator,
