@@ -62,18 +62,18 @@ import { Mouse } from "./interactions/mouse.js"
 //     (x) colors not normalized
 //     (x) viewport panning out of bounds
 //     (x) subarray not a fn
-// ( ) captures
+// (x) captures
 //     (x) implement fast capture using canvas as a fallback renderer
-//     ( ) check if capture works on fxhash
+//     (x) check if capture works on fxhash
 // (x) add features
 // (x) remove Metrics / stats
 // (x) remove UI
-// ( ) if time
-//     ( ) add mutation rate (hard coded at gen0)
+// (-) if time
+//     (-) add mutation rate (hard coded at gen0)
 //     (-) decrease nb of DNAs, as it results in very different generations
 //         experiment with a single DNA ? -> too monotonous ?
-// ( ) work on final bundling
-//     ( ) many files are included
+// (x) work on final bundling
+//     (x) many files are included
 // (x) fix mobile
 
 async function start() {

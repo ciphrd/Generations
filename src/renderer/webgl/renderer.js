@@ -5,7 +5,6 @@ import colorGL from "./shaders/lib/color.glsl"
 import noiseGL from "./shaders/lib/noise.glsl"
 import convolveGL from "./shaders/lib/convolve.glsl"
 import cellGL from "./shaders/lib/cell.glsl"
-import cellShadingGL from "./shaders/lib/cell-shading.glsl"
 import viewGL from "./shaders/lib/view.glsl"
 import fullVS from "./shaders/full.vert.glsl"
 import textureFS from "./shaders/texture.frag.glsl"
@@ -104,7 +103,6 @@ export class WebGLRenderer extends Renderer {
       noise: noiseGL,
       convolve: convolveGL,
       cell: cellGL,
-      "cell-shading": cellShadingGL,
       view: viewGL,
     })
 
